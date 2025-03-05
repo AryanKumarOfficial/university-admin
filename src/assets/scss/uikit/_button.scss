@@ -4,29 +4,43 @@
 
 
 .btn {
-    font-size: variables.$font-size - 1px; 
-	&.btn-default{
-		color: colors.$gray-600;
-        background-color: colors.$white;
-        border-color: colors.$gray-100;
-        padding: 6px 18px;
-    }
-    &.btn-secondary {
-        @include css3.box-shadow(0 1px 1px 0 rgba(colors.$dark, 0.06));
-    }    
-    
-    &.btn-square {
-        @include css3.border-radius(0);
-    }
-    &.box_shadow{
-        @include css3.box-shadow(0 4px 5px rgba(colors.$dark,0.2));
-    }
-    &.btn-facebook{
-        background: #3b5998;
-        color: colors.$white;
-    }
-    &.btn-google{
-        background: #4285F4;
-        color: colors.$white;
-    }
+  font-size: variables.$font-size - 1px;
+
+  &.btn-default {
+    color: colors.$white;
+    background-color: colors.$blush;
+    border-color: colors.$gray-100;
+    padding: 6px 18px;
+    @include css3.border-radius(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &.btn-primary {
+    background-color: colors.$blush;
+    @include css3.box-shadow(0 1px 1px 0 rgba(colors.$dark, 0.06));
+  }
+
+  &.btn-secondary {
+    @include css3.box-shadow(0 1px 1px 0 rgba(colors.$dark, 0.06));
+  }
+
+  &.btn-square {
+    @include css3.border-radius(0);
+  }
+
+  &.box_shadow {
+    @include css3.box-shadow(0 4px 5px rgba(colors.$dark, 0.2));
+  }
+
+  &.btn-facebook {
+    background: #3b5998;
+    color: colors.$white;
+  }
+
+  &.btn-google {
+    background: #4285F4;
+    color: colors.$white;
+  }
 }
