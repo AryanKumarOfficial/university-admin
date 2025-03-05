@@ -1,0 +1,102 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../mixins/css3";
+@use "functions";
+
+.tag {
+  @include css3.border-radius(3px);
+  font-size: functions.px2rem(12px);
+  color: colors.$text-muted-dark;
+  font-weight: font.$font-weight-400;
+  background-color: colors.$gray-200;
+  padding: 0 .5rem;
+  line-height: 2em;
+  display: inline-flex;
+  cursor: default;
+  user-select: none;
+
+  @at-root a#{&} {
+    @include css3.transition(all .3s ease-in-out);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(colors.$text-muted-dark, .20);
+      color: inherit;
+    }
+  }
+}
+
+.tag-addon {
+  @extend .align-center !optional;
+  display: inline-block;
+  padding: 0 .5rem;
+  color: inherit;
+  text-decoration: none;
+  background: rgba(#000, .06);
+  margin: 0 -.5rem 0 .5rem;
+  min-width: 1.5rem;
+
+  &:last-child {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+  }
+
+  i {
+    vertical-align: middle;
+    margin: 0 -.25rem;
+  }
+
+  @at-root a#{&} {
+    @include css3.transition(all .3s ease-in-out);
+    text-decoration: none;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(#000, .16);
+      color: inherit;
+    }
+  }
+}
+
+.tag-avatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 3px 0 0 3px;
+  margin: 0 .5rem 0 -.5rem;
+}
+
+@each $vendor, $color in colors.$colors {
+  .tag-#{$vendor} {
+    background-color: $color;
+    color: colors.$white;
+  }
+}
+
+@each $vendor, $color in colors.$theme-colors {
+  .tag-#{$vendor} {
+    background-color: $color;
+    color: colors.$white;
+  }
+}
+
+.tag-rounded {
+  @include css3.border-radius(50px);
+
+  .tag-avatar {
+    @include css3.border-radius(50px);
+  }
+}
+
+.tags {
+  margin-bottom: -.5rem;
+  font-size: 0;
+
+  > .tag {
+    margin-bottom: .5rem;
+
+    &:not(:last-child) {
+      margin-right: .5rem;
+    }
+  }
+}

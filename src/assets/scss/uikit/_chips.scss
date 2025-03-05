@@ -1,0 +1,40 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../mixins/css3";
+@use "functions";
+
+.chips {
+	margin: 0 0 -.5rem;
+
+	.chip {
+		margin: 0 .5rem .5rem 0;
+	}
+}
+
+.chip {
+    @include css3.transition(all .3s ease-in-out);
+    @include css3.border-radius(2rem);
+    font-weight: font.$font-weight-600;
+    background-color: colors.$white;
+	color: colors.$text-muted-dark;
+	display: inline-block;
+	height: 2rem;
+	line-height: 2rem;
+	font-size: functions.px2rem(14px);
+	padding: 0 .75rem;
+
+	.avatar {
+        @include css3.border-radius(50%);
+		float: left;
+		margin: 0 .5rem 0 -.75rem;
+		height: 2rem;
+		width: 2rem;
+	}
+
+	@at-root a#{&} {
+		&:hover {
+			color: inherit;
+			text-decoration: none;			
+		}
+	}
+}

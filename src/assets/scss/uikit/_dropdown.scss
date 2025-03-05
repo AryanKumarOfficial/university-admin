@@ -1,0 +1,84 @@
+@use "../base/colors";
+@use "../base/ui-variables";
+@use "../base/variables";
+@use "../mixins/css3";
+
+.dropdown {
+  display: inline-block;
+}
+
+.dropdown-menu {
+  box-shadow: ui-variables.$dropdown-box-shadow;
+  border: 0;
+  min-width: 12rem;
+  font-size: variables.$font-size - 1px;
+
+  .dropdown-item {
+    color: colors.$gray-700;
+    font-size: variables.$font-size - 1px;
+    padding: 8px 10px;
+    margin: 0 10px;
+    width: auto;
+
+    &:hover,
+    &:focus {
+      background: colors.$gray-100;
+
+      &.readall {
+        background: transparent;
+        color: colors.$primary !important;
+      }
+    }
+
+    > div {
+      @extend .text_ellipsis !optional;
+      width: calc(100% - 50px);
+    }
+
+    &.readall {
+      padding: 0;
+    }
+  }
+
+  &.dropdown-menu-arrow {
+
+    &:after {
+      display: inline-block;
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: 12px;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid colors.$white;
+      border-left: 10px solid transparent;
+    }
+
+    &.dropdown-menu-right {
+      &:before,
+      &:after {
+        left: auto;
+        right: 12px;
+      }
+    }
+  }
+}
+
+.dropdown-toggle {
+  user-select: none;
+  cursor: pointer;
+
+  &:after {
+    vertical-align: 0.155em;
+  }
+
+  &:empty:after {
+    @extend .ml-0 !optional;
+  }
+}
+
+.dropdown-icon {
+  @include css3.inline-block();
+  @extend .align-center !optional;
+  margin-right: .5rem;
+  vertical-align: -1px;
+}

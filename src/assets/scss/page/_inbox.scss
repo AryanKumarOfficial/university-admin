@@ -1,0 +1,170 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../base/variables";
+@use "../mixins/css3";
+@use "../mixins/responsive";
+
+.inbox {
+  margin: 0;
+
+  .card-header {
+    padding: 10px 20px;
+
+    .custom-checkbox {
+      .custom-control-label:before,
+      .custom-control-label:after {
+        top: 2px;
+      }
+    }
+
+    .card-options > a {
+      font-size: variables.$font-size;
+      padding: 0 5px;
+      margin-left: 10px;
+    }
+
+    h5 {
+      white-space: nowrap;
+    }
+  }
+
+  .first {
+    width: 70px;
+  }
+
+  .custom-control {
+    @include css3.inline-block();
+    @extend .mb-0 !optional;
+
+    .custom-control-label::before,
+    .custom-control-label::after {
+      top: 2px;
+    }
+  }
+
+  .from {
+    a {
+      @extend .font-17 !optional;
+      color: colors.$gray-700;
+    }
+  }
+
+  .msg {
+    @extend .text_ellipsis !optional;
+    width: 800px;
+
+    @include responsive.max-screen(variables.$break-xlarge) {
+      width: 600px;
+    }
+    @include responsive.max-screen(variables.$break-1024) {
+      width: 510px;
+    }
+    @include responsive.max-screen(variables.$break-medium) {
+      width: 350px;
+    }
+    @include responsive.max-screen(variables.$break-small - 1px) {
+      width: 220px;
+    }
+  }
+
+  .detail {
+    background: variables.$body-color;
+
+    .detail-header {
+      padding: 15px;
+      background: colors.$white;
+
+      .float-left {
+        img {
+          border-radius: variables.$border-radius-small;
+          max-width: 63px;
+        }
+      }
+
+      @include responsive.max-screen(variables.$break-xsmall) {
+        small,
+        span {
+          display: none;
+        }
+      }
+    }
+
+    .media-body {
+      p {
+        a {
+          color: variables.$font-color;
+        }
+      }
+    }
+
+    .mail-cnt {
+      padding: 20px 15px;
+      @include responsive.max-screen(variables.$break-xsmall) {
+        padding: 20px 0;
+      }
+    }
+  }
+
+  &.unread {
+    .btn-link {
+      font-weight: font.$font-weight-700;
+    }
+
+    .from {
+      a {
+        color: colors.$gray-700;
+        font-weight: font.$font-weight-700;
+      }
+    }
+  }
+}
+
+.mail-star {
+  color: colors.$gray-500;
+
+  &.active {
+    color: colors.$warning;
+  }
+
+  &.love {
+    color: colors.$blush;
+  }
+}
+
+.file_folder {
+  @extend .mb-25 !optional;
+
+  a {
+    @include css3.inline-block();
+    @extend .mb-5 !optional;
+    border-radius: variables.$border-radius-small;
+    border: 1px solid colors.$gray-100;
+    position: relative;
+    overflow: hidden;
+    width: 220px;
+    @include responsive.max-screen(variables.$break-small - 100px) {
+      width: 100%;
+      display: block;
+    }
+  }
+
+  .icon {
+    @extend .align-center !optional;
+    float: left;
+    width: 60px;
+
+    i {
+      @extend .font-30 !optional;
+      vertical-align: middle;
+      line-height: 65px;
+    }
+  }
+
+  .file-name {
+    padding: 10px;
+
+    .date {
+      float: right;
+    }
+  }
+}

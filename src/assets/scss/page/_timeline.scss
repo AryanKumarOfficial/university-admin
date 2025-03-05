@@ -1,0 +1,102 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../base/variables";
+@use "../mixins/css3";
+@use "../mixins/responsive";
+@use "../uikit/functions";
+
+.timeline {
+  position: relative;
+  margin: 0 0 2rem;
+  padding: 0;
+  list-style: none;
+
+  &:before {
+    @include css3.display-block;
+    background-color: colors.$gray-200;
+    position: absolute;
+    content: '';
+    width: 1px;
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    left: 4px;
+  }
+}
+
+.timeline-item {
+  position: relative;
+  display: flex;
+  padding-left: 2rem;
+  margin: .5rem 0;
+
+  &:first-child:before,
+  &:last-child:before {
+    background: colors.$white;
+    content: '';
+    position: absolute;
+    width: 1px;
+    left: .25rem;
+  }
+
+  &:first-child {
+    margin-top: 0;
+
+    &:before {
+      top: 0;
+      height: .5rem;
+    }
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+
+    &:before {
+      top: .5rem;
+      bottom: 0;
+    }
+  }
+}
+
+.timeline-badge {
+  @include css3.display-block;
+  border: 1px solid colors.$white;
+  background: colors.$gray-500;
+  position: absolute;
+  width: functions.px2rem(7px);
+  height: functions.px2rem(7px);
+  left: 1px;
+  top: .5rem;
+  border-radius: 100%;
+}
+
+.timeline-time {
+  color: colors.$text-muted;
+  font-size: font.$small-font-size;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.timeline_item {
+  @extend .ml-10 !optional;
+  border-left: 1px solid colors.$gray-200;
+  padding: 20px 30px;
+  position: relative;
+  @include responsive.max-screen(variables.$break-small - 1px) {
+    padding-right: 0;
+  }
+
+  .tl_avatar {
+    @include css3.border-radius(30px);
+    position: absolute;
+    left: -15px;
+    width: 30px;
+    border: 2px solid colors.$white;
+    top: 20px;
+    padding: 2px;
+  }
+
+  .msg {
+    margin: 15px 0;
+  }
+}

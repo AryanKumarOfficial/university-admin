@@ -1,0 +1,46 @@
+// mixins for CSS3 features
+
+@mixin transition($transition) {
+  transition: $transition;
+}
+
+@mixin inline-block() {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@mixin display-block() {
+  display: block;
+}
+
+@mixin border-radius($radius) {
+  border-radius: $radius;
+}
+
+@mixin border-right-radius($right-radius) {
+  border-top-right-radius: $right-radius;
+  border-bottom-right-radius: $right-radius;
+}
+
+@mixin border-left-radius($left-radius) {
+  border-top-left-radius: $left-radius;
+  border-bottom-left-radius: $left-radius;
+}
+
+@mixin border-top-radius($top-radius) {
+  border-top-left-radius: $top-radius;
+  border-top-right-radius: $top-radius;
+}
+
+@mixin border-bottom-radius($bottom-radius) {
+  border-bottom-left-radius: $bottom-radius;
+  border-bottom-right-radius: $bottom-radius;
+}
+
+@mixin box-shadow($box-shadow) {
+  box-shadow: $box-shadow;
+}
+
+@mixin opacity($opacity) {
+  opacity: $opacity;
+}

@@ -1,0 +1,55 @@
+
+// import google fonts
+@use 'font/fonts';
+@use 'font/simple-line-icons';
+@use 'font/weather-icons';
+@use 'font/feather';
+@use '../plugins/font-awesome/css/font-awesome.scss';
+
+@use "mixins/responsive";
+@use "mixins/clearfix";
+@use "mixins/css3";
+
+// project base scss
+@use 'base/colors';
+@use 'base/variables';
+@use 'base/font';
+@use 'base/ui-variables';
+@use 'base/helpers';
+@use "base/general";
+
+// ui kit scss
+@use 'uikit/functions';
+@use 'uikit/layout';
+@use 'uikit/aside';
+@use 'uikit/header';
+@use 'uikit/sidebar';
+@use 'uikit/footer';
+@use 'uikit/text';
+@use 'uikit/utilities';
+@use 'uikit/type';
+@use 'uikit/grid';
+@use 'uikit/uikit';
+
+// Page scss
+@use 'page/sparkline';
+@use 'page/charts';
+@use 'page/jvectormap';
+@use 'page/social';
+@use 'page/chat';
+@use 'page/timeline';
+@use 'page/example';
+@use 'page/inbox';
+@use 'page/calendar';
+@use 'page/blog';
+@use 'page/profile';
+
+// Project Widgets
+@use 'page/widgets';
+@use 'page/widgets-statistics';
+@use 'page/widgets-data';
+@use 'page/widgets-social';
+
+@use 'skins/dark.scss';
+@use 'skins/theme1.scss';
+

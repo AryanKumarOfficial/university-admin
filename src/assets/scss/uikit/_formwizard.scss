@@ -1,0 +1,198 @@
+@use "../base/colors";
+@use "../base/variables";
+@use "../mixins/css3";
+@use "../mixins/responsive";
+
+﻿.wizard {
+
+  .content {
+    @include css3.border-radius(0px);
+    @extend .margin-0 !optional;
+    min-height: 245px;
+    overflow-y: auto;
+
+    .body {
+      padding: 15px;
+
+      label.error {
+        @extend .margin-0 !optional;
+        @extend .font-12 !optional;
+        color: colors.$danger;
+      }
+
+      input[type="checkbox"] {
+        display: none;
+      }
+    }
+  }
+
+  .actions {
+    @include css3.display-block;
+    @extend .align-right !optional;
+    position: relative;
+    width: 100%;
+    margin-top: 10px !important;
+
+    ul {
+      @include css3.inline-block;
+
+      > li {
+        float: left;
+        margin: 0 !important;
+      }
+    }
+
+    a {
+      @include css3.display-block;
+      @extend .ml-5 !optional;
+      color: colors.$white;
+      text-decoration: none;
+
+      &:hover, &:active {
+        @include css3.display-block;
+        color: colors.$white;
+        text-decoration: none;
+      }
+    }
+
+    .disabled a {
+
+      &:hover, &:active {
+        background: colors.$gray-100;
+        color: colors.$gray-500;
+      }
+    }
+  }
+
+  .steps {
+    @include css3.display-block;
+    position: relative;
+    width: 100%;
+    margin-bottom: 2px;
+
+    a {
+      @include css3.display-block;
+      @include css3.border-radius(0px);
+      width: auto;
+      margin: 0 2px 0 0;
+      padding: 10px;
+      text-decoration: none;
+
+      &:hover, &:active {
+        @include css3.display-block;
+        @include css3.border-radius(0px);
+        width: auto;
+        margin: 0 2px 0 0;
+        padding: 10px;
+        text-decoration: none;
+      }
+    }
+
+    .number {
+      @extend .font-15 !optional;
+    }
+
+    .disabled a {
+      cursor: default;
+
+      &:hover, &:active {
+        background: colors.$gray-200;
+        color: colors.$gray-400;
+        cursor: default;
+      }
+    }
+
+    .current a {
+      color: colors.$white;
+      cursor: default;
+
+      &:hover, &:active {
+        color: colors.$white;
+        cursor: default;
+      }
+    }
+
+    .done a {
+      color: colors.$white;
+      opacity: 0.7;
+
+      &:hover, &:active {
+        color: colors.$white;
+        opacity: 0.7;
+      }
+    }
+
+    > ul > li {
+      width: 25%;
+      float: left;
+
+      &:last-child {
+        a {
+          margin: 0;
+        }
+      }
+    }
+
+  }
+
+  &.vertical {
+    > .steps {
+      float: left;
+      width: 30%;
+      @extend .pr-5 !optional;
+
+      > ul > li {
+        float: none;
+        width: 100%;
+
+        a {
+          margin: 0 0 2px 0;
+        }
+      }
+    }
+
+    > .content {
+      float: left;
+      width: 70%;
+      margin: 0;
+    }
+
+    > .actions {
+      float: right;
+      width: 100%;
+      margin: 0;
+    }
+  }
+}
+
+.wizard_validation {
+  .wizard .steps > ul > li {
+    width: auto !important;
+  }
+}
+
+@include responsive.max-screen(variables.$break-small - 1px) {
+  .wizard {
+    > .steps {
+      > ul > li {
+        width: 100%;
+        margin-bottom: 2px;
+      }
+
+      a {
+        margin: 0;
+      }
+    }
+
+    &.wizard.vertical {
+      > .content, > .steps {
+        width: 100%;
+        padding: 0;
+
+      }
+    }
+  }
+  .wizard_validation .wizard .steps > ul > li {
+    width: 100% !important;
+  }
+}

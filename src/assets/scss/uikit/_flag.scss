@@ -1,0 +1,22 @@
+@use "sass:math";
+
+@use "../base/variables";
+@use "../mixins/css3";
+
+.flag {
+	@include css3.border-radius(2px);
+	width: math.div(1.2rem*640, 480);
+	height: 1.2rem;
+	display: inline-block;
+	background: no-repeat center/100% 100%;
+	vertical-align: bottom;
+	font-style: normal;
+	box-shadow: 0 0 1px 1px rgba(0, 0, 0, .1);
+
+}
+
+@each $flag in variables.$flag-icons {
+	.flag-#{$flag} {
+		background-image: url('../../images/flags/' + $flag + '.svg');
+	}
+}

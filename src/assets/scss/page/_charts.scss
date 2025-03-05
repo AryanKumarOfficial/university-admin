@@ -1,0 +1,192 @@
+@use "../base/colors";
+@use "../base/variables";
+@use "../mixins/css3";
+@use "../uikit/functions";
+
+/* sparkline chart */
+#jqstooltip {
+  background-color: colors.$white;
+  border-color: colors.$gray-400;
+  color: variables.$font-color;
+
+  .jqsfield {
+    color: variables.$font-color;
+  }
+}
+
+.c3-area {
+  opacity: 1 !important;
+}
+
+/* chartist */
+$ct-series-colors: (
+        a: #f79647,
+        b: #4aacc7,
+        c: #9bbb58,
+        d: #c0504e,
+        e: #4f81be,
+        f: #8064a1,
+        g: #77933e,
+        h: #ffc200,
+        i: #0544d3,
+        j: #6b0392,
+        k: #f05b4f,
+        l: #dda458,
+        m: #eacf7d,
+        n: #86797d,
+        o: #b2c326,
+);
+
+.ct-series {
+  .ct-line {
+    stroke-width: 1px;
+  }
+
+  .ct-bar {
+    stroke-width: 15px;
+  }
+
+  .ct-point {
+    stroke-width: 5px;
+    stroke-linecap: round;
+  }
+}
+
+@each $series-name, $series-color in $ct-series-colors {
+  .ct-series-#{$series-name} {
+    .ct-line,
+    .ct-bar,
+    .ct-point {
+      stroke: $series-color;
+    }
+
+    .ct-area,
+    .ct-slice-donut-solid,
+    .ct-slice-pie,
+    .ct-bar {
+      fill: $series-color;
+    }
+  }
+}
+
+.chartist-tooltip {
+  @include css3.border-radius(3px);
+  background: colors.$gray-700;
+  color: colors.$white;
+  min-width: 3.5em;
+
+  &:before {
+    border-top-color: colors.$gray-700;
+    margin-left: -8px;
+    border-width: 8px;
+  }
+}
+
+.ct-axis-title {
+  fill: colors.$gray-500;
+}
+
+/* Top Products Chart */
+.ct-label {
+  font-size: variables.$font-size;
+  color: variables.$font-color;
+}
+
+.ct-legend {
+  position: relative;
+  z-index: 1;
+  padding: 0;
+  margin-left: auto;
+  text-align: right;
+
+  li {
+    display: inline-block;
+    position: relative;
+    padding-left: 18px;
+    margin-right: 20px;
+    margin-bottom: 3px;
+    list-style-type: none;
+  }
+
+  li:before {
+    @include css3.border-radius(2px);
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    top: 5px;
+    left: 0;
+    content: '';
+    border: 3px solid transparent;
+  }
+
+  li.inactive:before {
+    background: transparent;
+  }
+
+  &.ct-legend-inside {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  @each $series-name, $series-color in $ct-series-colors {
+    .ct-series-#{$series-name}:before {
+      background-color: $series-color;
+      border-color: $series-color;
+    }
+  }
+}
+
+$sizes: (
+        'xs': 2.5rem,
+        'sm': 4rem,
+        'lg': 10rem
+);
+
+.chart-circle {
+  display: block;
+  height: 8rem;
+  width: 8rem;
+  position: relative;
+
+  canvas {
+    margin: 0 auto;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+  }
+}
+
+@each $size, $value in $sizes {
+  .chart-circle-#{$size} {
+    height: $value;
+    width: $value;
+    font-size: 0.8rem;
+  }
+}
+
+.chart-circle-value {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  line-height: 1;
+
+  small {
+    display: block;
+    color: colors.$text-muted;
+    font-size: functions.px2rem(15px);
+  }
+}
+
+.flot-chart {
+  width: 100%;
+  height: 320px;
+}

@@ -1,0 +1,89 @@
+@use "../../base/colors";
+@use "../../base/font";
+@use "../../base/variables";
+@use "../../mixins/css3";
+
+.imagecheck {
+	margin: 0;
+	position: relative;
+	cursor: pointer;
+}
+
+.imagecheck-input {
+	position: absolute;
+	z-index: -1;
+	opacity: 0;
+}
+
+.imagecheck-figure {
+    @include css3.border-radius(3px);
+    margin: 0;
+	border: 1px solid variables.$border-color;	
+	position: relative;
+
+	.imagecheck-input:focus ~ & {
+		border-color: colors.$primary;
+	}
+
+	.imagecheck-input:checked ~ & {
+		border-color: variables.$border-color-dark;
+	}
+
+	&:before {
+        @include css3.border-radius(3px);
+        @include css3.display-block;
+        content: '\f14a';
+        font-family: 'FontAwesome';
+		position: absolute;
+		top: .25rem;
+		left: .25rem;
+		width: 1rem;
+		height: 1rem;
+		pointer-events: none;
+		user-select: none;		
+		color: colors.$primary;
+		z-index: 1;
+		opacity: 0;
+		transition: .3s opacity;
+
+		.imagecheck-input:checked ~ & {
+			opacity: 1;
+		}
+	}
+}
+
+.imagecheck-image {
+	max-width: 100%;
+	opacity: .64;
+	transition: .3s opacity;
+
+	&:first-child {
+		border-top-left-radius: 2px;
+		border-top-right-radius: 2px;
+	}
+
+	&:last-child {
+		border-bottom-left-radius: 2px;
+		border-bottom-right-radius: 2px;
+	}
+
+	.imagecheck:hover &,
+	.imagecheck-input:focus ~ .imagecheck-figure &,
+	.imagecheck-input:checked ~ .imagecheck-figure & {
+		opacity: 1;
+	}
+}
+
+.imagecheck-caption {
+	text-align: center;
+	padding: .25rem .25rem;
+	color: colors.$text-muted;
+	font-size: font.$font-size-sm;
+	transition: .3s color;
+
+	.imagecheck:hover &,
+	.imagecheck-input:focus ~ .imagecheck-figure &,
+	.imagecheck-input:checked ~ .imagecheck-figure & {
+		color: variables.$body-color;
+	}
+}

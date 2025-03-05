@@ -1,0 +1,19 @@
+@use "../base/colors";
+@use "../base/font";
+@use "functions";
+
+.page-breadcrumb {
+	background: none;
+    padding: 0;
+    margin: 0;
+    font-size: functions.px2rem(14px);
+	font-weight: font.$font-weight-600;
+
+	.breadcrumb-item {
+		color: colors.$text-muted;
+
+		&.active {
+			color: colors.$text-muted-dark;
+		}
+	}
+}

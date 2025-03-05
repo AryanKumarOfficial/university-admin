@@ -1,0 +1,90 @@
+@use "../base/colors";
+@use "../base/variables";
+
+.widgets1 {
+  display: flex;
+  align-items: center;
+
+  .icon {
+    width: 40px;
+    text-align: center;
+    margin-right: 20px;
+  }
+}
+
+.widgets2 {
+  display: flex;
+  justify-content: space-between;
+
+  h2 {
+    @extend .mb-20 !optional;
+  }
+
+  h6 {
+    @extend .mb-0 !optional;
+  }
+
+  .icon {
+
+    @extend .font-37 !optional;
+  }
+}
+
+.top_counter {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+
+  .icon {
+    @extend .mr-15 !optional;
+    border-radius: variables.$border-radius-small;
+    width: 45px;
+    height: 45px;
+    line-height: 45px;
+    text-align: center;
+
+    i {
+      @extend .font-18 !optional;
+      color: colors.$white;
+    }
+  }
+}
+
+.w_sparkline {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.currency_state {
+  display: flex;
+  align-items: center;
+
+  .icon {
+    @extend .mr-20 !optional;
+
+    img {
+      width: 40px;
+    }
+  }
+
+  .number {
+    @extend .mb-0 !optional;
+  }
+}
+
+.gender_overview {
+  @extend .mb-15 !optional;
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  background: colors.$gray-50;
+
+  .widgets1 {
+    margin: 0 20px;
+
+    .icon {
+      width: 40px;
+    }
+  }
+}

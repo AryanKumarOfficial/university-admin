@@ -1,0 +1,10 @@
+@use "../base/colors";
+
+.badge {
+	color: colors.$white;
+}
+
+.badge-default {
+	background: colors.$gray-300;
+	color: colors.$gray-600;
+}

@@ -1,0 +1,150 @@
+@use "../mixins/responsive";
+@use "colors";
+@use "font";
+@use "variables";
+
+@for $i from 5 through 49 {
+    .font-#{$i + 1} {
+        font-size: #{$i + 1}px;
+    }
+}
+
+.inlineblock {display: inline-block;}
+.iblock {display: inline-block;}
+.dblock {display: block;}
+.displaynone {display: none; }
+.overflowhidden{overflow: hidden;}
+.b-none{ border: 0 !important;}
+.bg-none{ 
+    background: transparent !important;
+    .card-header,
+    .card-body{
+        padding-left: 0;
+        padding-right: 0;
+    }
+}
+
+//Margin
+@for $i from -25 through 25 {
+    .ml-#{$i * 5} {
+        margin-left: #{$i * 5}px;
+    }
+
+    .mt-#{$i * 5} {
+        margin-top: #{$i * 5}px;
+    }
+
+    .mr-#{$i * 5} {
+        margin-right: #{$i * 5}px;
+    }
+
+    .mb-#{$i * 5} {
+        margin-bottom: #{$i * 5}px;
+    }
+}
+.margin-0 {
+    margin: 0 !important;
+}
+
+@for $i from 0 through 25 {
+    .pl-#{$i * 5} {
+        padding-left: #{$i * 5}px;
+    }
+
+    .pt-#{$i * 5} {
+        padding-top: #{$i * 5}px;
+    }
+
+    .pr-#{$i * 5} {
+        padding-right: #{$i * 5}px;
+    }
+
+    .pb-#{$i * 5} {
+        padding-bottom: #{$i * 5}px;
+    }
+}
+.padding-0 {
+    padding: 0 !important;
+}
+.align-left {
+    text-align: left;
+}
+.align-center {
+    text-align: center;
+}
+.align-right {
+    text-align: right;
+}
+.align-justify {
+    text-align: justify;
+}
+
+.font300{ font-weight: font.$font-weight-300; }
+.font600{ font-weight: font.$font-weight-600; }
+.font700{ font-weight: font.$font-weight-700; }
+
+.text_ellipsis{
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    display: block;
+    overflow: hidden;
+}
+.display-5{ font-size: 2.5rem;}
+.p-10{padding: 10px !important; }
+.p-15{padding: 15px !important; }
+.p-20{padding: 20px !important; }
+
+
+.width30{ width: 30px;}
+.width35{ width: 35px;}
+.width40{ width: 40px;}
+.width45{ width: 45px;}
+.width100{width: 100px;}
+.width150{ width: 150px;}
+.width250{ width: 250px;}
+.width360{ width: 360px;}
+
+.bg-blue    { background-color: colors.$blue;}
+.bg-azure   { background-color: colors.$azure; }
+.bg-indigo  { background-color: colors.$indigo; }
+.bg-purple  { background-color: colors.$purple; }
+.bg-pink    { background-color: colors.$pink; }
+.bg-red     { background-color: colors.$red; }
+.bg-orange  { background-color: colors.$orange; }
+.bg-yellow  { background-color: colors.$yellow; }
+.bg-lime    { background-color: colors.$lime; }
+.bg-green   { background-color: colors.$green; }
+.bg-teal    { background-color: colors.$teal; }
+.bg-cyan    { background-color: colors.$cyan; }
+.bg-gray    { background-color: colors.$gray-500 !important; }
+.bg-lightgray    { background-color: colors.$gray-300 !important; }
+
+.bg-light-blue    { background-color: rgba(colors.$blue, 0.1); color: colors.$blue; }
+.bg-light-azure   { background-color: rgba(colors.$azure, 0.1); color: colors.$azure; }
+.bg-light-indigo  { background-color: rgba(colors.$indigo, 0.1); color: colors.$indigo; }
+.bg-light-purple  { background-color: rgba(colors.$purple, 0.1); color: colors.$purple; }
+.bg-light-pink    { background-color: rgba(colors.$pink, 0.1); color: colors.$pink; }
+.bg-light-red     { background-color: rgba(colors.$red, 0.1); color: colors.$red; }
+.bg-light-orange  { background-color: rgba(colors.$orange, 0.1); color: colors.$orange; }
+.bg-light-yellow  { background-color: rgba(colors.$yellow, 0.1); color: colors.$yellow; }
+.bg-light-lime    { background-color: rgba(colors.$lime, 0.1); color: colors.$lime; }
+.bg-light-green   { background-color: rgba(colors.$green, 0.1); color: colors.$green; }
+.bg-light-teal    { background-color: rgba(colors.$teal, 0.1); color: colors.$teal; }
+.bg-light-cyan    { background-color: rgba(colors.$cyan, 0.1); color: colors.$cyan; }
+.bg-light-gray    { background-color: rgba(colors.$gray-500, 0.1); color: colors.$gray-500; }
+
+@include responsive.max-screen (variables.$break-1024){
+	.hidden-md{
+		display: none;
+	}
+}
+@include responsive.max-screen (variables.$break-medium){
+	.hidden-sm{
+		display: none;
+	}
+}
+@include responsive.max-screen (variables.$break-small - 1px){
+	.hidden-xs{
+		display: none;
+	}
+}

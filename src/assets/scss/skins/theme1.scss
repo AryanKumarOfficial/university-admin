@@ -1,0 +1,1047 @@
+@use "../base/colors";
+@use "../base/variables";
+@use "../mixins/responsive";
+@use "dark";
+
+﻿// Theme Color 1
+.theme-azure{
+    #header_top{
+        background: colors.$azure;
+        .brand-logo {
+            color: colors.$azure;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$azure;
+    }
+    .btn-primary{
+        background: colors.$azure;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$azure;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$azure, colors.$indigo);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$azure;
+            }
+        }
+    }
+    .chip {
+        color: colors.$azure;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$indigo;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$indigo;
+                border-color: colors.$indigo;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$indigo;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$indigo;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$azure;
+        }
+    }
+}
+
+// Theme Color 2
+.theme-indigo{
+    #header_top{
+        background: colors.$indigo;
+        .brand-logo {
+            color: colors.$indigo;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$indigo;
+    }
+    .btn-primary{
+        background: colors.$indigo;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$indigo;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$indigo2, colors.$indigo);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$indigo;
+            }
+        }
+    }
+    .chip {
+        color: colors.$indigo;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$indigo2;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$indigo2;
+                border-color: colors.$indigo2;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$indigo2;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$indigo2;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$indigo;
+        }
+    }
+}
+
+// Theme Color 3
+.theme-purple{
+    #header_top{
+        background: colors.$purple;
+        .brand-logo {
+            color: colors.$purple;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$blush, colors.$purple);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$purple;
+    }
+    .btn-primary{
+        background: colors.$purple;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$purple;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$blush, colors.$purple);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$blush, colors.$purple);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$blush, colors.$purple);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$blush, colors.$purple);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$blush, colors.$purple);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$purple;
+            }
+        }
+    }
+    .chip {
+        color: colors.$purple;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$blush;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$blush;
+                border-color: colors.$blush;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$blush;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$blush;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$purple;
+        }
+    }
+}
+
+// Theme Color 4
+.theme-orange{
+    #header_top{
+        background: colors.$orange;
+        .brand-logo {
+            color: colors.$orange;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$orange;
+    }
+    .btn-primary{
+        background: colors.$orange;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$orange;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$indigo2, colors.$orange);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$orange;
+            }
+        }
+    }
+    .chip {
+        color: colors.$orange;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$indigo2;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$indigo2;
+                border-color: colors.$indigo2;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$indigo2;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$indigo2;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$orange;
+        }
+    }
+}
+
+// Theme Color 5
+.theme-green{
+    #header_top{
+        background: colors.$green;
+        .brand-logo {
+            color: colors.$green;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$teal, colors.$green);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$green;
+    }
+    .btn-primary{
+        background: colors.$green;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$green;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$teal, colors.$green);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$teal, colors.$green);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$teal, colors.$green);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$teal, colors.$green);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$teal, colors.$green);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$green;
+            }
+        }
+    }
+    .chip {
+        color: colors.$green;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$teal;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$teal;
+                border-color: colors.$teal;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$teal;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$teal;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$green;
+        }
+    }
+}
+
+// Theme Color 6
+.theme-cyan{
+    #header_top{
+        background: colors.$cyan;
+        .brand-logo {
+            color: colors.$cyan;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$cyan;
+    }
+    .btn-primary{
+        background: colors.$cyan;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$cyan;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$teal, colors.$cyan);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$cyan;
+            }
+        }
+    }
+    .chip {
+        color: colors.$cyan;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$teal;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$teal;
+                border-color: colors.$teal;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$teal;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$teal;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$cyan;
+        }
+    }
+}
+
+// Theme Color 7
+.theme-blush{
+    #header_top{
+        background: colors.$blush;
+        .brand-logo {
+            color: colors.$blush;
+        }
+        &.dark{
+            background: colors.$black2 !important;
+            .brand-logo{
+                background: dark.$dark-line;
+            }
+            .nav-link{
+                color: colors.$gray-400 !important;
+            }
+        }
+    }
+    #left-sidebar {
+        .brand-name {
+            background: linear-gradient(145deg, colors.$blue, colors.$blush);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+    }
+    .card-title{
+        color: colors.$blush;
+    }
+    .btn-primary{
+        background: colors.$blush;
+        border: 0;
+    }
+    &.offcanvas-active{
+        #header_top{
+            background: colors.$blush;
+        }
+        &.gradient{
+            #header_top{
+                background: linear-gradient(145deg, colors.$blue, colors.$blush);
+            }   
+        }
+    }
+    &.gradient{
+        #header_top{
+            background: transparent;
+            @include responsive.max-screen(variables.$break-large){
+                background: linear-gradient(145deg, colors.$blue, colors.$blush);
+            }
+            &.dark{
+                background: colors.$black2 !important;
+                .brand-logo{
+                    background: dark.$dark-line;
+                }
+                .nav-link{
+                    color: colors.$gray-400 !important;
+                }
+            }
+        }
+        #left-sidebar{
+            background: linear-gradient(145deg, colors.$blue, colors.$blush);
+            .brand-name{
+                color: colors.$white;
+                background: transparent;
+                -webkit-text-fill-color: inherit;
+            }
+            .nav-tabs{
+                border-bottom: 1px solid rgba(colors.$white, 0.3);
+                .nav-link{
+                    color: rgba(colors.$white, 0.5);
+                    &.active{
+                        border-color: colors.$white;
+                        color: colors.$white;
+                    }
+                }
+            }
+            .metismenu{
+                .g_heading{
+                    color: rgba(colors.$white, 0.5);
+                }
+                a{
+                    color: rgba(colors.$white, 0.9);
+                }
+                .active>a,
+                a:hover{
+                    color: colors.$white;
+                }
+            }
+        }
+        .btn-primary{
+            background: linear-gradient(145deg, colors.$blue, colors.$blush);
+        }
+    }
+    .user_div {
+        .gradient {
+            background: linear-gradient(145deg, colors.$blue, colors.$blush);
+            color: colors.$white;
+
+            .card-footer {
+                border-top-color: colors.$white;
+            }
+        }
+    }
+    .page-breadcrumb {
+        .breadcrumb-item {
+            a {
+                color: colors.$blush;
+            }
+        }
+    }
+    .chip {
+        color: colors.$blush;
+    }
+    .metismenu {
+        a {    
+            &:hover{
+                color: colors.$blue;
+            }
+        }
+        .active{
+            > a{
+                color: colors.$blue;
+                border-color: colors.$blue;
+            }
+            ul{
+                .active{
+                    a{
+                        color: colors.$blue;
+                        background: transparent;
+                    }
+                }
+            }
+        }
+        &:not(.grid) {
+            .active {
+                > a {
+                    i {
+                        background: colors.$blue;
+                    }
+                }
+            }
+        }
+    }
+    .font_setting {
+        input.custom-control-input:checked ~ .custom-control-label {
+            background: colors.$blush;
+        }
+    }
+}

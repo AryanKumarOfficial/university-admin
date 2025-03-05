@@ -1,0 +1,232 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../base/variables";
+@use "../mixins/css3";
+@use "../mixins/responsive";
+
+﻿.right_sidebar {
+  @include css3.box-shadow(-2px 2px 5px rgba(colors.$dark, 0.1));
+  @include css3.transition(all 0.4s ease-in-out);
+  background: colors.$white;
+  width: 300px;
+  height: 100vh;
+  position: fixed;
+  right: -350px;
+  top: 0px;
+  z-index: 9999 !important;
+  overflow-y: scroll;
+  scrollbar-width: none; // Firefox /
+  -ms-overflow-style: none; // IE 10+ /
+
+  &::-webkit-scrollbar { // WebKit /
+    width: 0px;
+  }
+
+  @include responsive.max-screen(variables.$break-small - 1px) {
+    padding-bottom: 40px;
+  }
+
+  &.open {
+    right: 0;
+  }
+
+  .settingbar {
+    position: absolute;
+    right: 0;
+  }
+
+  .nav-tabs {
+    margin: 0;
+
+    + .tab-content {
+      padding: 20px;
+    }
+  }
+
+  .card {
+    .card-header {
+      @extend .pb-0 !optional;
+    }
+
+    ul {
+      @extend .mb-0 !optional;
+    }
+  }
+}
+
+.setting-list {
+  li {
+    @extend .mb-10 !optional;
+
+    &:last-child {
+      @extend .mb-0 !optional;
+    }
+  }
+}
+
+.choose-skin,
+.sidebar-skin {
+  display: flex;
+  align-items: center;
+  flex-flow: row wrap;
+  grid-gap: 5px;
+
+  li {
+    @include css3.transition(all .3s ease-in-out);
+    @include css3.inline-block();
+    position: relative;
+    cursor: pointer;
+    font-size: 0;
+
+    &.active,
+    &:hover {
+      &:after {
+        position: absolute;
+        content: "";
+        background: colors.$white;
+        width: 20px;
+        height: 20px;
+        top: 5px;
+        left: 5px;
+        border-radius: 3px;
+      }
+    }
+
+    div {
+      @include css3.border-radius(2px);
+      @include css3.inline-block();
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+
+      &.azure {
+        background: colors.$azure;
+      }
+
+      &.indigo {
+        background: colors.$indigo;
+      }
+
+      &.purple {
+        background: colors.$purple;
+      }
+
+      &.orange {
+        background: colors.$orange;
+      }
+
+      &.green {
+        background: colors.$green;
+      }
+
+      &.cyan {
+        background: colors.$cyan;
+      }
+
+      &.blush {
+        background: colors.$blush;
+      }
+    }
+  }
+}
+
+.font_setting {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 10px;
+
+  .custom-control {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+
+    .custom-control-label {
+      padding: 10px;
+      display: inline-block;
+      vertical-align: top;
+      width: 100%;
+      border: 1px solid #E6E9ED;
+      border-radius: 5px;
+
+      &:before,
+      &:after {
+        content: none;
+      }
+    }
+  }
+}
+
+
+input.custom-control-input:checked ~ .custom-control-label {
+  color: #fff;
+}
+
+.contact-list {
+  li {
+    @extend .mb-25 !optional;
+
+    .contact-img {
+      @extend .mr-15 !optional;
+
+      img {
+        width: 30px;
+      }
+    }
+
+    .contact-name {
+      @extend .font-15 !optional;
+      @extend .mb-0 !optional;
+
+      span {
+        @extend .font-12 !optional;
+        font-weight: font.$font-weight-400;
+      }
+    }
+
+    .action {
+      margin-left: auto;
+    }
+  }
+}
+
+.theme_div {
+
+  @include css3.box-shadow(-2px 2px 5px rgba(colors.$dark, 0.1));
+  @include css3.transition(all 0.3s ease-in-out);
+  background: colors.$white;
+  width: 278px;
+  height: 100vh;
+  position: fixed;
+  right: -280px;
+  top: 0px;
+  z-index: 9999 !important;
+
+  overflow-x: auto;
+  scrollbar-width: none; // Firefox /
+  -ms-overflow-style: none; // IE 10+ /
+
+  &::-webkit-scrollbar { // WebKit /
+    width: 0px;
+  }
+
+  &.open {
+    right: 0;
+  }
+
+  .card {
+    border: 0;
+
+    .list-group {
+      a {
+        display: block;
+
+        img {
+          border: 1px solid colors.$gray-100;
+        }
+      }
+    }
+  }
+}

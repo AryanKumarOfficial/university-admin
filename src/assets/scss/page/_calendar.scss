@@ -1,0 +1,327 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../base/variables";
+@use "../mixins/css3";
+
+.fc-overlay {
+  display: none;
+  position: absolute;
+  min-width: 260px;
+  padding: 15px 0;
+  top: auto;
+  left: 50%;
+  margin-left: -150px;
+  z-index: 1000;
+  color: colors.$gray-800 !important;
+
+  &.left {
+    @extend .margin-0 !optional;
+    left: 100%;
+    top: -15px;
+    padding: 0 10px;
+  }
+
+  &.right {
+    @extend .margin-0 !optional;
+    left: auto;
+    right: 100%;
+    top: -15px;
+    padding: 0 10px;
+  }
+
+  .panel {
+    padding: 10px;
+  }
+}
+
+#calendar.fc {
+  .fc-toolbar {
+    @include css3.border-radius(0);
+    @extend .pt-10 !optional;
+    @extend .pb-15 !optional;
+    @extend .margin-0 !optional;
+    color: colors.$gray-800;
+    background: transparent;
+
+    h2 {
+      @extend .pt-5 !optional;
+      @extend .margin-0 !optional;
+      @extend .font-20 !optional;
+      text-transform: uppercase;
+    }
+
+    .fc-today-button, .fc-state-default {
+      @extend .font-14 !optional;
+      background: transparent;
+      color: colors.$gray-400;
+      padding: 4px 10px;
+      height: auto;
+      border: none;
+      box-shadow: none;
+      text-shadow: none;
+    }
+  }
+
+  .fc-view-container {
+
+    .fc-event {
+      padding: 5px;
+      font-size: variables.$font-size - 2px;
+      border-radius: variables.$border-radius-small;
+      border: 0;
+      color: colors.$gray-50;
+
+      &.fc-event-end:not(.fc-event-start) {
+        border: 0 !important;
+      }
+
+      &:focus,
+      &:hover,
+      &:active {
+        z-index: 1000;
+        color: colors.$white;
+
+        .fc-overlay {
+          @include css3.display-block();
+        }
+      }
+    }
+
+    .fc-view {
+      &.fc-basic-view,
+      &.fc-agenda {
+        > table {
+          > thead {
+            tr {
+              th,
+              td {
+                &.fc-widget-header {
+                  color: colors.$gray-700;
+                  background: colors.$gray-100;
+                  border: 1px solid colors.$gray-50;
+                  padding: 10px;
+                }
+
+                &.fc-agenda-gutter {
+                  @include css3.display-block();
+                }
+              }
+
+              td {
+                &.fc-widget-header {
+                  @extend .padding-0 !optional;
+                }
+              }
+            }
+          }
+
+          tbody {
+            tr {
+              td {
+                &.fc-widget-content {
+                  border: 0;
+                  border-bottom: 1px solid colors.$gray-50;
+                  border-right: 1px solid colors.$gray-50;
+
+                  &.fc-state-highlight {
+                    background: colors.$white;
+                  }
+                }
+
+                &.fc-day-number {
+                  @extend .font-15 !optional;
+                  color: colors.$gray-800;
+                  padding: 5px 10px;
+                  margin: 5px;
+
+                  &.fc-state-highlight {
+                    @include css3.border-radius(50%);
+                    background-color: colors.$red;
+                    color: colors.$white;
+                    padding: 4px 6px;
+                    float: right;
+                  }
+                }
+
+                &:first-child {
+                  &.fc-widget-content {
+                    border-left: 1px solid colors.$gray-50;
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        .fc-body {
+          .fc-row .fc-bg {
+            border-bottom: 1px solid colors.$gray-50;
+          }
+
+          .fc-row:last-of-type .fc-bg {
+            border-bottom: 0;
+          }
+        }
+
+        .fc-agenda-allday {
+          .fc-agenda-axis,
+          .fc-agenda-gutter {
+            @extend .font-12 !optional;
+            background-color: colors.$gray-200;
+            color: colors.$gray-800;
+            border-left: 1px solid colors.$gray-50;
+            border-right: 1px solid colors.$gray-50;
+            font-weight: 100;
+            padding: 10px 5px;
+          }
+        }
+
+        > table {
+          > tbody {
+            > tr {
+              > td {
+                &.fc-state-highlight {
+                  background: colors.$gray-200;
+                }
+
+                &.fc-sat {
+                  border-right: 0;
+                }
+              }
+            }
+          }
+        }
+
+        .fc-agenda-slots {
+          tr {
+            line-height: 35px;
+
+            th {
+              @extend .font-12 !optional;
+              background-color: colors.$gray-200;
+              color: colors.$gray-800;
+              border: 0;
+              border-left: 1px solid colors.$gray-50;
+              border-right: 1px solid colors.$gray-50;
+              font-weight: 100;
+              padding-top: 10px;
+            }
+
+            td.fc-widget-content {
+              border-bottom: 1px solid colors.$gray-50;
+              line-height: 50px;
+
+              &:last-child {
+                border-right: 0;
+              }
+            }
+
+            &.fc-minor {
+              td.fc-widget-content {
+                border-bottom: 1px solid colors.$gray-50;
+              }
+            }
+          }
+        }
+
+        .fc-agenda-divider {
+          border: 1px solid colors.$gray-50;
+
+          .fc-agenda-divider-inner {
+            background-color: colors.$gray-200;
+            height: 3px;
+          }
+        }
+      }
+    }
+
+    .fc-list-view {
+      .fc-list-item {
+        color: colors.$gray-200;
+      }
+    }
+
+    .fc-other-month {
+      background: #f3f9ff;
+    }
+
+    .fc-basic-view .fc-day-number, .fc-basic-view .fc-week-number {
+      float: left;
+      padding: 10px 0 5px 10px;
+    }
+  }
+
+  .fc-popover {
+    border-radius: variables.$border-radius-large;
+    box-shadow: 0px 10px 50px 0px rgba(colors.$dark, 0.2);
+    border: none;
+    padding: 10px;
+
+    .fc-event-container {
+      @extend .padding-0 !optional;
+    }
+
+    .fc-event {
+      padding: 4px 8px;
+      margin: 2px 0px;
+    }
+
+  }
+
+  .fc-agendaWeek-view,
+  .fc-agendaDay-view,
+  .fc-listWeek-view {
+    .fc-head {
+      .fc-widget-header {
+        span {
+          @include css3.inline-block();
+          padding: 10px;
+        }
+      }
+    }
+  }
+
+  .fc-unthemed {
+    td {
+      border-color: colors.$gray-50;
+    }
+  }
+}
+
+.fc-unthemed {
+  .fc-row,
+  thead,
+  td,
+  th,
+  .fc-divider {
+    border-color: variables.$lightgray;
+  }
+}
+
+.fc-agendaWeek-view {
+  tr.fc-minor {
+    display: none;
+  }
+
+  .fc-axis {
+    padding: 5px;
+  }
+
+  .fc-head .fc-widget-header {
+    background: variables.$lightgray;
+
+    span {
+      font-weight: font.$font-weight-600;
+    }
+  }
+}
+
+.fc {
+  &.event_list {
+    .fc-event {
+      @extend .mb-5 !optional;
+      border: 0;
+      padding: 5px 15px;
+    }
+  }
+}

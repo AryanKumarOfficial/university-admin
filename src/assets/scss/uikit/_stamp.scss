@@ -1,0 +1,22 @@
+@use "../base/colors";
+@use "../base/font";
+@use "../mixins/css3";
+
+.stamp {
+  @include css3.border-radius(3px);
+  @extend .align-center !optional;
+  color: colors.$white;
+  background: colors.$gray-600;
+  font-weight: font.$font-weight-600;
+  display: inline-block;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 .25rem;
+  line-height: 2rem;
+}
+
+.stamp-md {
+  min-width: 2.5rem;
+  height: 2.5rem;
+  line-height: 2.5rem;
+}
