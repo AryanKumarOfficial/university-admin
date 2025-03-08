@@ -1,28 +1,40 @@
 import {NextResponse} from "next/server";
 import {auth} from "@/lib/firebase/client";
 
-const publicRoutes = ['/login', '/register'];
-const assetRoutes = /^\/(_next\/static|assets)\//; // Allow Next.js static assets and custom assets
+const publicRoutes = ["/login", "/register"];
 
 export async function middleware(request) {
-    const path = request.nextUrl.pathname;
+    const {pathname} = request.nextUrl;
+    // Retrieve the session token once
+    const session = request.cookies.get("firebase-auth-token")?.value;
 
-    if (publicRoutes.includes(path) || assetRoutes.test(path)) {
+    // If the route is public (auth routes)
+    if (publicRoutes.includes(pathname)) {
+        // If the user is already authenticated, redirect to home.
+        if (session) {
+            return NextResponse.redirect(new URL("/", request.url));
+        }
+        // Otherwise, allow access to the auth route.
         return NextResponse.next();
     }
 
-    // Protect all other routes
-    const session = request.cookies.get('firebase-auth-token')?.value;
+    // For protected routes, if there's no session, redirect to login.
     if (!session) {
-        return NextResponse.redirect(new URL('/login', request.url));
+        return NextResponse.redirect(new URL("/login", request.url));
     }
 
+    // Validate the session by checking the Firebase token.
     try {
         await auth.currentUser?.getIdToken(true);
         return NextResponse.next();
     } catch (error) {
-        const response = NextResponse.redirect(new URL('/login', request.url));
-        response.cookies.delete('firebase-auth-token');
+        const response = NextResponse.redirect(new URL("/login", request.url));
+        response.cookies.delete("firebase-auth-token");
         return response;
     }
 }
+
+// Use route matcher to exclude asset routes
+export const config = {
+    matcher: ["/((?!_next/static|assets).*)"],
+};
