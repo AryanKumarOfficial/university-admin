@@ -32,7 +32,9 @@ export default function Breadcrumb({breadcrumbs = []}) {
                                         {isLast || !crumb.href ? (
                                             crumb.label
                                         ) : (
-                                            <Link href={crumb.href}>{crumb.label}</Link>
+                                            <Link style={{
+                                                textDecoration: "none",
+                                            }} href={crumb.href}>{crumb.label}</Link>
                                         )}
                                     </li>
                                 );

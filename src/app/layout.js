@@ -2,7 +2,6 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import "@/assets/scss/main.scss";
 import AuthProvider from "@/components/auth-provider";
 
-
 export const metadata = {
     title: "University Admin",
     description: "Centralised admin for all university related tasks",
