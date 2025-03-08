@@ -5,7 +5,32 @@ import {usePathname} from "next/navigation";
 
 const sidebarLinks = {
     university: [
-        {path: "/", icon: "fa fa-dashboard", label: "Dashboard"},
+        {
+            path: "/",
+            icon: "fa fa-dashboard",
+            label: "Dashboard"
+        },
+        {
+            path: "/leads",
+            icon: "fa fa-users",
+            label: "Leads"
+        },
+        {
+            path: "/clients",
+            icon: "fa fa-users",
+            label: "Clients"
+        },
+        {
+            path: "/teachers",
+            icon: "fa fa-users",
+            label: "Teachers"
+        },
+        {
+            path: "/Students",
+            icon: "fa fa-users",
+            label: "Students"
+        },
+
     ],
     admin: [
         {path: "/payments", icon: "fa fa-credit-card", label: "Payments"},
