@@ -1,7 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "@/assets/scss/main.scss";
-import Footer from "@/components/Footer";
-import Navbar from "@/components/Navbar";
+import AuthProvider from "@/components/auth-provider";
 
 
 export const metadata = {
@@ -13,9 +12,9 @@ export default function RootLayout({children}) {
     return (
         <html lang="en">
         <body className={"font-muli theme-blush"}>
-        <Navbar/>
-        {children}
-        <Footer/>
+        <AuthProvider>
+            {children}
+        </AuthProvider>
         <script src={"../assets/js/lib.vendor.bundle.js"}></script>
         <script src={"../assets/js/core.js"}></script>
         </body>

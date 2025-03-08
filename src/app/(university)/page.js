@@ -1,5 +1,4 @@
 import React from 'react'
-import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
 
 export default function Page(props) {
@@ -9,7 +8,7 @@ export default function Page(props) {
             <Breadcrumb/>
             <div className="section-body mt-4 min-vh-100">
                 <div className="container-fluid d-flex flex-column justify-content-center align-items-center" style={{
-                    height:"100vh"
+                    height: "100vh"
                 }}>
                     <h1 className={"page-subtitle fs-1 fw-bolder"}>Dashboard</h1>
 
