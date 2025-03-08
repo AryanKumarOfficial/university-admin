@@ -178,9 +178,10 @@ const Navbar = () => {
         <div id="main_content">
             <TopHeader user={user}/>
             <div id="left-sidebar" className="sidebar">
-                <h5 className="brand-name">
-                    <Link href="/" className="menu_option float-right" style={{textDecoration: "none"}}>
-                        Centralized Admin
+                <h5 className="brand-name fs-6 w-100">Centralized Admin
+                    <Link href="#" className="menu_option float-right ms-3" style={{textDecoration: "none"}}>
+                        <i className="icon-grid font-16" data-toggle="tooltip" data-placement="left"
+                           title="Grid & List Toggle"></i>
                     </Link>
                 </h5>
                 <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} currentPath={pathname}/>
