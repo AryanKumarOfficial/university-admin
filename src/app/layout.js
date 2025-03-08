@@ -1,6 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "@/assets/scss/main.scss";
 import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
 
 
 export const metadata = {
@@ -12,9 +13,11 @@ export default function RootLayout({children}) {
     return (
         <html lang="en">
         <body className={"font-muli theme-blush"}>
+        <Navbar/>
         {children}
         <Footer/>
-        <script src={"./assets/js/core.js"}></script>
+        <script src={"../assets/js/lib.vendor.bundle.js"}></script>
+        <script src={"../assets/js/core.js"}></script>
         </body>
         </html>
     );
