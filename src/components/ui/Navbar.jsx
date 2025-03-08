@@ -7,27 +7,27 @@ const sidebarLinks = {
     university: [
         {
             path: "/",
-            icon: "fa fa-dashboard",
+            icon: "fa fa-tachometer",
             label: "Dashboard"
         },
         {
             path: "/leads",
-            icon: "fa fa-users",
+            icon: "fa fa-address-book",
             label: "Leads"
         },
         {
             path: "/clients",
-            icon: "fa fa-users",
+            icon: "fa fa-briefcase",
             label: "Clients"
         },
         {
             path: "/teachers",
-            icon: "fa fa-users",
+            icon: "fa fa-user",
             label: "Teachers"
         },
         {
             path: "/students",
-            icon: "fa fa-users",
+            icon: "fa fa-graduation-cap",
             label: "Students"
         },
 
