@@ -26,7 +26,7 @@ const sidebarLinks = {
             label: "Teachers"
         },
         {
-            path: "/Students",
+            path: "/students",
             icon: "fa fa-users",
             label: "Students"
         },
