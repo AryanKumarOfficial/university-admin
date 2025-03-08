@@ -6,16 +6,20 @@ import {useAuthStore} from "@/stores/auth-store";
 import {useRouter} from "next/navigation";
 
 export default function Page() {
-    const {signIn, error, loading} = useAuthStore();
-    const [formState, setFormState] = useState({email: "", password: ""});
+    const {signUp, error, loading} = useAuthStore();
+    const [formState, setFormState] = useState({name: "", email: "", password: ""});
+
     const router = useRouter();
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await signIn(formState.email, formState.password);
+            await signUp(formState.name, formState.email, formState.password);
             router.push("/");
+
         } catch (error) {
             console.error("Login error:", error);
+        } finally {
+            e.target.reset();
         }
     };
 
@@ -43,6 +47,18 @@ export default function Page() {
                         </div>
 
                         <form id="loginForm" onSubmit={handleSubmit}>
+                            <div className="form-group my-3">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="inputName"
+                                    name="name"
+                                    placeholder="Enter your Name"
+                                    value={formState.name}
+                                    onChange={onChange}
+                                    required
+                                />
+                            </div>
                             <div className="form-group">
                                 <input
                                     type="email"
@@ -55,18 +71,7 @@ export default function Page() {
                                     required
                                 />
                             </div>
-                            <div className="form-group">
-                                <label className="form-label">
-                                    <Link href="/forgot-password" className="small"
-                                          style={{
-                                              float: "right",
-                                              textDecoration: "none",
-                                              margin: "5px 0",
-                                          }}
-                                    >
-                                        I forgot password
-                                    </Link>
-                                </label>
+                            <div className="form-group mt-3">
                                 <input
                                     type="password"
                                     name="password"
@@ -81,14 +86,14 @@ export default function Page() {
 
                             <div className="text-center d-flex flex-column justify-content-between">
                                 <button type="submit" className="btn btn-primary btn-block mt-2">
-                                    {loading ? <i className="fa fa-spinner fa-spin"/> : "Login"}
+                                    {loading ? <i className="fa fa-spinner fa-spin"/> : "Register"}
                                 </button>
                                 {error && <p className="text-danger mt-2">{error}</p>}
                                 <div className="text-muted mt-4">
                                     Don't have an account?{" "}
-                                    <Link href="/register" style={{
+                                    <Link href="/login" style={{
                                         textDecoration: "none",
-                                    }}>Sign up</Link>
+                                    }}>Login</Link>
                                 </div>
                             </div>
                         </form>
