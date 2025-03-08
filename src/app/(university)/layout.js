@@ -1,5 +1,3 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
-import "@/assets/scss/main.scss";
 import Footer from "@/components/ui/Footer";
 import Navbar from "@/components/ui/Navbar";
 

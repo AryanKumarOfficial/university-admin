@@ -55,10 +55,10 @@ function TopHeader({user}) {
                     </div>
                 </div>
                 <div className="hright">
-                    <a href="javascript:void(0)" className="nav-link icon right_tab">
+                    <Link href="#" className="nav-link icon right_tab">
                         <i className="fe fe-align-right"></i>
-                    </a>
-                    <Link href="/login" className="nav-link icon settingbar">
+                    </Link>
+                    <Link href="/login" className="nav-link  right_tab">
                         <i className="fe fe-power"></i>
                     </Link>
                 </div>

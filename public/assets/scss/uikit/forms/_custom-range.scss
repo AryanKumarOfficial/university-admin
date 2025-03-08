@@ -13,7 +13,7 @@ $custom-range-thumb-background: #fff;
 $custom-range-thumb-border: 1px solid color.adjust(ui-variables.$input-border-color, $lightness: -5%);
 
 @function custom-range-long-shadow($color) {
-  $size: -1 * calc(($custom-range-thumb-height - $custom-range-slider-height) / 2);
+  $size: calc(-1 * ($custom-range-thumb-height - $custom-range-slider-height) / 2);
 
   $val: 1px 0 0 $size $color;
   $s: calc($custom-range-slider-width / 1);
@@ -76,7 +76,7 @@ $custom-range-thumb-border: 1px solid color.adjust(ui-variables.$input-border-co
     background: $custom-range-thumb-background;
     border-radius: $custom-range-thumb-radius;
     box-shadow: custom-range-long-shadow($custom-range-background-slider);
-    margin-top: (-($custom-range-thumb-height - $custom-range-slider-height) / 2);
+    margin-top: calc(-1*($custom-range-thumb-height - $custom-range-slider-height) / 2);
     border: $custom-range-thumb-border;
     transition: .3s border-color, .3s background-color;
   }
