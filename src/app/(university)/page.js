@@ -3,6 +3,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
 import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
 import Performance from "@/components/sections/Dashboard/Performance";
+import Finance from "@/components/sections/Dashboard/Finance";
 
 export default function Page(props) {
 
@@ -18,6 +19,7 @@ export default function Page(props) {
                                 <UniversityReport/>
                                 <Performance/>
                             </div>
+                            <Finance/>
                         </div>
                     </div>
                 </div>
