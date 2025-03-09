@@ -9,22 +9,19 @@ const Footer = () => {
                         <div className="container-fluid">
                             <div className="row">
                                 <div className="col-md-6 col-sm-12">
-                                    Copyright &copy; 2024
-                                    <Link href="https://themeforest.net/user/puffintheme/portfolio" target="_blank"
+                                    Copyright &copy; 2025
+                                    <Link href="https://iqnaut.com" target="_blank"
                                           rel="noopener noreferrer">
-                                        {" "}PuffinTheme
+                                        {" "}Iqnaut Central Admin
                                     </Link>.
                                 </div>
-                                <div className="col-md-6 col-sm-12 text-md-right">
+                                <div className="col-md-6 col-sm-12 text-md-right d-flex justify-content-md-end justify-content-center mb-10 mb-md-0">
                                     <ul className="list-inline mb-0">
                                         <li className="list-inline-item">
-                                            <Link href="/doc/index.html">Documentation</Link>
+                                            <Link href="#">Privacy Policy</Link>
                                         </li>
                                         <li className="list-inline-item">
-                                            <Link href="#">FAQ</Link>
-                                        </li>
-                                        <li className="list-inline-item">
-                                            <button className="btn btn-outline-primary btn-sm">Buy Now</button>
+                                            <Link href="#">Terms of Use</Link>
                                         </li>
                                     </ul>
                                 </div>
