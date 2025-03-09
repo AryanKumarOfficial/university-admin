@@ -2,6 +2,7 @@ import React from 'react'
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
 import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
+import Performance from "@/components/sections/Dashboard/Performance";
 
 export default function Page(props) {
 
@@ -15,6 +16,7 @@ export default function Page(props) {
                         <div className="tab-pane fade show active" id="admin-Dashboard" role={"tabpanel"}>
                             <div className="row clearfix">
                                 <UniversityReport/>
+                                <Performance/>
                             </div>
                         </div>
                     </div>
