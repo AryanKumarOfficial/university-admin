@@ -1,4 +1,3 @@
-
 // import google fonts
 @use 'font/fonts';
 @use 'font/simple-line-icons';
@@ -52,4 +51,8 @@
 
 @use 'skins/dark.scss';
 @use 'skins/theme1.scss';
+
+a {
+  text-decoration: none;
+}
 
