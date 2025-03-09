@@ -1,3 +1,6 @@
+"use client";
+import React from 'react'
+
 const DataCard = () => {
     return (
         <div className="section-body mt-4">

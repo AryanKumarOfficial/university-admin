@@ -1,3 +1,4 @@
+"use client";
 import React from 'react'
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
@@ -8,7 +9,7 @@ import ExamToppers from "@/components/sections/Dashboard/Toppers";
 import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
 import NewStudents from "@/components/sections/Dashboard/NewStudents";
 
-export default function Page(props) {
+export default function Page() {
 
     return (
         <div className={"page"}>

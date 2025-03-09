@@ -1,4 +1,6 @@
 // Finance.jsx
+"use client";
+import React from 'react';
 
 export default function Finance() {
     // 1. Define your card data in one place:

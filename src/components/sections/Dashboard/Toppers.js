@@ -1,3 +1,6 @@
+"use client";
+import React from 'react';
+
 export default function ExamToppers() {
     // 1. Define the table data in one place
     const toppers = [
