@@ -4,6 +4,7 @@ import DataCard from "@/components/sections/Dashboard/DataCard";
 import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
 import Performance from "@/components/sections/Dashboard/Performance";
 import Finance from "@/components/sections/Dashboard/Finance";
+import ExamToppers from "@/components/sections/Dashboard/Toppers";
 
 export default function Page(props) {
 
@@ -20,6 +21,9 @@ export default function Page(props) {
                                 <Performance/>
                             </div>
                             <Finance/>
+                            <div className="row clearfix row-deck my-3">
+                                <ExamToppers/>
+                            </div>
                         </div>
                     </div>
                 </div>
