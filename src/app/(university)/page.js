@@ -5,6 +5,7 @@ import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
 import Performance from "@/components/sections/Dashboard/Performance";
 import Finance from "@/components/sections/Dashboard/Finance";
 import ExamToppers from "@/components/sections/Dashboard/Toppers";
+import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
 
 export default function Page(props) {
 
@@ -23,6 +24,7 @@ export default function Page(props) {
                             <Finance/>
                             <div className="row clearfix row-deck my-3">
                                 <ExamToppers/>
+                                <DeviceAnalytics/>
                             </div>
                         </div>
                     </div>
