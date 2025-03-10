@@ -5,26 +5,24 @@ import {collection, deleteDoc, doc, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 import {Button, Modal} from "react-bootstrap";
 import Link from "next/link";
+import {formatTime} from "@/helpers/TimeFormat";
 
 const breadcrumbs = [{label: "Leads", href: "/leads"}];
 
 export default function LeadsPage() {
-
     const [leads, setLeads] = useState([]);
-
-    // New state for deletion confirmation
+    const [selectedClient, setSelectedClient] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [leadToDelete, setLeadToDelete] = useState(null);
+    const [clientToDelete, setClientToDelete] = useState(null);
+    const [showUpdateModal, setShowUpdateModal] = useState(false);
 
     useEffect(() => {
-        (async () => {
-            await fetchLeads();
-        })()
+        fetchClients();
     }, []);
 
-    const fetchLeads = async () => {
-        const leadCollections = collection(db, "leads");
-        const querySnapshot = await getDocs(leadCollections);
+    const fetchClients = async () => {
+        const leadsCollections = collection(db, "leads");
+        const querySnapshot = await getDocs(leadsCollections);
         const fetchedLeads = [];
         querySnapshot.forEach((doc) => {
             fetchedLeads.push({...doc.data(), id: doc.id});
@@ -32,29 +30,11 @@ export default function LeadsPage() {
         setLeads(fetchedLeads);
     };
 
-    const getTag = (status) => {
-        switch (status?.toLowerCase()) {
-            case "new":
-                return "tag-primary";
-            case "contacted":
-                return "tag-warning";
-            case "converted":
-                return "tag-success";
-            default:
-                return "tag-default";
-        }
-    };
 
-    // Delete confirmation handler using modal
     const confirmDelete = async () => {
-        try {
-            await deleteDoc(doc(db, "leads", leadToDelete));
-            await fetchLeads();
-            setShowDeleteConfirm(false);
-            setLeadToDelete(null);
-        } catch (err) {
-            console.error("Error deleting the lead: ", err);
-        }
+        await deleteDoc(doc(db, "leads", clientToDelete));
+        fetchClients();
+        setShowDeleteConfirm(false);
     };
 
     return (
@@ -62,8 +42,8 @@ export default function LeadsPage() {
             <Breadcrumb breadcrumbs={breadcrumbs}/>
             <div className="section-body">
                 <div className="container-fluid d-flex justify-content-end">
-                    <Link href={`/leads/add`} className="btn btn-primary rounded px-4 py-2">
-                        Add Lead
+                    <Link href={"/leads/add"} className="btn btn-primary rounded px-4 py-2">
+                        Add a new Lead
                     </Link>
                 </div>
             </div>
@@ -72,52 +52,60 @@ export default function LeadsPage() {
                 <div className="container-fluid">
                     <div className="card">
                         <div className="table-responsive">
-                            <table className="table table-hover table-vcenter text-nowrap table-striped mb-0">
+                            <table className="table table-hover table-vcenter table-responsive table-striped table-custom2 text-nowrap table-striped mb-0">
                                 <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>School</th>
-                                    <th>Created At</th>
-                                    <th>Status</th>
+                                    <th>School Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Contact Number</th>
+                                    <th>Location</th>
+                                    <th>Number of Students</th>
+                                    <th>Annual Fees</th>
+                                    <th>Website</th>
+                                    <th>Follow Up</th>
+                                    <th>Date & Time</th>
+                                    <th>Comments</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 {leads.length > 0 ? (
-                                    leads.map((lead, index) => (
-                                        <tr key={lead.id}>
+                                    leads.map((client, index) => (
+                                        <tr key={client.id}>
                                             <td>{index + 1}</td>
+                                            <td>{client.schoolName}</td>
+                                            <td>{client.contacts[0]?.name}</td>
+                                            <td>{client.contacts[0]?.phone}</td>
+                                            <td>{client.state}, {client.city}, {client.area}</td>
+                                            <td>{client.numStudents}</td>
+                                            <td>{client.annualFees}</td>
+                                            <td>{client.hasWebsite === "yes" ? "Yes" : "No"}</td>
                                             <td>
-                                                {lead.fname} {lead.lname}
-                                            </td>
-                                            <td>{lead.emailId}</td>
-                                            <td>{lead.phoneNumber}</td>
-                                            <td>{lead.schoolName}</td>
-                                            <td>
-                                                {new Date(lead.createdAt).toLocaleDateString("en-IN", {
-                                                    year: "numeric",
-                                                    month: "short",
-                                                    day: "numeric",
-                                                })}
+                                                {client.response}
                                             </td>
                                             <td>
-                                                <span
-                                                    className={`tag ${getTag(lead.currentStatus)}`}>{lead.currentStatus}</span>
+                                                {client.response === "Call later" ? (
+                                                    new Date(client.followUpDate).toLocaleString("en-IN", {
+                                                        day: "numeric",
+                                                        month: "short",
+                                                        year: "numeric",
+                                                    }) + " - " + formatTime(client.followUpTime)
+                                                ) : (
+                                                    new Date(client.createdAt).toLocaleString()
+                                                )}
                                             </td>
+                                            <td>{client.comments[0].text || "No comments"}</td>
                                             <td>
-                                                <Link href={`/leads/update/${lead.id}`}
-                                                      className={"btn btn-outline-primary btn-sm mr-2"}
-                                                >
+                                                <Link href={`/leads/update/${client.id}`}
+                                                      className="btn btn-outline-primary btn-sm">
                                                     <i className="fa fa-edit"></i>
                                                 </Link>{" "}
                                                 <Button
                                                     variant="outline-danger"
                                                     size="sm"
                                                     onClick={() => {
-                                                        setLeadToDelete(lead.id);
+                                                        setClientToDelete(client.id);
                                                         setShowDeleteConfirm(true);
                                                     }}
                                                 >
@@ -128,9 +116,7 @@ export default function LeadsPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={8} className="text-center">
-                                            No leads found
-                                        </td>
+                                        <td colSpan={12} className="text-center">No Leads found</td>
                                     </tr>
                                 )}
                                 </tbody>
@@ -140,7 +126,6 @@ export default function LeadsPage() {
                 </div>
             </div>
 
-            {/* Delete Confirmation Modal */}
             <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirm Delete</Modal.Title>

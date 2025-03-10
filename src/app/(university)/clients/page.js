@@ -148,7 +148,7 @@ export default function ClientsPage() {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={9} className="text-center">
+                                        <td colSpan={12} className="text-center">
                                             No clients found
                                         </td>
                                     </tr>

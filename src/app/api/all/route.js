@@ -3,7 +3,7 @@ import {db} from "@/lib/firebase/client"
 
 export async function GET() {
     try {
-        const leadCollection = collection(db, "clients");
+        const leadCollection = collection(db, "leads");
         const querySnapshot = await getDocs(leadCollection);
         const fetchedLeads = [];
         querySnapshot.forEach((docSnap) => {
