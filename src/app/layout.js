@@ -1,6 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "../../public/assets/scss/main.scss";
 import AuthProvider from "@/components/auth-provider";
+import {Analytics} from "@vercel/analytics/next";
 
 export const metadata = {
     title: "University Admin",
@@ -13,6 +14,7 @@ export default function RootLayout({children}) {
         <body className={"font-muli theme-blush"}>
         <AuthProvider>
             {children}
+            <Analytics/>
         </AuthProvider>
         <script src={"/assets/js/lib.vendor.bundle.js"}></script>
         <script src={"/assets/js/core.js"}></script>

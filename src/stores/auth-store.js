@@ -196,6 +196,8 @@ export const useAuthStore = create(
                     },
                 }
             )
-        )
+        ), {
+            enabled: process.env.NODE_ENV !== 'production',
+        }
     )
 );
