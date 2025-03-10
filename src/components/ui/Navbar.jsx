@@ -93,13 +93,25 @@ function SidebarNav({activeTab, onTabChange, currentPath}) {
                         <nav className="sidebar-nav">
                             <ul className="metismenu">
                                 {links.map(({path, icon, label}) => (
-                                    <li key={label} className={currentPath === path ? "active" : ""}>
+                                    <li
+                                        key={label}
+                                        className={
+                                            path === "/"
+                                                ? currentPath === "/"
+                                                    ? "active"
+                                                    : ""
+                                                : currentPath.startsWith(path)
+                                                    ? "active"
+                                                    : ""
+                                        }
+                                    >
                                         <Link href={path} style={{textDecoration: "none"}}>
                                             <i className={icon}></i>
                                             <span>{label}</span>
                                         </Link>
                                     </li>
                                 ))}
+
                             </ul>
                         </nav>
                     </div>
@@ -171,11 +183,6 @@ const Navbar = () => {
 
     const dropdownItems = [
         {label: "Dashboard", href: "/", type: "link"},
-        {label: "Leads", href: "/leads", type: "link"},
-        {label: "Clients", href: "/clients", type: "link"},
-        {label: "Teachers", href: "/teachers", type: "link"},
-        {label: "Students", href: "/students", type: "link"},
-        {label: "Payments", href: "/payments", type: "link"},
         {label: "Logout", type: "button", action: handleLogout},
     ];
 
