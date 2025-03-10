@@ -13,7 +13,7 @@ export default function Page() {
         e.preventDefault();
         try {
             await signIn(formState.email, formState.password);
-            router.push("/");
+            router.refresh();
         } catch (error) {
             console.error("Login error:", error);
         }

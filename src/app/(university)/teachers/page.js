@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { Modal, Button, Form } from "react-bootstrap";
+import Link from "next/link";
 
 const breadcrumbs = [{ label: "Teachers", href: "/teachers" }];
 
@@ -119,9 +120,9 @@ export default function TeachersPage() {
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <div className="section-body">
                 <div className="container-fluid d-flex justify-content-end">
-                    <Button variant="primary" className="rounded px-4 py-2" onClick={handleAdd}>
+                    <Link href={"/teachers/add"}className="rounded px-4 py-2 btn btn-primary">
                         Add Teacher
-                    </Button>
+                    </Link>
                 </div>
             </div>
 

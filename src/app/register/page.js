@@ -14,7 +14,7 @@ export default function Page() {
         e.preventDefault();
         try {
             await signUp(formState.name, formState.email, formState.password);
-            router.push("/");
+            router.push("/login");
 
         } catch (error) {
             console.error("Login error:", error);

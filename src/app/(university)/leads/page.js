@@ -52,7 +52,7 @@ export default function LeadsPage() {
                 <div className="container-fluid">
                     <div className="card">
                         <div className="table-responsive">
-                            <table className="table table-hover table-vcenter table-responsive table-striped table-custom2 text-nowrap table-striped mb-0">
+                            <table className="table table-hover table-vcenter text-nowrap table-striped mb-0">
                                 <thead>
                                 <tr>
                                     <th>#</th>

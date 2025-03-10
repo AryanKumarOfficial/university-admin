@@ -122,7 +122,11 @@ function UserDropdown({user, dropdownItems}) {
         <span
             className="avatar"
             style={{
-                backgroundImage: `url(https://ui-avatars.com/api/?name=${user?.displayName ?? "Guest"})`,
+                backgroundImage: `url(https://ui-avatars.com/api/?name=${
+                    user?.displayName
+                        ? user.displayName.replace(/[\s,]+/g, "+")
+                        : "Guest"
+                })`,
             }}
         ></span>
                 {user?.displayName ?? "Guest"}
