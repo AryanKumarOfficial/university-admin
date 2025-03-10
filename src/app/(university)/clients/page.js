@@ -125,14 +125,14 @@ export default function ClientsPage() {
                                             <td>
                                                 {client.contacts[0].name}{" ("}{client.contacts[0].phone}{")"}
                                             </td>
-                                            <td>
+                                            <td className={"text-truncate"}>
                                                 {client.comments[0].text}
                                             </td>
                                             <td>
-                                                <Button variant="outline-secondary" size="sm"
-                                                        onClick={() => handleEdit(client)}>
+                                                <Link href={`/clients/update/${client.id}`} className={"btn btn-outline-primary btn-sm"}
+                                                >
                                                     <i className="fa fa-edit"></i>
-                                                </Button>{" "}
+                                                </Link>{" "}
                                                 <Button
                                                     variant="outline-danger"
                                                     size="sm"
