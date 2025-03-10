@@ -1,35 +1,25 @@
 "use client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import React, {useEffect, useState} from "react";
-import {addDoc, collection, deleteDoc, doc, getDocs, updateDoc} from "firebase/firestore";
+import {collection, deleteDoc, doc, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
-import {Button, Form, Modal} from "react-bootstrap";
+import {Button, Modal} from "react-bootstrap";
+import Link from "next/link";
 
 const breadcrumbs = [{label: "Leads", href: "/leads"}];
 
 export default function LeadsPage() {
-    const initialFormState = {
-        fname: "",
-        lname: "",
-        emailId: "",
-        phoneNumber: "",
-        schoolName: "",
-        currentStatus: "",
-        note: "",
-        createdAt: new Date().toISOString(),
-    };
 
-    const [formData, setFormData] = useState(initialFormState);
     const [leads, setLeads] = useState([]);
-    const [selectedLead, setSelectedLead] = useState(null);
-    const [showModal, setShowModal] = useState(false);
 
     // New state for deletion confirmation
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [leadToDelete, setLeadToDelete] = useState(null);
 
     useEffect(() => {
-        fetchLeads();
+        (async () => {
+            await fetchLeads();
+        })()
     }, []);
 
     const fetchLeads = async () => {
@@ -55,31 +45,6 @@ export default function LeadsPage() {
         }
     };
 
-    const handleChange = (e) => {
-        setFormData({...formData, [e.target.name]: e.target.value});
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (selectedLead) {
-                // Update lead
-                await updateDoc(doc(db, "leads", selectedLead.id), formData);
-            } else {
-                // Add new lead
-                await addDoc(collection(db, "leads"), formData);
-            }
-            await fetchLeads();
-            setShowModal(false);
-        } catch (err) {
-            console.error("Error adding/updating document: ", err);
-        } finally {
-            setFormData(initialFormState);
-            setSelectedLead(null);
-        }
-        console.log("Form submitted with data:", formData);
-    };
-
     // Delete confirmation handler using modal
     const confirmDelete = async () => {
         try {
@@ -92,35 +57,14 @@ export default function LeadsPage() {
         }
     };
 
-    const handleEdit = (lead) => {
-        setSelectedLead(lead);
-        setFormData({
-            fname: lead.fname || "",
-            lname: lead.lname || "",
-            emailId: lead.emailId || "",
-            phoneNumber: lead.phoneNumber || "",
-            schoolName: lead.schoolName || "",
-            currentStatus: lead.currentStatus || "",
-            note: lead.note || "",
-            createdAt: lead.createdAt || new Date().toISOString(),
-        });
-        setShowModal(true);
-    };
-
-    const handleAdd = () => {
-        setSelectedLead(null);
-        setFormData(initialFormState);
-        setShowModal(true);
-    };
-
     return (
         <div className="page vh-100">
             <Breadcrumb breadcrumbs={breadcrumbs}/>
             <div className="section-body">
                 <div className="container-fluid d-flex justify-content-end">
-                    <Button variant="primary" className="rounded px-4 py-2" onClick={handleAdd}>
-                        Add
-                    </Button>
+                    <Link href={"/leads/add"} className="btn btn-primary rounded px-4 py-2">
+                        Add Lead
+                    </Link>
                 </div>
             </div>
 
@@ -164,10 +108,11 @@ export default function LeadsPage() {
                                                     className={`tag ${getTag(lead.currentStatus)}`}>{lead.currentStatus}</span>
                                             </td>
                                             <td>
-                                                <Button variant="outline-secondary" size="sm"
-                                                        onClick={() => handleEdit(lead)}>
+                                                <Link href={`/leads/update/${lead.id}`}
+                                                      className={"btn btn-outline-primary btn-sm mr-2"}
+                                                >
                                                     <i className="fa fa-edit"></i>
-                                                </Button>{" "}
+                                                </Link>{" "}
                                                 <Button
                                                     variant="outline-danger"
                                                     size="sm"
@@ -194,66 +139,6 @@ export default function LeadsPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Add/Edit Lead Modal using React-Bootstrap */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} id="leadModal">
-                <Modal.Header closeButton>
-                    <Modal.Title>{selectedLead ? "Edit Lead" : "Add a Lead"}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleSubmit}>
-                        <div className="row">
-                            {[
-                                {id: "fname", label: "First Name", type: "text"},
-                                {id: "lname", label: "Last Name", type: "text"},
-                                {id: "emailId", label: "Email ID", type: "email"},
-                                {id: "phoneNumber", label: "Phone Number", type: "tel"},
-                                {id: "schoolName", label: "School Name", type: "text"},
-                            ].map((field, index) => (
-                                <div className="col-md-6 col-sm-12" key={index}>
-                                    <Form.Group className="my-2" controlId={field.id}>
-                                        <Form.Label>{field.label}</Form.Label>
-                                        <Form.Control type={field.type} name={field.id} value={formData[field.id]}
-                                                      onChange={handleChange}/>
-                                    </Form.Group>
-                                </div>
-                            ))}
-                            <div className="col-md-6 col-sm-12">
-                                <Form.Group controlId="currentStatus" className="my-2">
-                                    <Form.Label>Status</Form.Label>
-                                    <Form.Control as="select" name="currentStatus" value={formData.currentStatus}
-                                                  onChange={handleChange}>
-                                        <option value="">-- Status --</option>
-                                        {["New", "Contacted", "Qualified", "Unqualified", "Follow-Up", "In Progress", "Converted", "Lost"].map(
-                                            (status) => (
-                                                <option key={status} value={status}>
-                                                    {status}
-                                                </option>
-                                            )
-                                        )}
-                                    </Form.Control>
-                                </Form.Group>
-                            </div>
-                            <div className="col-sm-12">
-                                <Form.Group controlId="note" className="my-2">
-                                    <Form.Label>Note</Form.Label>
-                                    <Form.Control as="textarea" rows={4} name="note"
-                                                  placeholder="Additional information..." value={formData.note}
-                                                  onChange={handleChange}/>
-                                </Form.Group>
-                            </div>
-                        </div>
-                        <div className="d-flex gap-2 mt-3">
-                            <Button type="submit" variant="primary">
-                                {selectedLead ? "Update" : "Submit"}
-                            </Button>
-                            <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </Button>
-                        </div>
-                    </Form>
-                </Modal.Body>
-            </Modal>
 
             {/* Delete Confirmation Modal */}
             <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>
