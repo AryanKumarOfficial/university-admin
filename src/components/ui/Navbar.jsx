@@ -2,7 +2,7 @@
 
 import {useState} from "react";
 import Link from "next/link";
-import {usePathname} from "next/navigation";
+import {usePathname, useRouter} from "next/navigation";
 import {useAuthStore} from "@/stores/auth-store";
 
 const sidebarLinks = {
@@ -155,10 +155,11 @@ const Navbar = () => {
     const [activeTab, setActiveTab] = useState("university");
     const {logOut, user} = useAuthStore();
     const pathname = usePathname();
-
+    const router = useRouter();
     const handleLogout = async () => {
         try {
             await logOut();
+            router.refresh();
         } catch (error) {
             console.error("Logout error:", error);
         }
