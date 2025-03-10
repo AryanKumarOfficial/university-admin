@@ -1,11 +1,13 @@
 "use client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import React, { useState, useEffect } from "react";
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
-import { Modal, Button, Form } from "react-bootstrap";
+import React, {useEffect, useState} from "react";
+import {collection, deleteDoc, doc, getDocs} from "firebase/firestore";
+import {db} from "@/lib/firebase/client";
+import {Button, Modal} from "react-bootstrap";
+import Link from "next/link";
+import {formatTime} from "@/helpers/TimeFormat";
 
-const breadcrumbs = [{ label: "Clients", href: "/clients" }];
+const breadcrumbs = [{label: "Clients", href: "/clients"}];
 
 export default function ClientsPage() {
     // Define client-related form fields
@@ -31,7 +33,9 @@ export default function ClientsPage() {
     const [clientToDelete, setClientToDelete] = useState(null);
 
     useEffect(() => {
-        fetchClients();
+        (async () => {
+            await fetchClients();
+        })()
     }, []);
 
     const fetchClients = async () => {
@@ -39,7 +43,7 @@ export default function ClientsPage() {
         const querySnapshot = await getDocs(clientCollections);
         const fetchedClients = [];
         querySnapshot.forEach((doc) => {
-            fetchedClients.push({ ...doc.data(), id: doc.id });
+            fetchedClients.push({...doc.data(), id: doc.id});
         });
         setClients(fetchedClients);
     };
@@ -47,38 +51,13 @@ export default function ClientsPage() {
     // A helper for visual styling of status tags
     const getTag = (status) => {
         switch (status?.toLowerCase()) {
-            case "active":
+            case "yes":
                 return "tag-success";
-            case "inactive":
+            case "no":
                 return "tag-danger";
             default:
                 return "tag-default";
         }
-    };
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        try {
-            if (selectedClient) {
-                // Update existing client
-                await updateDoc(doc(db, "clients", selectedClient.id), formData);
-            } else {
-                // Add new client
-                await addDoc(collection(db, "clients"), formData);
-            }
-            await fetchClients();
-            setShowModal(false);
-        } catch (err) {
-            console.error("Error adding/updating document: ", err);
-        } finally {
-            setFormData(initialFormState);
-            setSelectedClient(null);
-        }
-        console.log("Form submitted with data:", formData);
     };
 
     // Delete confirmation using modal
@@ -93,36 +72,14 @@ export default function ClientsPage() {
         }
     };
 
-    const handleEdit = (client) => {
-        setSelectedClient(client);
-        setFormData({
-            firstName: client.firstName || "",
-            lastName: client.lastName || "",
-            email: client.email || "",
-            phone: client.phone || "",
-            company: client.company || "",
-            address: client.address || "",
-            status: client.status || "",
-            note: client.note || "",
-            createdAt: client.createdAt || new Date().toISOString(),
-        });
-        setShowModal(true);
-    };
-
-    const handleAdd = () => {
-        setSelectedClient(null);
-        setFormData(initialFormState);
-        setShowModal(true);
-    };
-
     return (
         <div className="page vh-100">
-            <Breadcrumb breadcrumbs={breadcrumbs} />
+            <Breadcrumb breadcrumbs={breadcrumbs}/>
             <div className="section-body">
                 <div className="container-fluid d-flex justify-content-end">
-                    <Button variant="primary" className="rounded px-4 py-2" onClick={handleAdd}>
+                    <Link href={"/clients/add"} variant="primary" className="rounded px-4 py-2 btn btn-primary">
                         Add Client
-                    </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -134,13 +91,15 @@ export default function ClientsPage() {
                                 <thead>
                                 <tr>
                                     <th>#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone</th>
-                                    <th>Company</th>
+                                    <th>School Name</th>
                                     <th>Address</th>
-                                    <th>Created At</th>
-                                    <th>Status</th>
+                                    <th>Session Starts From</th>
+                                    <th>School Timing</th>
+                                    <th>Students</th>
+                                    <th>Annual Fee</th>
+                                    <th>Website</th>
+                                    <th>Contact Person</th>
+                                    <th>Comment</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -150,24 +109,28 @@ export default function ClientsPage() {
                                         <tr key={client.id}>
                                             <td>{index + 1}</td>
                                             <td>
-                                                {client.firstName} {client.lastName}
+                                                {client.schoolName} {client.lastName}
                                             </td>
-                                            <td>{client.email}</td>
-                                            <td>{client.phone}</td>
-                                            <td>{client.company}</td>
-                                            <td>{client.address}</td>
+                                            <td>{client.area + ", " + client.city + ", " + client.state}</td>
+                                            <td>{client.newSessionStarts}</td>
+                                            <td>{formatTime(client.schoolTimingsFrom)} - {formatTime(client.schoolTimingsTo)}</td>
+                                            <td>{client.numStudents}</td>
                                             <td>
-                                                {new Date(client.createdAt).toLocaleDateString("en-IN", {
-                                                    year: "numeric",
-                                                    month: "short",
-                                                    day: "numeric",
-                                                })}
+                                                {client.annualFees}
                                             </td>
                                             <td>
-                                                <span className={`tag ${getTag(client.status)}`}>{client.status}</span>
+                                                <span
+                                                    className={`tag ${getTag(client.hasWebsite)} text-capitalize`}>{client.hasWebsite}</span>
                                             </td>
                                             <td>
-                                                <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(client)}>
+                                                {client.contacts[0].name}{" ("}{client.contacts[0].phone}{")"}
+                                            </td>
+                                            <td>
+                                                {client.comments[0].text}
+                                            </td>
+                                            <td>
+                                                <Button variant="outline-secondary" size="sm"
+                                                        onClick={() => handleEdit(client)}>
                                                     <i className="fa fa-edit"></i>
                                                 </Button>{" "}
                                                 <Button
@@ -196,68 +159,6 @@ export default function ClientsPage() {
                     </div>
                 </div>
             </div>
-
-            {/* Add/Edit Client Modal using React-Bootstrap */}
-            <Modal show={showModal} onHide={() => setShowModal(false)} id="clientModal">
-                <Modal.Header closeButton>
-                    <Modal.Title>{selectedClient ? "Edit Client" : "Add Client"}</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleSubmit}>
-                        <div className="row">
-                            {[
-                                { id: "firstName", label: "First Name", type: "text" },
-                                { id: "lastName", label: "Last Name", type: "text" },
-                                { id: "email", label: "Email", type: "email" },
-                                { id: "phone", label: "Phone", type: "tel" },
-                                { id: "company", label: "Company", type: "text" },
-                                { id: "address", label: "Address", type: "text" },
-                            ].map((field, index) => (
-                                <div className="col-md-6 col-sm-12" key={index}>
-                                    <Form.Group className="my-2" controlId={field.id}>
-                                        <Form.Label>{field.label}</Form.Label>
-                                        <Form.Control type={field.type} name={field.id} value={formData[field.id]} onChange={handleChange} />
-                                    </Form.Group>
-                                </div>
-                            ))}
-                            <div className="col-md-6 col-sm-12">
-                                <Form.Group controlId="status" className="my-2">
-                                    <Form.Label>Status</Form.Label>
-                                    <Form.Control as="select" name="status" value={formData.status} onChange={handleChange}>
-                                        <option value="">-- Status --</option>
-                                        {["Active", "Inactive"].map((status) => (
-                                            <option key={status} value={status}>
-                                                {status}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
-                            </div>
-                            <div className="col-sm-12">
-                                <Form.Group controlId="note" className="my-2">
-                                    <Form.Label>Note</Form.Label>
-                                    <Form.Control
-                                        as="textarea"
-                                        rows={4}
-                                        name="note"
-                                        placeholder="Additional information..."
-                                        value={formData.note}
-                                        onChange={handleChange}
-                                    />
-                                </Form.Group>
-                            </div>
-                        </div>
-                        <div className="d-flex gap-2 mt-3">
-                            <Button type="submit" variant="primary">
-                                {selectedClient ? "Update" : "Submit"}
-                            </Button>
-                            <Button variant="outline-secondary" onClick={() => setShowModal(false)}>
-                                Cancel
-                            </Button>
-                        </div>
-                    </Form>
-                </Modal.Body>
-            </Modal>
 
             {/* Delete Confirmation Modal */}
             <Modal show={showDeleteConfirm} onHide={() => setShowDeleteConfirm(false)}>

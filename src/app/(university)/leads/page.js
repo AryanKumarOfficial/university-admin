@@ -62,7 +62,7 @@ export default function LeadsPage() {
             <Breadcrumb breadcrumbs={breadcrumbs}/>
             <div className="section-body">
                 <div className="container-fluid d-flex justify-content-end">
-                    <Link href={"/leads/add"} className="btn btn-primary rounded px-4 py-2">
+                    <Link href={`/leads/add`} className="btn btn-primary rounded px-4 py-2">
                         Add Lead
                     </Link>
                 </div>
