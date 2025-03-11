@@ -11,3 +11,17 @@ export function formatTime(time24) {
 
     return `${hours}:${minutes} ${period}`;
 }
+
+// Helper function to format a Date object as ddmmyyyy
+export function formatDateToDDMMYYYY(date) {
+    const tempDate = new Date(date);
+    let day = tempDate.getDate();
+    let month = tempDate.getMonth() + 1; // JavaScript months are 0-indexed
+    const year = tempDate.getFullYear();
+
+    // Pad day and month with a leading zero if needed
+    day = day < 10 ? `0${day}` : day;
+    month = month < 10 ? `0${month}` : month;
+
+    return `${day}${month}${year}`;
+}

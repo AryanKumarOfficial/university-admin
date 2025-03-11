@@ -8,8 +8,8 @@ export default function BasicInfoSection({register, errors, response}) {
             </div>
             <div className="card-body">
                 <div className="row">
-                    <div className="col-md-3 mb-3">
-                        <label className="form-label">School Name</label>
+                    <div className="col-md-6 mb-3">
+                        <label className="form-label">Name</label>
                         <input
                             className="form-control"
                             type="text"
@@ -19,6 +19,19 @@ export default function BasicInfoSection({register, errors, response}) {
                             <small className="text-danger">{errors.schoolName.message}</small>
                         )}
                     </div>
+                    <div className="col-md-6 mb-3">
+                        <label className="form-label">Lead Type</label>
+                        <select className="form-select" {...register("leadType")}>
+                            <option value="school">School</option>
+                            <option value="college">College</option>
+                            <option value="institute">Institute</option>
+                        </select>
+                        {errors.leadType && (
+                            <small className="text-danger">{errors.leadType.message}</small>
+                        )}
+                    </div>
+                </div>
+                <div className={"row"}>
                     <div className="col-md-3 mb-3">
                         <label className="form-label">State</label>
                         <input

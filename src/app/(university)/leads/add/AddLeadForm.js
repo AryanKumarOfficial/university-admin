@@ -44,6 +44,7 @@ export default function AddLeadForm() {
         defaultValues: {
             // Basic Info
             schoolName: "",
+            leadType: "school",
             state: "",
             city: "",
             area: "",
@@ -117,6 +118,7 @@ export default function AddLeadForm() {
             const leadData = {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
+                createdAt: new Date(Date.now()).toISOString(), // add timestamp
             };
             delete leadData.newComments;
 

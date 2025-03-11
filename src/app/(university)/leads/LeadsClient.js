@@ -6,7 +6,7 @@ import ConfirmModal from "@/components/sections/leads/ConfirmModal";
 import AlertList from "@/components/sections/leads/AlertList";
 import Pagination from "@/components/sections/leads/Pagination";
 import {deleteLead, markLeadAsComplete} from "./actions";
-import {formatTime} from "@/helpers/TimeFormat";
+import {formatDateToDDMMYYYY, formatTime} from "@/helpers/TimeFormat";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 /**
@@ -25,14 +25,13 @@ export default function LeadsClient({initialLeads}) {
     const [confirmAction, setConfirmAction] = useState(null); // "delete" or "complete"
     const [leadToActOn, setLeadToActOn] = useState(null);
 
+    // Filtering state for lead type and createdAt date
+    const [filterLeadType, setFilterLeadType] = useState("All"); // "All", "School", "College", etc.
+    const [filterCreatedAt, setFilterCreatedAt] = useState(""); // expects yyyy-mm-dd string
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
-    const totalPages = Math.ceil(leads.length / pageSize);
-
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const leadsPage = leads.slice(startIndex, endIndex);
 
     /** Add an alert message (variant + message). */
     const addAlert = (variant, message) => {
@@ -138,13 +137,70 @@ export default function LeadsClient({initialLeads}) {
         return "";
     };
 
+    // Apply filtering by lead type
+    let filteredLeads = leads;
+    if (filterLeadType !== "All") {
+        filteredLeads = filteredLeads.filter(
+            (lead) => (lead.leadType ?? "school") === filterLeadType
+        );
+    }
+
+    // Apply filtering by createdAt date if provided
+    if (filterCreatedAt) {
+        filteredLeads = filteredLeads.filter((lead) => {
+            if (!lead.createdAt) return false;
+            console.log(`lead.createdAt: ${lead.createdAt}\n filterCreatedAt: ${new Date(filterCreatedAt).toISOString()}`);
+            return formatDateToDDMMYYYY(lead.createdAt) === formatDateToDDMMYYYY(new Date(filterCreatedAt).toISOString());
+        });
+    }
+
+    // Clear filters function
+    const clearFilters = () => {
+        setFilterLeadType("All");
+        setFilterCreatedAt("");
+    };
+
+    // Pagination based on filtered leads
+    const totalPages = Math.ceil(filteredLeads.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const leadsPage = filteredLeads.slice(startIndex, endIndex);
+
     return (
         <div className="section-body p-3">
             {/* Alerts */}
             <AlertList alerts={alerts} removeAlert={removeAlert}/>
 
-            {/* "Add New Lead" Button */}
-            <div className="d-flex justify-content-end mb-3">
+            {/* Filtering UI & "Add New Lead" Button */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex gap-2">
+                    {/* Filter by Lead Type */}
+                    <select
+                        className="form-select"
+                        value={filterLeadType}
+                        onChange={(e) => setFilterLeadType(e.target.value)}
+                    >
+                        <option value="All">All Lead Types</option>
+                        <option value="school">School</option>
+                        <option value="college">College</option>
+                        <option value="institute">Institute</option>
+                        {/* Add additional options as needed */}
+                    </select>
+                    {/* Filter by Created At Date */}
+                    <input
+                        type="date"
+                        className="form-control"
+                        value={filterCreatedAt}
+                        onChange={(e) => {
+                            console.log("time: ", new Date(e.target.value).toISOString());
+                            setFilterCreatedAt(e.target.value)
+                        }}
+                    />
+                {/* Clear Filters Button */}
+                <button className="btn btn-danger w-100" onClick={clearFilters}>
+                    Clear Filters
+                </button>
+                </div>
                 <Link href="/leads/add" className="btn btn-primary px-4">
                     Add New Lead
                 </Link>
@@ -157,7 +213,8 @@ export default function LeadsClient({initialLeads}) {
                         <thead>
                         <tr>
                             <th>#</th>
-                            <th>School Name</th>
+                            <th>Name</th>
+                            <th>Lead Type</th>
                             <th>Contact Person</th>
                             <th>Contact Number</th>
                             <th>Location</th>
@@ -168,7 +225,6 @@ export default function LeadsClient({initialLeads}) {
                             <th>Date & Time</th>
                             <th>Comments</th>
                             <th>Created At</th>
-                            <th>Updated At</th>
                             <th>Action</th>
                         </tr>
                         </thead>
@@ -178,6 +234,7 @@ export default function LeadsClient({initialLeads}) {
                                 <tr key={ld.id} className={getRowClass(ld)}>
                                     <td>{(currentPage - 1) * pageSize + idx + 1}</td>
                                     <td>{ld.schoolName}</td>
+                                    <td>{ld.leadType ?? "School"}</td>
                                     <td>{ld.contacts?.[0]?.name || "N/A"}</td>
                                     <td>{ld.contacts?.[0]?.phone || "N/A"}</td>
                                     <td>
@@ -189,14 +246,17 @@ export default function LeadsClient({initialLeads}) {
                                     <td>{ld.response}</td>
                                     <td>{renderDateTime(ld)}</td>
                                     <td>{renderFirstComment(ld)}</td>
-                                    <td>
+                                    <td className="text-uppercase">
                                         {ld.createdAt
-                                            ? new Date(ld.createdAt).toLocaleString()
-                                            : "N/A"}
-                                    </td>
-                                    <td>
-                                        {ld.updatedAt
-                                            ? new Date(ld.updatedAt).toLocaleString()
+                                            ? new Date(ld.createdAt).toLocaleString("en-IN", {
+                                                day: "numeric",
+                                                month: "short",
+                                                year: "numeric",
+                                                hour: "numeric",
+                                                minute: "numeric",
+                                                hour12: true,
+                                                hourCycle: "h12",
+                                            })
                                             : "N/A"}
                                     </td>
                                     <td className="d-flex gap-2">
@@ -242,10 +302,10 @@ export default function LeadsClient({initialLeads}) {
             </div>
 
             {/* Pagination */}
-            {leads.length > 0 && (
+            {filteredLeads.length > 0 && (
                 <div className="d-flex justify-content-end mt-3">
                     <Pagination
-                        totalItems={leads.length}
+                        totalItems={filteredLeads.length}
                         pageSize={pageSize}
                         currentPage={currentPage}
                         onPageChange={(newPage) => setCurrentPage(newPage)}

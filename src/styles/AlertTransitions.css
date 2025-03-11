@@ -1,0 +1,24 @@
+/* When the alert is entering, simply fade it in */
+.fade-slide-enter {
+    opacity: 0;
+    transform: translateY(0);
+}
+
+.fade-slide-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 500ms;
+}
+
+/* For exit, first fade out then slide up */
+.fade-slide-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.fade-slide-exit-active {
+    opacity: 0;
+    /* Slide up after the fade; a 500ms delay on the transform */
+    transform: translateY(-20px);
+    transition: opacity 500ms, transform 500ms 500ms;
+}
