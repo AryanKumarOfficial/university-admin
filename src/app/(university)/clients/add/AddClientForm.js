@@ -155,6 +155,7 @@ export default function AddClientForm() {
             const clientData = {
                 ...data,
                 comments: data.newComments, // brand-new client => no old comments
+                createdAt: new Date().toISOString(),
             };
             delete clientData.newComments;
 

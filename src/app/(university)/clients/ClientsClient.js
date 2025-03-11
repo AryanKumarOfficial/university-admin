@@ -27,6 +27,7 @@ import {formatTime} from "@/helpers/TimeFormat";
  * - Alerts
  * - Local pagination
  * - "Add New Client" button
+ * - Filtering by New Session and sorting by School Name
  */
 export default function ClientsClient({initialClients}) {
     const [clients, setClients] = useState(initialClients || []);
@@ -37,16 +38,15 @@ export default function ClientsClient({initialClients}) {
     const [confirmAction, setConfirmAction] = useState(null); // "delete" or "complete"
     const [clientToActOn, setClientToActOn] = useState(null);
 
+    // New filtering & sorting state
+    const [filterSession, setFilterSession] = useState("All");
+    const [sortSchoolName, setSortSchoolName] = useState(""); // "" = default, "asc" or "desc"
+
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
-    const totalPages = Math.ceil(clients.length / pageSize);
 
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const clientsPage = clients.slice(startIndex, endIndex);
-
-    /** Add an alert message (variant + message). */
+    /** Alert functions */
     const addAlert = (variant, message) => {
         setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
     };
@@ -54,47 +54,35 @@ export default function ClientsClient({initialClients}) {
         setAlerts((prev) => prev.filter((a) => a.id !== id));
     };
 
-    /**
-     * Called when user clicks "Delete" => store client, open modal
-     */
+    /** Handle Delete & Mark Complete actions */
     const handleDeleteClick = (client) => {
         setClientToActOn(client);
         setConfirmAction("delete");
         setShowConfirm(true);
     };
 
-    /**
-     * Called when user clicks "Mark as Complete" => store client, open modal
-     */
     const handleCompleteClick = (client) => {
         setClientToActOn(client);
         setConfirmAction("complete");
         setShowConfirm(true);
     };
 
-    /**
-     * Called when user confirms in the modal => do the server action, local update
-     */
     const confirmActionHandler = async () => {
         setShowConfirm(false);
         if (!clientToActOn || !confirmAction) return;
 
         if (confirmAction === "delete") {
-            // 1) Delete server action
+            // Delete action
             const formData = new FormData();
             formData.set("clientId", clientToActOn.id);
             await deleteClient(formData);
-
-            // 2) Remove from local state
             setClients((prev) => prev.filter((cl) => cl.id !== clientToActOn.id));
             addAlert("success", `Client "${clientToActOn.schoolName}" deleted!`);
         } else if (confirmAction === "complete") {
-            // 1) Mark complete
+            // Mark as complete action
             const formData = new FormData();
             formData.set("clientId", clientToActOn.id);
             await markClientAsComplete(formData);
-
-            // 2) Update local state
             setClients((prev) =>
                 prev.map((cl) =>
                     cl.id === clientToActOn.id ? {...cl, response: "Completed"} : cl
@@ -107,22 +95,51 @@ export default function ClientsClient({initialClients}) {
         setConfirmAction(null);
     };
 
-    /** Show the latest comment if any. */
+    /** Filtering & Sorting Logic */
+    let filteredClients = clients;
+
+    // Filter by New Session (Month)
+    if (filterSession !== "All") {
+        filteredClients = filteredClients.filter(
+            (client) => client.newSessionStarts === filterSession
+        );
+    }
+
+    // Sorting by School Name
+    if (sortSchoolName === "asc") {
+        filteredClients = [...filteredClients].sort((a, b) =>
+            a.schoolName.localeCompare(b.schoolName)
+        );
+    } else if (sortSchoolName === "desc") {
+        filteredClients = [...filteredClients].sort((a, b) =>
+            b.schoolName.localeCompare(a.schoolName)
+        );
+    }
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredClients.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const clientsPage = filteredClients.slice(startIndex, endIndex);
+
+    // Clear filters function
+    const clearFilters = () => {
+        setFilterSession("All");
+        setSortSchoolName("");
+        setCurrentPage(1);
+    };
+
+    /** Utility functions */
     const renderLatestComment = (client) => {
         if (Array.isArray(client.comments) && client.comments.length > 0) {
             const latest = client.comments[client.comments.length - 1];
-            if (typeof latest === "object") {
-                return latest.text || "No comment text";
-            }
-            return latest;
+            return typeof latest === "object" ? latest.text || "No comment text" : latest;
         }
         return "No comments";
     };
 
-    /** Row coloring logic if needed (optional). */
     const getRowClass = (client) => {
         if (client.response === "Completed") return "table-success";
-        // If you have other statuses like "Call later," "Not interested," etc.
         return "";
     };
 
@@ -131,8 +148,50 @@ export default function ClientsClient({initialClients}) {
             {/* Alerts */}
             <AlertList alerts={alerts} removeAlert={removeAlert}/>
 
-            {/* "Add New Client" Button */}
-            <div className="d-flex justify-content-end mb-3">
+            {/* Filtering, Sorting UI & "Add New Client" Button */}
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                <div className="d-flex gap-2 align-items-center">
+                    {/* Filter by New Session */}
+                    <select
+                        className="form-select"
+                        value={filterSession}
+                        onChange={(e) => {
+                            setFilterSession(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value="All">All Sessions</option>
+                        <option value="January">January</option>
+                        <option value="February">February</option>
+                        <option value="March">March</option>
+                        <option value="April">April</option>
+                        <option value="May">May</option>
+                        <option value="June">June</option>
+                        <option value="July">July</option>
+                        <option value="August">August</option>
+                        <option value="September">September</option>
+                        <option value="October">October</option>
+                        <option value="November">November</option>
+                        <option value="December">December</option>
+                    </select>
+                    {/* Sort by School Name */}
+                    <select
+                        className="form-select"
+                        value={sortSchoolName}
+                        onChange={(e) => {
+                            setSortSchoolName(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                    >
+                        <option value="">Sort by School Name</option>
+                        <option value="asc">A - Z</option>
+                        <option value="desc">Z - A</option>
+                    </select>
+                    {/* Clear Filters Button */}
+                    <button className="btn btn-danger w-100" onClick={clearFilters}>
+                        Clear Filters
+                    </button>
+                </div>
                 <Link href="/clients/add" className="btn btn-primary px-4">
                     Add New Client
                 </Link>
@@ -171,7 +230,9 @@ export default function ClientsClient({initialClients}) {
                                             : "N/A"}
                                     </td>
                                     <td>{cl.numStudents}</td>
-                                    <td><span className={"fw-bold"}>₹</span>{" "}{cl.annualFees}</td>
+                                    <td>
+                                        <span className="fw-bold">₹</span> {cl.annualFees}
+                                    </td>
                                     <td>{cl.hasWebsite === "yes" ? "Yes" : "No"}</td>
                                     <td>
                                         {cl.contacts?.[0]
@@ -180,13 +241,10 @@ export default function ClientsClient({initialClients}) {
                                     </td>
                                     <td>{renderLatestComment(cl)}</td>
                                     <td className="d-flex gap-2">
-                                        {/* Update */}
                                         <Link href={`/clients/update/${cl.id}`}
                                               className="btn btn-outline-primary btn-sm">
                                             <i className="fa fa-edit"></i>
                                         </Link>
-
-                                        {/* Delete */}
                                         <button
                                             className="btn btn-outline-danger btn-sm"
                                             onClick={() => handleDeleteClick(cl)}
@@ -212,10 +270,10 @@ export default function ClientsClient({initialClients}) {
             </div>
 
             {/* Pagination */}
-            {clients.length > 0 && (
+            {filteredClients.length > 0 && (
                 <div className="d-flex justify-content-end mt-3">
                     <Pagination
-                        totalItems={clients.length}
+                        totalItems={filteredClients.length}
                         pageSize={pageSize}
                         currentPage={currentPage}
                         onPageChange={(newPage) => setCurrentPage(newPage)}
@@ -223,7 +281,7 @@ export default function ClientsClient({initialClients}) {
                 </div>
             )}
 
-            {/* Confirm Modal (for both delete & complete) */}
+            {/* Confirm Modal (for delete & complete) */}
             <ConfirmModal
                 show={showConfirm}
                 onHide={() => setShowConfirm(false)}
