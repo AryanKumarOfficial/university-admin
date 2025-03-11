@@ -1,7 +1,8 @@
-"use server";
+export const revalidate = 0;
+export const dynamic ="force-dynamic"
 import React from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { fetchAllLeads } from "./fetchLeads";
+import {fetchAllLeads} from "./fetchLeads";
 import LeadsClient from "./LeadsClient";
 
 /**
@@ -16,8 +17,8 @@ export default async function LeadsPage() {
     // 2) Render a breadcrumb and the client component
     return (
         <div className="page vh-100">
-            <Breadcrumb breadcrumbs={[{ label: "Leads", href: "/leads" }]} />
-            <LeadsClient initialLeads={leads} />
+            <Breadcrumb breadcrumbs={[{label: "Leads", href: "/leads"}]}/>
+            <LeadsClient initialLeads={leads}/>
         </div>
     );
 }

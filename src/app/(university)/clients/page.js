@@ -1,4 +1,5 @@
-"use server";
+export const revalidate = 0;
+export const dynamic = "force-dynamic"
 import React from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import {fetchAllClients} from "./fetchClients";

@@ -182,7 +182,7 @@ export default function ClientsClient({initialClients}) {
                                     <td className="d-flex gap-2">
                                         {/* Update */}
                                         <Link href={`/clients/update/${cl.id}`}
-                                              className="btn btn-outline-warning btn-sm">
+                                              className="btn btn-outline-primary btn-sm">
                                             <i className="fa fa-edit"></i>
                                         </Link>
 

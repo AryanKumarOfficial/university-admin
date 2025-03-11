@@ -1,3 +1,5 @@
+export const revalidate = 0;
+export const dynamic = "force-dynamic"
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
