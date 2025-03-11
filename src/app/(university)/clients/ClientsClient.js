@@ -7,6 +7,7 @@ import AlertList from "@/components/sections/clients/AlertList"; // (Client) for
 import Pagination from "@/components/sections/clients/Pagination"; // (Client) for local pagination
 import {deleteClient, markClientAsComplete} from "./actions"; // (Server) your server actions
 import "bootstrap/dist/css/bootstrap.min.css";
+import {formatTime} from "@/helpers/TimeFormat";
 
 /**
  * ClientsClient.jsx
@@ -166,11 +167,11 @@ export default function ClientsClient({initialClients}) {
                                     <td>{cl.newSessionStarts || "N/A"}</td>
                                     <td>
                                         {cl.schoolTimingsFrom && cl.schoolTimingsTo
-                                            ? `${cl.schoolTimingsFrom} to ${cl.schoolTimingsTo}`
+                                            ? `${formatTime(cl.schoolTimingsFrom)} to ${formatTime(cl.schoolTimingsTo)}`
                                             : "N/A"}
                                     </td>
                                     <td>{cl.numStudents}</td>
-                                    <td>{cl.annualFees}</td>
+                                    <td><span className={"fw-bold"}>₹</span>{" "}{cl.annualFees}</td>
                                     <td>{cl.hasWebsite === "yes" ? "Yes" : "No"}</td>
                                     <td>
                                         {cl.contacts?.[0]
