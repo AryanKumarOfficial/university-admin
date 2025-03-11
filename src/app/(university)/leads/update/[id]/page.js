@@ -2,105 +2,42 @@
 
 import React, {useEffect, useState} from "react";
 import {useFieldArray, useForm} from "react-hook-form";
-import {z} from "zod";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {doc, getDoc, updateDoc} from "firebase/firestore";
+import {useRouter} from "next/navigation";
+import Alert from "react-bootstrap/Alert";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import {doc, getDoc, updateDoc} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
-import Alert from 'react-bootstrap/Alert';
-import {useRouter} from "next/navigation";
+import {LeadSchema} from "@/schema/lead";
 
-/**
- * Zod schema defining form structure:
- * - Most fields are mandatory, except competitorSchools[] and expansionPlans.
- * - Key Contact Person is an array of at least one contact (name, designation, email, phone).
- * - Communication channels are selected via checkboxes, requiring at least one.
- */
-const LeadSchema = z.object({
-    // Basic School Information
-    schoolName: z.string().min(1, "School Name is required"),
-    contacts: z
-        .array(
-            z.object({
-                name: z.string().min(1, "Name is required"),
-                designation: z.string().min(1, "Designation is required"),
-                email: z.string().email("Invalid email address"),
-                phone: z.string().min(1, "Phone is required"),
-            })
-        )
-        .min(1, "At least one contact person is required"),
-    state: z.string().min(1, "State is required"),
-    city: z.string().min(1, "City is required"),
-    area: z.string().min(1, "Area is required"),
-    numStudents: z
-        .union([
-            z.number().min(1, "Must be >= 1"),
-            z.string().regex(/^\d+$/, "Must be a valid number").transform(Number),
-        ])
-        .refine((val) => val >= 1, {
-            message: "Number of Students must be at least 1",
-        }),
+// Modular sections
+import BasicInfoSection from "@/components/sections/leads/BasicInfoSection";
+import FollowUpSection from "@/components/sections/leads/FollowUpSection";
+import DecisionMakingSection from "@/components/sections/leads/DecisionMakingSection";
+import CommentsSection from "@/components/sections/leads/CommentsSection";
 
-    annualFees: z.string().min(1, "Annual Fees is required"),
-    hasWebsite: z.enum(["yes", "no"], {
-        errorMap: () => ({message: "Select Yes or No"}),
-    }),
-    response: z.enum(["Call later", "Not interested"], {
-        errorMap: () => ({message: "Select Call later or Not interested"}),
-    }),
-    followUpDate: z.string().optional(),
-    followUpTime: z.string().optional(),
-    // comments
-    comments: z.array(
-        z.object({
-            text: z.string().min(1, "Comment cannot be empty"),
-        })
-    ).optional(),
-});
+export default function LeadUpdateForm({params}) {
+    // Document ID from route params
+    const docId = React.use(params)?.id;
 
-export default function LeadAddForm({params}) {
-    const resolvedParams = React.use(params);
-    const [alerts, setAlerts] = useState([]);
+    // Old comments (read-only) + UI states
+    const [existingComments, setExistingComments] = useState([]);
     const [loading, setLoading] = useState(true);
-    const addAlert = (variant, message) => {
-        const newAlert = {id: Date.now(), variant, message};
-        setAlerts((prev) => [...prev, newAlert]);
-    };
+    const [alerts, setAlerts] = useState([]);
+    const [isSaving, setIsSaving] = useState(false); // Tracks when saving is in progress
 
-    const removeAlert = (id) => {
-        setAlerts((prev) => prev.filter((alert) => alert.id !== id));
-    };
-
-    const getIcon = (variant) => {
-        switch (variant) {
-            case 'success':
-                return <i className="fa fa-check-circle" style={{marginRight: '8px'}}/>;
-            case 'danger':
-                return <i className="fa fa-exclamation-triangle" style={{marginRight: '8px'}}/>;
-            case 'info':
-                return <i className="fa fa-info-circle" style={{marginRight: '8px'}}/>;
-            default:
-                return null;
-        }
-    };
     const router = useRouter();
 
-    // Breadcrumbs (modify as needed)
-    const breadcrumbs = [
-        {label: "Home", href: "/"},
-        {label: "Leads", href: "/leads"},
-        {label: "Update Lead", href: "/leads/add"},
-    ];
-
-    // Initialize the form
+    // Initialize React Hook Form
     const {
         register,
         handleSubmit,
         formState: {errors},
         control,
         watch,
-        reset
+        reset,
     } = useForm({
         resolver: zodResolver(LeadSchema),
         defaultValues: {
@@ -114,420 +51,194 @@ export default function LeadAddForm({params}) {
             hasWebsite: "no",
             followUpDate: "",
             followUpTime: "",
-            // At least one contact
-            contacts: [
-                {name: "", designation: "", email: "", phone: ""},
-            ],
-            comments: [],
-
+            contacts: [{name: "", designation: "", email: "", phone: ""}],
+            newComments: [],
         },
         mode: "onChange",
     });
 
+    // Field arrays for contacts & newComments
+    const {fields: contactFields, append: appendContact, remove: removeContact} = useFieldArray({
+        control,
+        name: "contacts",
+    });
+
+    const {
+        fields: newCommentFields,
+        append: appendNewComment,
+        prepend: prependNewComment,
+        remove: removeNewComment,
+    } = useFieldArray({control, name: "newComments"});
+
+    // Watch for "Call later" to conditionally render FollowUpSection
     const response = watch("response");
 
-    // Field arrays for dynamic lists
-    const {
-        fields: contactFields,
-        append: appendContact,
-        remove: removeContact,
-    } = useFieldArray({control, name: "contacts"});
-
-    // We'll also manage the comments array via useFieldArray
-    const {
-        fields: commentFields,
-        append: appendComment,
-        remove: removeComment,
-    } = useFieldArray({control, name: "comments"});
-
-    // Submit handler
-    const onSubmit = async (data) => {
-        console.log("Submitting Client:", data);
-        try {
-            const docRef = await doc(db, "leads", resolvedParams.id);
-            await updateDoc(docRef, data);
-            addAlert("success", "Lead Updated successfully")
-            reset();
-            router.push("/leads");
-        } catch (error) {
-            console.error("Error updating lead: ", error);
-            addAlert("danger", "Error updating lead")
+    // Fetch existing lead on mount
+    useEffect(() => {
+        if (!docId) {
+            setLoading(false);
+            return;
         }
 
-    };
-
-    useEffect(() => {
-        async function fetchClient(docId) {
+        const fetchLead = async () => {
             try {
                 const docRef = doc(db, "leads", docId);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {
-                    // Merge the fetched data into the form
-                    reset(docSnap.data());
+                    const data = docSnap.data();
+                    // old comments
+                    setExistingComments(data.comments || []);
+                    // populate the form with existing data
+                    reset(data);
                 } else {
-                    console.log("No such document!");
+                    console.warn("No such document!");
                 }
             } catch (error) {
-                console.error("Error fetching client:", error);
+                console.error("Error fetching lead:", error);
             } finally {
                 setLoading(false);
             }
+        };
+
+        fetchLead();
+    }, [docId, reset]);
+
+    // Alert helpers
+    const addAlert = (variant, message) => {
+        setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
+    };
+
+    const removeAlert = (id) => {
+        setAlerts((prev) => prev.filter((a) => a.id !== id));
+    };
+
+    // Optional: icon mapping for alerts
+    const getIcon = (variant) => {
+        switch (variant) {
+            case "success":
+                return <i className="fa fa-check-circle me-1"/>;
+            case "danger":
+                return <i className="fa fa-exclamation-triangle me-1"/>;
+            case "info":
+                return <i className="fa fa-info-circle me-1"/>;
+            default:
+                return null;
         }
+    };
 
-        if (resolvedParams.id) {
-            (async () => await fetchClient(resolvedParams.id))()
-        } else {
-            setLoading(false)
+    // Handle form submission
+    const onSubmit = async (data) => {
+        if (!docId) return; // No docId => can't update
+        try {
+            setIsSaving(true); // Start saving
+            if (!data.newComments) {
+                data.comments = existingComments;
+            } else {
+                data.comments = [...data.newComments, ...existingComments];
+            }
+            delete data.newComments;
+            // Merge old + new comments
+
+            // Update the lead in Firestore
+            const docRef = doc(db, "leads", docId);
+            await updateDoc(docRef, data);
+
+            addAlert("success", "Lead updated successfully");
+            reset();
+            router.push("/leads");
+        } catch (error) {
+            console.error("Error updating lead:", error);
+            addAlert("danger", "Error updating lead");
+        } finally {
+            setIsSaving(false); // End saving
         }
+    };
 
-
-    }, [reset, resolvedParams.id])
-
+    if (loading) {
+        return <div>Loading lead data...</div>;
+    }
 
     return (
-        <>
-            <div className="page">
-                {alerts.map((alert) => (
-                    <Alert
-                        key={alert.id}
-                        variant={alert.variant}
-                        onClose={() => removeAlert(alert.id)}
-                        dismissible
-                        className={"alert-icon d-flex align-items-center h-100 alert alert-" + alert.variant}
-                    >
-                        {getIcon(alert.variant)}
-                        {alert.message}
-                    </Alert>
-                ))}
-                {/* Breadcrumb Component */}
-                <Breadcrumb breadcrumbs={breadcrumbs}/>
-
-                <div className="section-body mt-4">
-                    <div className="container-fluid">
-                        <div className="tab-content">
-                            <div className="tab-pane active show fade" id="lead-add">
-                                <form onSubmit={handleSubmit(onSubmit)}>
-                                    {/* BASIC SCHOOL INFORMATION */}
-                                    <div className="card mb-3">
-                                        <div className="card-header">
-                                            <h3 className="card-title">Basic School Information</h3>
-                                        </div>
-                                        <div className="card-body">
-                                            {/* Row 1: School Name */}
-                                            <div className="row">
-                                                <div className="col-md-4 mb-3">
-                                                    <label className="form-label">School Name</label>
-                                                    <input className="form-control" {...register("schoolName")} />
-                                                    {errors.schoolName && (
-                                                        <small className="text-danger">
-                                                            {errors.schoolName.message}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                                {/* Location: State, City, Area */}
-                                                <div className="col-md-4 mb-3">
-                                                    <label className="form-label">State</label>
-                                                    <input className="form-control" {...register("state")} />
-                                                    {errors.state && (
-                                                        <small className="text-danger">{errors.state.message}</small>
-                                                    )}
-                                                </div>
-                                                <div className="col-md-2 mb-3">
-                                                    <label className="form-label">City</label>
-                                                    <input className="form-control" {...register("city")} />
-                                                    {errors.city && (
-                                                        <small className="text-danger">{errors.city.message}</small>
-                                                    )}
-                                                </div>
-                                                <div className="col-md-2 mb-3">
-                                                    <label className="form-label">Area</label>
-                                                    <input className="form-control" {...register("area")} />
-                                                    {errors.area && (
-                                                        <small className="text-danger">{errors.area.message}</small>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Row 2:  */}
-                                            <div className="row">
-                                                <div className="col-md-3 mb-3">
-                                                    <label className="form-label">Number of Students</label>
-                                                    <input className="form-control" {...register("numStudents")}/>
-                                                    {errors.numStudents && (
-                                                        <small className="text-danger">
-                                                            {errors.numStudents.message}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                                <div className="col-md-3 mb-3">
-                                                    <label className="form-label">Annual School Fees</label>
-                                                    <input
-                                                        className="form-control"
-                                                        type={"number"}
-                                                        placeholder="e.g. 1990"
-                                                        {...register("annualFees")}
-                                                    />
-                                                    {errors.annualFees && (
-                                                        <small className="text-danger">
-                                                            {errors.annualFees.message}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                                <div className="col-md-3 mb-3">
-                                                    <label className="form-label">Do they have a website</label>
-                                                    <select
-                                                        className="form-select"
-                                                        {...register("hasWebsite")}
-                                                    >
-                                                        <option value="">Select Option</option>
-                                                        <option value="yes">Yes</option>
-                                                        <option value="no">No</option>
-                                                    </select>
-                                                    {errors.hasWebsite && (
-                                                        <small className="text-danger">
-                                                            {errors.hasWebsite.message}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                                <div className="col-md-3 mb-3">
-                                                    <label className="form-label">Response</label>
-                                                    <select
-                                                        className="form-select"
-                                                        {...register("response")}
-                                                    >
-                                                        <option value="">Choose a follow up</option>
-                                                        <option value="Call later">Call later</option>
-                                                        <option value="Not interested">Not interested</option>
-                                                    </select>
-                                                    {errors.response && (
-                                                        <small className="text-danger">
-                                                            {errors.response.message}
-                                                        </small>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-
-                                    {/* Followup time and date */}
-                                    {response === "Call later" && (
-                                        <div className="card mb-3">
-                                            <div className="card-header">
-                                                <h3 className="card-title">Follow Up</h3>
-                                            </div>
-                                            <div className="card-body">
-                                                {/* Key Contact Person (Dynamic Array) */}
-                                                <div className="row">
-                                                    <div className="col-md-6 mb-3">
-                                                        <label className="form-label">Date</label>
-                                                        <input className="form-control"
-                                                               type={"date"} {...register("followUpDate")}/>
-                                                        {errors.followUpDate && (
-                                                            <small className="text-danger">
-                                                                {errors.followUpDate.message}
-                                                            </small>
-                                                        )}
-                                                    </div>
-                                                    <div className="col-md-6 mb-3">
-                                                        <label className="form-label">Time</label>
-                                                        <input className="form-control"
-                                                               type={"time"} {...register("followUpTime")}/>
-                                                        {errors.followUpTime && (
-                                                            <small className="text-danger">
-                                                                {errors.followUpTime.message}
-                                                            </small>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-
-                                            </div>
-                                        </div>
-
-                                    )}
-
-
-                                    {/* DECISION-MAKING AND INFLUENCERS */}
-                                    <div className="card mb-3">
-                                        <div className="card-header">
-                                            <h3 className="card-title">Decision-Making and Influencers</h3>
-                                        </div>
-                                        <div className="card-body">
-                                            {/* Key Contact Person (Dynamic Array) */}
-                                            <h6>Key Contact Person(s)</h6>
-                                            <ContactArray
-                                                contactFields={contactFields}
-                                                removeContact={removeContact}
-                                                appendContact={appendContact}
-                                                register={register}
-                                                errors={errors}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* MISCELLANEOUS */}
-
-                                    {/*Comments ( Can add comments from time to time) :show the latest comment */}
-                                    <CommentsSection
-                                        commentFields={commentFields}
-                                        appendComment={appendComment}
-                                        removeComment={removeComment}
-                                        register={register}
-                                        errors={errors}
-
-                                    />
-
-                                    {/* Submit Button */}
-                                    <div className="text-end mb-5">
-                                        <button type="submit" className="btn btn-success">
-                                            Update Lead
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
-}
-
-/**
- * Renders a dynamic array of Key Contact Person(s).
- * Uses useFieldArray from the parent component.
- */
-function ContactArray({contactFields, removeContact, appendContact, register, errors}) {
-    return (
-        <div className="mb-3">
-            {contactFields.map((field, index) => (
-                <div key={field.id} className="card card-body mb-2">
-                    <div className="row">
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">Name</label>
-                            <input
-                                className="form-control"
-                                {...register(`contacts.${index}.name`)}
-                            />
-                            {errors.contacts?.[index]?.name && (
-                                <small className="text-danger">
-                                    {errors.contacts[index].name.message}
-                                </small>
-                            )}
-                        </div>
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">Designation</label>
-                            <input
-                                className="form-control"
-                                {...register(`contacts.${index}.designation`)}
-                            />
-                            {errors.contacts?.[index]?.designation && (
-                                <small className="text-danger">
-                                    {errors.contacts[index].designation.message}
-                                </small>
-                            )}
-                        </div>
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">Email</label>
-                            <input
-                                className="form-control"
-                                {...register(`contacts.${index}.email`)}
-                            />
-                            {errors.contacts?.[index]?.email && (
-                                <small className="text-danger">
-                                    {errors.contacts[index].email.message}
-                                </small>
-                            )}
-                        </div>
-                        <div className="col-md-3 mb-3">
-                            <label className="form-label">Phone</label>
-                            <input
-                                className="form-control"
-                                {...register(`contacts.${index}.phone`)}
-                            />
-                            {errors.contacts?.[index]?.phone && (
-                                <small className="text-danger">
-                                    {errors.contacts[index].phone.message}
-                                </small>
-                            )}
-                        </div>
-                    </div>
-                    {contactFields.length > 1 && (
-                        <button
-                            type="button"
-                            className="btn btn-outline-danger btn-sm align-self-end"
-                            onClick={() => removeContact(index)}
-                        >
-                            Remove Contact
-                        </button>
-                    )}
-                </div>
-            ))}
-            <button
-                type="button"
-                className="btn btn-outline-primary"
-                onClick={() =>
-                    appendContact({name: "", designation: "", email: "", phone: ""})
-                }
-            >
-                + Add Contact
-            </button>
-        </div>
-    );
-}
-
-/**
- # Renders a dynamic array of comments.
- */
-
-
-function CommentsSection({
-                             commentFields,
-                             appendComment,
-                             removeComment,
-                             register,
-                             errors,
-                         }) {
-    return (
-        <div className="card mb-3">
-            <div className="card-header">
-                <h3 className="card-title">Comments</h3>
-            </div>
-            <div className="card-body">
-                {/* Input to add a new comment */}
-                {commentFields.map((field, index) => (
-                    <div key={field.id} className="card card-body mb-2">
-                        {/* One field: text */}
-                        <label className="form-label">Comment</label>
-                        <input
-                            className="form-control"
-                            {...register(`comments.${index}.text`)}
-                        />
-                        {errors.comments?.[index]?.text && (
-                            <small className="text-danger">
-                                {errors.comments[index].text.message}
-                            </small>
-                        )}
-
-                        {/* Remove button (only if more than 1 or always—your choice) */}
-                        <button
-                            type="button"
-                            className="btn btn-outline-danger btn-sm mt-2"
-                            onClick={() => removeComment(index)}
-                        >
-                            Remove Comment
-                        </button>
-                    </div>
-                ))}
-                {/* Add a blank new comment */}
-                <button
-                    type="button"
-                    className="btn btn-outline-primary"
-                    onClick={() => appendComment({text: ""})}
+        <div className="page">
+            {/* Alerts */}
+            {alerts.map((alert) => (
+                <Alert
+                    key={alert.id}
+                    variant={alert.variant}
+                    onClose={() => removeAlert(alert.id)}
+                    dismissible
+                    className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
                 >
-                    + Add Comment
-                </button>
+                    {getIcon(alert.variant)}
+                    {alert.message}
+                </Alert>
+            ))}
+
+            {/* Show a banner if updating is in progress */}
+            {isSaving && (
+                <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
+                    <i className="fa fa-spinner fa-spin me-2"/>
+                    Updating lead...
+                </Alert>
+            )}
+
+            {/* Breadcrumb */}
+            <Breadcrumb
+                breadcrumbs={[
+                    {label: "Home", href: "/"},
+                    {label: "Leads", href: "/leads"},
+                    {label: "Update Lead", href: `/leads/${docId}/update`},
+                ]}
+            />
+
+            <div className="section-body mt-4">
+                <div className="container-fluid">
+                    <div className="tab-content">
+                        <div className="tab-pane active show fade" id="lead-update">
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                {/* Basic Info */}
+                                <BasicInfoSection register={register} errors={errors} response={response}/>
+
+                                {/* Follow Up */}
+                                {response === "Call later" && <FollowUpSection register={register} errors={errors}/>}
+
+                                {/* Contacts */}
+                                <DecisionMakingSection
+                                    contactFields={contactFields}
+                                    appendContact={appendContact}
+                                    removeContact={removeContact}
+                                    register={register}
+                                    errors={errors}
+                                />
+
+                                {/* Comments */}
+                                <CommentsSection
+                                    showExistingComments
+                                    existingComments={existingComments}
+                                    newCommentFields={newCommentFields}
+                                    prependNewComment={prependNewComment}
+                                    removeNewComment={removeNewComment}
+                                    appendNewComment={appendNewComment}
+                                />
+
+                                {/* Buttons */}
+                                <div className="d-flex justify-content-end gap-2 mb-5">
+                                    <button
+                                        type="reset"
+                                        className="btn btn-danger"
+                                        onClick={() => router.back()}
+                                        disabled={isSaving}
+                                    >
+                                        Discard Changes
+                                    </button>
+                                    <button type="submit" className="btn btn-success" disabled={isSaving}>
+                                        {isSaving ? "Updating..." : "Update Lead"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

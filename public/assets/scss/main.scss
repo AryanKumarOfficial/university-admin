@@ -68,3 +68,14 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+.call-later-row {
+  background-color: #fff7e6; /* Light yellow highlight */
+}
+
+.not-interested-row {
+  opacity: 0.7; /* Slightly dim */
+}
+
+.completed-row {
+  background-color: #e6ffe6; /* Light green highlight */
+}

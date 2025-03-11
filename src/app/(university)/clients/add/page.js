@@ -847,7 +847,13 @@ export default function ClientAddForm() {
                                     />
 
                                     {/* Submit Button */}
-                                    <div className="text-end mb-5">
+                                    <div className="d-flex justify-content-end gap-2 mb-5">
+                                        <button type="reset" className="btn btn-danger"
+                                                onClick={() => router.push("/clients", {
+                                                    scroll: true,
+                                                }, {shallow: true})}>
+                                            Cancel
+                                        </button>
                                         <button type="submit" className="btn btn-success">
                                             Save Client
                                         </button>
