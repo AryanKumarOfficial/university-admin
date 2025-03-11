@@ -29,8 +29,9 @@ export const ClientSchema = z.object({
      */
     yearOfEstablishment: z
         .union([
+            z.string().regex(/^\d+$/, "Must be a valid year").transform(Number),
             z.number()
-                .min(1900, "Year must be >= 1900")
+                // .min(1900, "Year must be >= 1900")
         ])
         .optional(),
 

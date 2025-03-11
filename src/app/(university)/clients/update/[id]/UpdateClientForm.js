@@ -1,7 +1,7 @@
 "use client";
 
 import React, {useEffect, useState} from "react";
-import {useFieldArray, useForm} from "react-hook-form";
+import {useFieldArray, useForm, useWatch} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {doc, updateDoc} from "firebase/firestore";
 import {useRouter} from "next/navigation";
@@ -9,7 +9,6 @@ import Alert from "react-bootstrap/Alert";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import {db} from "@/lib/firebase/client";
-// Suppose you have a Zod schema named ClientSchema:
 import {ClientSchema} from "@/schema/client";
 
 // Sections
@@ -21,35 +20,92 @@ import DecisionMakingSection from "@/components/sections/clients/DecisionMakingS
 import MiscSection from "@/components/sections/clients/MiscSection";
 import CommentsSection from "@/components/sections/clients/CommentsSection";
 
+/**
+ * UpdateClientForm
+ *
+ * Receives:
+ *  - oldData: The existing client document from Firestore, fetched by a parent server component or route.
+ *
+ * Renders a form pre-filled with oldData, merges new & old comments on submit,
+ * and updates Firestore using docId from oldData.id.
+ */
 export default function UpdateClientForm({oldData}) {
     const router = useRouter();
 
-    // If there's no oldData, user may have an invalid ID
     const [isSaving, setIsSaving] = useState(false);
     const [alerts, setAlerts] = useState([]);
     const [existingComments, setExistingComments] = useState([]);
 
-    // React Hook Form setup
+    // 1) Initialize React Hook Form
     const {
         register,
         handleSubmit,
         control,
         reset,
         formState: {errors},
+        resetField
     } = useForm({
         resolver: zodResolver(ClientSchema),
         defaultValues: {
-            // Minimal placeholders (they'll be overwritten by reset if oldData exists)
+            // Provide minimal placeholders
             schoolName: "",
             state: "",
             city: "",
             area: "",
-            // ... etc. ...
+            typeOfSchool: "co-ed",
+            yearOfEstablishment: "",
+            boardOfAffiliation: "cbse",
+            mediumOfInstruction: "english",
+            newSessionStarts: "",
+            frequencyOfPTA: "weekly",
+            schoolTimingsFrom: "",
+            schoolTimingsTo: "",
+
+            // Enrollment
+            numStudents: "",
+            numClasses: "",
+            numSections: "",
+            numTeachers: "",
+            numAdminStaff: "",
+
+            // Financial
+            annualFees: "",
+            feePaymentFrequency: "monthly",
+
+            // Technology
+            currentTools: "",
+            hasWebsite: "no",
+            hasInternet: "no",
+            digitalLiteracy: "basic",
+
+            // Decision Making
+            contacts: [
+                {name: "", designation: "", email: "", phone: ""},
+            ],
+            purchaseDecisionBy: "principal",
+
+            // Misc
+            specificNeeds: "",
+            customBoard: "",
+            knownPainPoints: "",
+            communicationChannels: [],
+            usp: "",
+            competitorSchools: [],
+            expansionPlans: "",
+
+            // Comments
             newComments: [],
         },
+        mode: "onChange",
     });
 
-    // Field arrays for contacts, competitorSchools, and newComments
+
+    const boardOfAffiliation = useWatch({
+        control,
+        name: "boardOfAffiliation",
+    })
+
+    // 2) useFieldArray for dynamic lists
     const {
         fields: contactFields,
         append: appendContact,
@@ -69,13 +125,11 @@ export default function UpdateClientForm({oldData}) {
         prepend: prependNewComment,
     } = useFieldArray({control, name: "newComments"});
 
-    // Populate form on mount if oldData is provided
+    // 3) Populate the form if oldData is provided
     useEffect(() => {
         if (oldData) {
-            // If oldData has existing comments, store them in state
             setExistingComments(oldData.comments || []);
-            // Overwrite default form values with oldData
-            reset(oldData);
+            reset(oldData); // Overwrites defaultValues with oldData
         }
     }, [oldData, reset]);
 
@@ -99,7 +153,7 @@ export default function UpdateClientForm({oldData}) {
         }
     };
 
-    // Submit handler merges old + new comments, updates Firestore
+    // 4) onSubmit merges old + new comments, updates Firestore
     const onSubmit = async (data) => {
         if (!oldData?.id) {
             addAlert("danger", "No valid client ID to update.");
@@ -108,19 +162,23 @@ export default function UpdateClientForm({oldData}) {
         setIsSaving(true);
         try {
             // Merge old + new comments
-            if (data.newComments) {
+            if (Array.isArray(data.newComments)) {
                 data.comments = [...existingComments, ...data.newComments];
             } else {
                 data.comments = existingComments;
             }
             delete data.newComments;
+            if (data.boardOfAffiliation !== "custom") {
+                console.log("deleting custom board");
+                delete data.customBoard;
+            }
 
             // Update Firestore
             const docRef = doc(db, "clients", oldData.id);
             await updateDoc(docRef, data);
 
             addAlert("success", "Client updated successfully!");
-            reset();
+            reset(); // Clear the form
             router.push("/clients");
         } catch (error) {
             console.error("Error updating client:", error);
@@ -151,7 +209,7 @@ export default function UpdateClientForm({oldData}) {
                 </Alert>
             ))}
 
-            {/* Saving banner */}
+            {/* Show saving banner if isSaving */}
             {isSaving && (
                 <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
                     <i className="fa fa-spinner fa-spin me-2"/>
@@ -159,9 +217,7 @@ export default function UpdateClientForm({oldData}) {
                 </Alert>
             )}
 
-            {/* Example breadcrumb */}
-            {/* Adjust your breadcrumb structure as needed */}
-            {/* <Breadcrumb ... /> */}
+            {/* Example: If you have a breadcrumb, place it here */}
 
             <div className="section-body mt-4">
                 <div className="container-fluid">
@@ -169,7 +225,8 @@ export default function UpdateClientForm({oldData}) {
                         <div className="tab-pane active show fade" id="client-update">
                             <form onSubmit={handleSubmit(onSubmit)}>
                                 {/* Basic School Info */}
-                                <BasicSchoolInfoSection register={register} errors={errors}/>
+                                <BasicSchoolInfoSection register={register} errors={errors}
+                                                        boardOfAffiliation={boardOfAffiliation}/>
                                 {/* Enrollment */}
                                 <EnrollmentSection register={register} errors={errors}/>
                                 {/* Financial */}

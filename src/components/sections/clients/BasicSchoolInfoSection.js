@@ -57,7 +57,7 @@ export default function BasicSchoolInfoSection({register, errors, boardOfAffilia
                 {/* Year of Establishment */}
                 <div className="mb-3">
                     <label className="form-label">Year of Establishment</label>
-                    <input className="form-control" {...register("yearOfEstablishment")} />
+                    <input className="form-control" type={"number"} {...register("yearOfEstablishment")} />
                     {errors.yearOfEstablishment && (
                         <small className="text-danger">
                             {errors.yearOfEstablishment.message}

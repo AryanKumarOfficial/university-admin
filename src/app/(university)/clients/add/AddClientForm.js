@@ -97,7 +97,7 @@ export default function AddClientForm() {
         mode: "onChange",
     });
 
-    const boardOfAffiliation= useWatch({
+    const boardOfAffiliation = useWatch({
         control,
         name: "boardOfAffiliation",
     })
@@ -211,7 +211,8 @@ export default function AddClientForm() {
                             <div className="tab-pane active show fade" id="client-add">
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                     {/* Basic School Info */}
-                                    <BasicSchoolInfoSection register={register} errors={errors} boardOfAffiliation={boardOfAffiliation}/>
+                                    <BasicSchoolInfoSection register={register} errors={errors}
+                                                            boardOfAffiliation={boardOfAffiliation}/>
 
                                     {/* Enrollment & Infrastructure */}
                                     <EnrollmentSection register={register} errors={errors}/>
@@ -254,10 +255,13 @@ export default function AddClientForm() {
                                         <button
                                             type="reset"
                                             className="btn btn-secondary"
-                                            onClick={() => reset()}
+                                            onClick={() => {
+                                                reset()
+                                                router.push("/clients")
+                                            }}
                                             disabled={isSaving}
                                         >
-                                            Clear Form
+                                            Cancel
                                         </button>
                                         <button type="submit" className="btn btn-success" disabled={isSaving}>
                                             {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
