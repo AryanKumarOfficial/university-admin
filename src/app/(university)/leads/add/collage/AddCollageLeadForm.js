@@ -168,7 +168,7 @@ export default function AddCollageLeadForm() {
                         {label: "Home", href: "/"},
                         {label: "Leads", href: "/leads"},
                         {label: "Add", href: "/leads/add",},
-                        {label: "Add New School Lead", href: "/leads/add/school"},
+                        {label: "Add New Collage Lead", href: "/leads/add/Collage"},
                     ]}
                 />
 
