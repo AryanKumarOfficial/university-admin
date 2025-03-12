@@ -86,7 +86,7 @@ export default function AddClientForm() {
             specificNeeds: "",
             customBoard: "",
             knownPainPoints: "",
-            communicationChannels: [],
+            communicationChannels: [""],
             usp: "",
             competitorSchools: [],
             expansionPlans: "",

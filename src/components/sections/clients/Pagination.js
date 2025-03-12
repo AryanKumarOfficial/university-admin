@@ -22,7 +22,7 @@ export default function Pagination({
                 <button
                     key={p}
                     className={`btn btn-sm ${
-                        p === currentPage ? "btn-primary" : "btn-outline-primary"
+                        p === currentPage ? "btn-primary" : "btn-outline-blush"
                     }`}
                     onClick={() => onPageChange(p)}
                 >

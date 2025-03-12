@@ -149,7 +149,6 @@ export default function LeadsClient({initialLeads}) {
     if (filterCreatedAt) {
         filteredLeads = filteredLeads.filter((lead) => {
             if (!lead.createdAt) return false;
-            console.log(`lead.createdAt: ${lead.createdAt}\n filterCreatedAt: ${new Date(filterCreatedAt).toISOString()}`);
             return formatDateToDDMMYYYY(lead.createdAt) === formatDateToDDMMYYYY(new Date(filterCreatedAt).toISOString());
         });
     }

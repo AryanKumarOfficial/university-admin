@@ -1,35 +1,15 @@
 "use client";
 
-import React, {useState} from "react";
+import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import ConfirmModal from "@/components/sections/clients/ConfirmModal"; // (Client) for confirm actions
 import AlertList from "@/components/sections/clients/AlertList"; // (Client) for user notifications
 import Pagination from "@/components/sections/clients/Pagination"; // (Client) for local pagination
-import {deleteClient, markClientAsComplete} from "./actions"; // (Server) your server actions
+import { deleteClient, markClientAsComplete } from "./actions"; // (Server) your server actions
 import "bootstrap/dist/css/bootstrap.min.css";
-import {formatTime} from "@/helpers/TimeFormat";
+import { formatTime } from "@/helpers/TimeFormat";
 
-/**
- * ClientsClient.jsx
- * Displays a table with columns:
- * 1) School Name
- * 2) Location (State, City, Area)
- * 3) New Session Starts (Month)
- * 4) School Timings (from–to)
- * 5) Number of Students
- * 6) Annual Fees
- * 7) Website?
- * 8) Key Contact Person & phone
- * 9) Latest comment
- *
- * Also includes:
- * - Confirm modal for both Delete & Mark Complete
- * - Alerts
- * - Local pagination
- * - "Add New Client" button
- * - Filtering by New Session and sorting by School Name
- */
-export default function ClientsClient({initialClients}) {
+export default function ClientsClient({ initialClients }) {
     const [clients, setClients] = useState(initialClients || []);
     const [alerts, setAlerts] = useState([]);
 
@@ -38,17 +18,18 @@ export default function ClientsClient({initialClients}) {
     const [confirmAction, setConfirmAction] = useState(null); // "delete" or "complete"
     const [clientToActOn, setClientToActOn] = useState(null);
 
-    // New filtering & sorting state
+    // Filtering & sorting states
     const [filterSession, setFilterSession] = useState("All");
     const [sortSchoolName, setSortSchoolName] = useState(""); // "" = default, "asc" or "desc"
+    const [filterCreatedAt, setFilterCreatedAt] = useState(""); // expects yyyy-mm-dd string
 
-    // Pagination
+    // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
 
     /** Alert functions */
     const addAlert = (variant, message) => {
-        setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
+        setAlerts((prev) => [...prev, { id: Date.now(), variant, message }]);
     };
     const removeAlert = (id) => {
         setAlerts((prev) => prev.filter((a) => a.id !== id));
@@ -71,61 +52,79 @@ export default function ClientsClient({initialClients}) {
         setShowConfirm(false);
         if (!clientToActOn || !confirmAction) return;
 
-        if (confirmAction === "delete") {
-            // Delete action
-            const formData = new FormData();
-            formData.set("clientId", clientToActOn.id);
-            await deleteClient(formData);
-            setClients((prev) => prev.filter((cl) => cl.id !== clientToActOn.id));
-            addAlert("success", `Client "${clientToActOn.schoolName}" deleted!`);
-        } else if (confirmAction === "complete") {
-            // Mark as complete action
-            const formData = new FormData();
-            formData.set("clientId", clientToActOn.id);
-            await markClientAsComplete(formData);
-            setClients((prev) =>
-                prev.map((cl) =>
-                    cl.id === clientToActOn.id ? {...cl, response: "Completed"} : cl
-                )
-            );
-            addAlert("success", `Client "${clientToActOn.schoolName}" marked as completed.`);
+        try {
+            if (confirmAction === "delete") {
+                const formData = new FormData();
+                formData.set("clientId", clientToActOn.id);
+                await deleteClient(formData);
+                setClients((prev) => prev.filter((cl) => cl.id !== clientToActOn.id));
+                addAlert("success", `Client "${clientToActOn.schoolName}" deleted!`);
+            } else if (confirmAction === "complete") {
+                const formData = new FormData();
+                formData.set("clientId", clientToActOn.id);
+                await markClientAsComplete(formData);
+                setClients((prev) =>
+                    prev.map((cl) =>
+                        cl.id === clientToActOn.id ? { ...cl, response: "Completed" } : cl
+                    )
+                );
+                addAlert("success", `Client "${clientToActOn.schoolName}" marked as completed.`);
+            }
+        } catch (error) {
+            addAlert("danger", "Action failed. Please try again.");
+        } finally {
+            setClientToActOn(null);
+            setConfirmAction(null);
         }
-
-        setClientToActOn(null);
-        setConfirmAction(null);
     };
 
-    /** Filtering & Sorting Logic */
-    let filteredClients = clients;
+    /** Memoized filtering & sorting */
+    const filteredClients = useMemo(() => {
+        let data = [...clients];
 
-    // Filter by New Session (Month)
-    if (filterSession !== "All") {
-        filteredClients = filteredClients.filter(
-            (client) => client.newSessionStarts === filterSession
-        );
-    }
+        // Filter by new session month if not "All"
+        if (filterSession !== "All") {
+            data = data.filter((client) => client.newSessionStarts === filterSession);
+        }
 
-    // Sorting by School Name
-    if (sortSchoolName === "asc") {
-        filteredClients = [...filteredClients].sort((a, b) =>
-            a.schoolName.localeCompare(b.schoolName)
-        );
-    } else if (sortSchoolName === "desc") {
-        filteredClients = [...filteredClients].sort((a, b) =>
-            b.schoolName.localeCompare(a.schoolName)
-        );
-    }
+        // Filter by createdAt date (if provided)
+        if (filterCreatedAt) {
+            const filterDate = new Date(filterCreatedAt);
+            data = data.filter((client) => {
+                if (!client.createdAt) return false;
+                const clientDate = new Date(client.createdAt);
+                return (
+                    clientDate.getFullYear() === filterDate.getFullYear() &&
+                    clientDate.getMonth() === filterDate.getMonth() &&
+                    clientDate.getDate() === filterDate.getDate()
+                );
+            });
+        }
 
-    // Pagination logic
+        // Sorting by school name
+        if (sortSchoolName === "asc") {
+            data.sort((a, b) => a.schoolName.localeCompare(b.schoolName));
+        } else if (sortSchoolName === "desc") {
+            data.sort((a, b) => b.schoolName.localeCompare(a.schoolName));
+        }
+
+        return data;
+    }, [clients, filterSession, filterCreatedAt, sortSchoolName]);
+
+    // Calculate total pages for pagination
     const totalPages = Math.ceil(filteredClients.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const clientsPage = filteredClients.slice(startIndex, endIndex);
 
-    // Clear filters function
+    // Memoized pagination
+    const paginatedClients = useMemo(() => {
+        const startIndex = (currentPage - 1) * pageSize;
+        return filteredClients.slice(startIndex, startIndex + pageSize);
+    }, [filteredClients, currentPage]);
+
+    /** Clear filters */
     const clearFilters = () => {
         setFilterSession("All");
         setSortSchoolName("");
+        setFilterCreatedAt("");
         setCurrentPage(1);
     };
 
@@ -139,42 +138,17 @@ export default function ClientsClient({initialClients}) {
     };
 
     const getRowClass = (client) => {
-        if (client.response === "Completed") return "table-success";
-        return "";
+        return client.response === "Completed" ? "table-success" : "";
     };
 
     return (
         <div className="section-body p-3">
             {/* Alerts */}
-            <AlertList alerts={alerts} removeAlert={removeAlert}/>
+            <AlertList alerts={alerts} removeAlert={removeAlert} />
 
             {/* Filtering, Sorting UI & "Add New Client" Button */}
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div className="d-flex gap-2 align-items-center">
-                    {/* Filter by New Session */}
-                    <select
-                        className="form-select"
-                        value={filterSession}
-                        onChange={(e) => {
-                            setFilterSession(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                    >
-                        <option value="All">All Sessions</option>
-                        <option value="January">January</option>
-                        <option value="February">February</option>
-                        <option value="March">March</option>
-                        <option value="April">April</option>
-                        <option value="May">May</option>
-                        <option value="June">June</option>
-                        <option value="July">July</option>
-                        <option value="August">August</option>
-                        <option value="September">September</option>
-                        <option value="October">October</option>
-                        <option value="November">November</option>
-                        <option value="December">December</option>
-                    </select>
-                    {/* Sort by School Name */}
                     <select
                         className="form-select"
                         value={sortSchoolName}
@@ -187,7 +161,14 @@ export default function ClientsClient({initialClients}) {
                         <option value="asc">A - Z</option>
                         <option value="desc">Z - A</option>
                     </select>
-                    {/* Clear Filters Button */}
+
+                    <input
+                        type="date"
+                        className="form-control"
+                        value={filterCreatedAt}
+                        onChange={(e) => setFilterCreatedAt(e.target.value)}
+                    />
+
                     <button className="btn btn-danger w-100" onClick={clearFilters}>
                         Clear Filters
                     </button>
@@ -213,50 +194,61 @@ export default function ClientsClient({initialClients}) {
                             <th>Website?</th>
                             <th>Key Contact + Phone</th>
                             <th>Latest Comment</th>
+                            <th>Created At</th>
                             <th>Action</th>
                         </tr>
                         </thead>
                         <tbody>
-                        {clientsPage.length > 0 ? (
-                            clientsPage.map((cl, idx) => (
-                                <tr key={cl.id} className={getRowClass(cl)}>
-                                    <td>{(currentPage - 1) * pageSize + idx + 1}</td>
-                                    <td>{cl.schoolName}</td>
-                                    <td>{`${cl.state}, ${cl.city}, ${cl.area}`}</td>
-                                    <td>{cl.newSessionStarts || "N/A"}</td>
-                                    <td>
-                                        {cl.schoolTimingsFrom && cl.schoolTimingsTo
-                                            ? `${formatTime(cl.schoolTimingsFrom)} to ${formatTime(cl.schoolTimingsTo)}`
-                                            : "N/A"}
-                                    </td>
-                                    <td>{cl.numStudents}</td>
-                                    <td>
-                                        <span className="fw-bold">₹</span> {cl.annualFees}
-                                    </td>
-                                    <td>{cl.hasWebsite === "yes" ? "Yes" : "No"}</td>
-                                    <td>
-                                        {cl.contacts?.[0]
-                                            ? `${cl.contacts[0].name} / ${cl.contacts[0].phone}`
-                                            : "N/A"}
-                                    </td>
-                                    <td>{renderLatestComment(cl)}</td>
-                                    <td className="d-flex gap-2">
-                                        <Link href={`/clients/update/${cl.id}`}
-                                              className="btn btn-outline-primary btn-sm">
-                                            <i className="fa fa-edit"></i>
-                                        </Link>
-                                        <button
-                                            className="btn btn-outline-danger btn-sm"
-                                            onClick={() => handleDeleteClick(cl)}
-                                        >
-                                            <i className="fa fa-trash-o"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                        {paginatedClients.length > 0 ? (
+                            paginatedClients.map((cl, idx) => {
+                                // Format createdAt date and time
+                                const dateObj = new Date(cl.createdAt);
+                                const formattedDate = dateObj.toLocaleDateString("en-IN", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                });
+                                const timeString = formatTime(dateObj.toTimeString().substring(0, 5));
+                                return (
+                                    <tr key={cl.id} className={getRowClass(cl)}>
+                                        <td>{(currentPage - 1) * pageSize + idx + 1}</td>
+                                        <td>{cl.schoolName}</td>
+                                        <td>{`${cl.state}, ${cl.city}, ${cl.area}`}</td>
+                                        <td>{cl.newSessionStarts || "N/A"}</td>
+                                        <td>
+                                            {cl.schoolTimingsFrom && cl.schoolTimingsTo
+                                                ? `${formatTime(cl.schoolTimingsFrom)} to ${formatTime(cl.schoolTimingsTo)}`
+                                                : "N/A"}
+                                        </td>
+                                        <td>{cl.numStudents}</td>
+                                        <td>
+                                            <span className="fw-bold">₹</span> {cl.annualFees}
+                                        </td>
+                                        <td>{cl.hasWebsite === "yes" ? "Yes" : "No"}</td>
+                                        <td>
+                                            {cl.contacts?.[0]
+                                                ? `${cl.contacts[0].name} / ${cl.contacts[0].phone}`
+                                                : "N/A"}
+                                        </td>
+                                        <td>{renderLatestComment(cl)}</td>
+                                        <td>{`${formattedDate} - ${timeString}`}</td>
+                                        <td className="d-flex gap-2">
+                                            <Link href={`/clients/update/${cl.id}`} className="btn btn-outline-primary btn-sm">
+                                                <i className="fa fa-edit"></i>
+                                            </Link>
+                                            <button
+                                                className="btn btn-outline-danger btn-sm"
+                                                onClick={() => handleDeleteClick(cl)}
+                                            >
+                                                <i className="fa fa-trash-o"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         ) : (
                             <tr>
-                                <td colSpan={11} className="text-center">
+                                <td colSpan={12} className="text-center">
                                     No Clients found.{" "}
                                     <Link href="/clients/add" className="fw-bold">
                                         Add one now!

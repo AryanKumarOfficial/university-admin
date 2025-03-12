@@ -31,9 +31,8 @@ export const ClientSchema = z.object({
         .union([
             z.string().regex(/^\d+$/, "Must be a valid year").transform(Number),
             z.number()
-                // .min(1900, "Year must be >= 1900")
-        ])
-        .optional(),
+            // .min(1900, "Year must be >= 1900")
+        ]),
 
     boardOfAffiliation: z.enum(
         ["cbse", "icse", "state-board", "ib", "igcse", "hpbose", "custom"],
@@ -149,8 +148,7 @@ export const ClientSchema = z.object({
             z.enum(["whatsapp", "phone-call", "email", "others"], {
                 errorMap: () => ({message: "Select a valid channel"}),
             })
-        )
-        .optional(),
+        ),
 
     usp: z.string().min(1, "USP is required"),
     competitorSchools: z.array(z.string().min(1)).optional(),

@@ -22,6 +22,11 @@
     @include css3.box-shadow(0 1px 1px 0 rgba(colors.$dark, 0.06));
   }
 
+  &.btn-outline-blush {
+    color: colors.$blush;
+    border-color: colors.$blush;
+  }
+
   &.btn-secondary {
     @include css3.box-shadow(0 1px 1px 0 rgba(colors.$dark, 0.06));
   }
@@ -41,6 +46,20 @@
 
   &.btn-google {
     background: #4285F4;
+    color: colors.$white;
+  }
+
+  //  hover effects
+  &.btn-default:hover {
+
+  }
+
+  &.btn-primary:hover {
+    background-color: colors.$blush2;
+  }
+
+  &.btn-outline-blush:hover {
+    background-color: colors.$blush;
     color: colors.$white;
   }
 }
