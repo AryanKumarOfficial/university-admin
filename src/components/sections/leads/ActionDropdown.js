@@ -18,12 +18,12 @@ export default function ActionDropdown() {
                 backgroundColor: "#de5d83"
             }}>
                 <li>
-                    <Link className="dropdown-item text-white" href="/leads/add">
+                    <Link className="dropdown-item text-white" href="/leads/add/school">
                         School
                     </Link>
                 </li>
                 <li>
-                    <Link className="dropdown-item text-white" href="/leads/add">
+                    <Link className="dropdown-item text-white" href="/leads/add/collage">
                         Collage
                     </Link>
                 </li>

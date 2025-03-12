@@ -19,7 +19,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import Alert from "react-bootstrap/Alert";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-export default function AddLeadForm() {
+export default function AddCollageLeadForm() {
     const router = useRouter();
 
     // Tracks if saving is in progress
@@ -44,7 +44,7 @@ export default function AddLeadForm() {
         defaultValues: {
             // Basic Info
             schoolName: "",
-            leadType: "school",
+            // leadType: "school",
             state: "",
             city: "",
             area: "",
@@ -119,6 +119,7 @@ export default function AddLeadForm() {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
                 createdAt: new Date(Date.now()).toISOString(), // add timestamp
+                leadType: "collage",
             };
             delete leadData.newComments;
 
@@ -166,7 +167,8 @@ export default function AddLeadForm() {
                     breadcrumbs={[
                         {label: "Home", href: "/"},
                         {label: "Leads", href: "/leads"},
-                        {label: "Add New Lead", href: "/leads/add"},
+                        {label: "Add", href: "/leads/add",},
+                        {label: "Add New School Lead", href: "/leads/add/school"},
                     ]}
                 />
 
@@ -176,7 +178,8 @@ export default function AddLeadForm() {
                             <div className="tab-pane active show fade" id="lead-add">
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                     {/* Basic Info */}
-                                    <BasicInfoSection register={register} errors={errors} response={response}/>
+                                    <BasicInfoSection register={register} errors={errors} response={response}
+                                                      title={"Collage"}/>
 
                                     {/* Follow Up if "Call later" */}
                                     {response === "Call later" && (

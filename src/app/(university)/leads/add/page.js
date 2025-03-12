@@ -1,6 +1,8 @@
 // /app/leads/add/page.tsx
-import AddLeadForm from "./AddLeadForm";
+
+import {permanentRedirect, RedirectType} from "next/navigation";
 
 export default function AddLeadPage() {
-    return <AddLeadForm />;
+    permanentRedirect("/leads", RedirectType.replace)
+    return null;
 }

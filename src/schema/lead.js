@@ -38,7 +38,7 @@ export const LeadSchema = z.object({
     newComments: z.array(z.object({
         text: z.string(),
     })).optional(),
-    leadType: z.enum(["school", "college", "institute"], {
-        errorMap: () => ({message: "Select School, College or Institute"}),
-    })
+    // leadType: z.enum(["school", "college", "institute"], {
+    //     errorMap: () => ({message: "Select School, College or Institute"}),
+    // })
 });

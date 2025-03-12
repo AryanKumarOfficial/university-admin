@@ -1,14 +1,14 @@
 import React from "react";
 
-export default function BasicInfoSection({register, errors, response}) {
+export default function BasicInfoSection({register, errors, title}) {
     return (
         <div className="card mb-3">
             <div className="card-header">
-                <h3 className="card-title">Basic School Information</h3>
+                <h3 className="card-title">Basic {title} Information</h3>
             </div>
             <div className="card-body">
                 <div className="row">
-                    <div className="col-md-6 mb-3">
+                    <div className="col-md-3 mb-3">
                         <label className="form-label">Name</label>
                         <input
                             className="form-control"
@@ -19,19 +19,17 @@ export default function BasicInfoSection({register, errors, response}) {
                             <small className="text-danger">{errors.schoolName.message}</small>
                         )}
                     </div>
-                    <div className="col-md-6 mb-3">
-                        <label className="form-label">Lead Type</label>
-                        <select className="form-select" {...register("leadType")}>
-                            <option value="school">School</option>
-                            <option value="college">College</option>
-                            <option value="institute">Institute</option>
-                        </select>
-                        {errors.leadType && (
-                            <small className="text-danger">{errors.leadType.message}</small>
-                        )}
-                    </div>
-                </div>
-                <div className={"row"}>
+                    {/*<div className="col-md-6 mb-3">*/}
+                    {/*    <label className="form-label">Lead Type</label>*/}
+                    {/*    <select className="form-select" {...register("leadType")}>*/}
+                    {/*        <option value="school">School</option>*/}
+                    {/*        <option value="college">College</option>*/}
+                    {/*        <option value="institute">Institute</option>*/}
+                    {/*    </select>*/}
+                    {/*    {errors.leadType && (*/}
+                    {/*        <small className="text-danger">{errors.leadType.message}</small>*/}
+                    {/*    )}*/}
+                    {/*</div>*/}
                     <div className="col-md-3 mb-3">
                         <label className="form-label">State</label>
                         <input
