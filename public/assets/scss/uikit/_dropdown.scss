@@ -17,12 +17,14 @@
     color: colors.$gray-700;
     font-size: variables.$font-size - 1px;
     padding: 8px 10px;
+    font-weight: bold;
     margin: 0 10px;
     width: auto;
 
     &:hover,
     &:focus {
-      background: colors.$gray-100;
+      background: colors.$white !important;
+      color: colors.$blush !important;
 
       &.readall {
         background: transparent;

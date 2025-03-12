@@ -8,6 +8,7 @@ import Pagination from "@/components/sections/leads/Pagination";
 import {deleteLead, markLeadAsComplete} from "./actions";
 import {formatDateToDDMMYYYY, formatTime} from "@/helpers/TimeFormat";
 import "bootstrap/dist/css/bootstrap.min.css";
+import ActionDropdown from "@/components/sections/leads/ActionDropdown";
 
 /**
  * LeadsClient:
@@ -195,14 +196,12 @@ export default function LeadsClient({initialLeads}) {
                             setFilterCreatedAt(e.target.value)
                         }}
                     />
-                {/* Clear Filters Button */}
-                <button className="btn btn-danger w-100" onClick={clearFilters}>
-                    Clear Filters
-                </button>
+                    {/* Clear Filters Button */}
+                    <button className="btn btn-danger w-100" onClick={clearFilters}>
+                        Clear Filters
+                    </button>
                 </div>
-                <Link href="/leads/add" className="btn btn-primary px-4">
-                    Add New Lead
-                </Link>
+                <ActionDropdown/>
             </div>
 
             {/* Table */}
