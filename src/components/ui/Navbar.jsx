@@ -7,11 +7,20 @@ import {useAuthStore} from "@/stores/auth-store";
 
 const sidebarLinks = {
     university: [
-        {path: "/", icon: "fa fa-tachometer", label: "Dashboard"},
-        {path: "/leads", icon: "fa fa-address-book", label: "Leads"},
-        {path: "/clients", icon: "fa fa-briefcase", label: "Clients"},
-        {path: "/teachers", icon: "fa fa-user", label: "Teachers"},
-        {path: "/students", icon: "fa fa-graduation-cap", label: "Students"},
+        {path: "/", icon: "fa fa-tachometer-alt", label: "Dashboard"},
+        {path: "/leads", icon: "fa fa-handshake", label: "Leads"},
+        {path: "/clients", icon: "fa fa-user-tie", label: "Clients"},
+        {path: "/teachers", icon: "fa fa-chalkboard-teacher", label: "Teachers"},
+        {path: "/students", icon: "fa fa-user-graduate", label: "Students"},
+        {
+            path: "/trainees",
+            icon: "fa fa-user-plus",
+            label: "Trainees"
+        }, {
+            path: "/users",
+            icon: "fa fa-users",
+            label: "Users"
+        }
     ],
     admin: [
         {path: "/payments", icon: "fa fa-credit-card", label: "Payments"},
