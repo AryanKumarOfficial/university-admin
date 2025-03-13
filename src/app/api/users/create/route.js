@@ -60,7 +60,7 @@ export async function POST(req) {
 
         // Everything succeeded
         return Response.json({message: 'User created successfully', uid: userRecord.uid}, {
-            status: 200,
+            status: 201,
         });
     } catch (error) {
         console.error('General error in createUser endpoint:', error);
