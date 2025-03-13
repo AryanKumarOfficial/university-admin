@@ -35,7 +35,9 @@ export async function DELETE(req) {
             return Response.json({error: authError.message}, {status: 400});
         }
 
-        return Response.json({message: 'User deleted successfully', uid}, {status: 200});
+        return Response.json({message: "User deleted successfully", uid}, {
+            status: 200,
+        })
     } catch (error) {
         console.error('General error in delete endpoint:', error);
         return Response.json({error: error.message}, {status: 500});

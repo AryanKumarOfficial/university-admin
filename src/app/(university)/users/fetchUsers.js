@@ -11,7 +11,7 @@ export async function fetchAllUsers() {
     const snapshot = await getDocs(collection(db, "users"));
     const users = [];
     snapshot.forEach((docSnap) => {
-        users.push({id: docSnap.id, ...docSnap.data()});
+        users.push({id: docSnap.data().uid, ...docSnap.data()});
     });
     return users;
 }

@@ -3,8 +3,11 @@
 import React from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
+import {formatTime} from "@/helpers/TimeFormat";
+import {useRouter} from "next/navigation";
 
 export default function UsersClient({initialUsers = []}) {
+    const router = useRouter();
     // Column definitions for users
     const columns = [
         {key: "id", header: "#"},
@@ -12,9 +15,23 @@ export default function UsersClient({initialUsers = []}) {
         {key: "email", header: "Email"},
         {key: "phone", header: "Phone"},
         {key: "password", header: "Password"},
-        {key: "role", header: "Role"},
+        {
+            key: "role", header: "Role",
+
+        },
         {key: "createdBy", header: "created By"},
-        {key: "createdAt", header: "Registered At"},
+        {
+            key: "createdAt", header: "Registered At",
+            render: (value) => (
+                <span className="text-muted">
+                    {new Date(value).toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                    }) + " - " + formatTime(value)}
+                </span>
+            ),
+        },
     ];
 
     // Filter options
@@ -24,7 +41,7 @@ export default function UsersClient({initialUsers = []}) {
             key: "role",
             label: "Role",
             type: "select",
-            options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Interns"]
+            options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Intern"]
         },
         {key: "startDate", label: "Registration Date", type: "date"},
     ];
@@ -42,8 +59,22 @@ export default function UsersClient({initialUsers = []}) {
             onClick: async (item) => {
                 if (item) {
                     console.log("Deleting user with id:", item.id);
+                    const res = await fetch(`/api/users/delete`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            uid: item.id,
+                        })
+                    })
+                    if (res.status !== 200) {
+                        console.log("Error deleting user with id:", res.status);
+                    } else {
+                        router.refresh();
+                    }
                 } else {
-                    console.log("Global delete action triggered");
+                    console.log("Error deleting user with id:", item.id);
                 }
             },
         },

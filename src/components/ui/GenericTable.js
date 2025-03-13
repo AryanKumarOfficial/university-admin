@@ -216,7 +216,7 @@ export default function GenericTable({
             {/* Data Table */}
             <div className="card">
                 <div className="table-responsive">
-                    <table className="table table-hover table-striped">
+                    <table className="table table-hover table-vcenter text-nowrap table-striped mb-0">
                         <thead>
                         <tr>
                             {tableColumns.map((col) => (
