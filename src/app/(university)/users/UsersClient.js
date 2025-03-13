@@ -7,21 +7,25 @@ import GenericTable from "@/components/ui/GenericTable";
 export default function UsersClient({initialUsers = []}) {
     // Column definitions for users
     const columns = [
+        {key: "id", header: "#"},
         {key: "name", header: "Name"},
-        {key: "role", header: "Role"},
         {key: "email", header: "Email"},
         {key: "phone", header: "Phone"},
-        {key: "status", header: "Status"},
+        {key: "password", header: "Password"},
+        {key: "role", header: "Role"},
+        {key: "createdBy", header: "created By"},
         {key: "createdAt", header: "Registered At"},
-        {key: "updatedAt", header: "Updated At"},
-        {key: "action", header: "Action"},
     ];
 
     // Filter options
     const filterOptions = [
         {key: "searchTerm", label: "Search", type: "text"},
-        {key: "role", label: "Role", type: "select", options: ["All", "Admin", "User", "Guest"]},
-        {key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"]},
+        {
+            key: "role",
+            label: "Role",
+            type: "select",
+            options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Interns"]
+        },
         {key: "startDate", label: "Registration Date", type: "date"},
     ];
 
@@ -60,8 +64,8 @@ export default function UsersClient({initialUsers = []}) {
     // Global action for users page
     const globalActions = {
         type: "link",
-        href: "/users",
-        label: "Users",
+        href: "/users/add",
+        label: "Add User",
     };
 
     return (

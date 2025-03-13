@@ -36,5 +36,5 @@ export async function middleware(request) {
 
 // Use route matcher to exclude asset routes
 export const config = {
-    matcher: ["/((?!_next/static|assets).*)"],
+    matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets).*)"],
 };

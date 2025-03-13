@@ -7,6 +7,7 @@ import GenericTable from "@/components/ui/GenericTable";
 export default function TeachersClient({initialTeachers = []}) {
     // Column definitions
     const columns = [
+        {key: "id", header: "#"},
         {key: "name", header: "Name"},
         {key: "status", header: "Status"},
         {key: "age", header: "Age"},

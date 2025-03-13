@@ -12,15 +12,8 @@ const sidebarLinks = {
         {path: "/clients", icon: "fa fa-user-tie", label: "Clients"},
         {path: "/teachers", icon: "fa fa-chalkboard-teacher", label: "Teachers"},
         {path: "/students", icon: "fa fa-user-graduate", label: "Students"},
-        {
-            path: "/trainees",
-            icon: "fa fa-user-plus",
-            label: "Trainees"
-        }, {
-            path: "/users",
-            icon: "fa fa-users",
-            label: "Users"
-        }
+        {path: "/trainees", icon: "fa fa-user-plus", label: "Trainees"},
+        {path: "/users", icon: "fa fa-users", label: "Users"}
     ],
     admin: [
         {path: "/payments", icon: "fa fa-credit-card", label: "Payments"},
