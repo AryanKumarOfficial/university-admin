@@ -9,6 +9,7 @@ export async function PUT(req) {
         const {uid, name, email, phone, password, role} = await req.json();
 
         if (!uid) {
+            console.log("uid required")
             return Response.json(
                 {error: 'Missing required parameter: uid'},
                 {status: 400}

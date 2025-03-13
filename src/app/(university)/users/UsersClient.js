@@ -87,6 +87,7 @@ export default function UsersClient({initialUsers = []}) {
             onClick: (item) => {
                 if (item) {
                     console.log("Editing user with id:", item.id);
+                    router.push(`/users/update/${item.id}`);
                 }
             },
         },

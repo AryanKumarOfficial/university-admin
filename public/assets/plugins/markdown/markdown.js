@@ -859,7 +859,7 @@ Markdown.dialects.Gruber.inline = {
         return [ m[0].length, [ "img", attrs ] ];
       }
 
-      // ![Alt text][id]
+      // ![Alt text][uid]
       m = text.match( /^!\[(.*?)\][ \t]*\[(.*?)\]/ );
 
       if ( m ) {
@@ -933,8 +933,8 @@ Markdown.dialects.Gruber.inline = {
         return [ consumed, link ];
       }
 
-      // [Alt text][id]
-      // [Alt text] [id]
+      // [Alt text][uid]
+      // [Alt text] [uid]
       m = text.match( /^\s*\[(.*?)\]/ );
 
       if ( m ) {
@@ -952,7 +952,7 @@ Markdown.dialects.Gruber.inline = {
         return [ consumed, link ];
       }
 
-      // [id]
+      // [uid]
       // Only if id is plain (no formatting.)
       if ( children.length == 1 && typeof children[0] == "string" ) {
 

@@ -1,5 +1,5 @@
 "use client"
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Alert from "react-bootstrap/Alert";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import {useForm} from "react-hook-form";
@@ -8,8 +8,9 @@ import {UserSchema} from "@/schema/User";
 import {useRouter} from "next/navigation";
 import BasicInformation from "@/components/sections/Users/BasicInformation";
 import AccountInformation from "@/components/sections/Users/AccountInformation";
+import AlertList from "@/components/sections/leads/AlertList";
 
-export default function AddUser() {
+export default function UpdateClient({user}) {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
     const [alerts, setAlerts] = useState([]);
@@ -53,31 +54,39 @@ export default function AddUser() {
         mode: "onChange"
     })
 
+
+    useEffect(() => {
+        if (user) {
+            reset(user)
+        }
+    }, []);
+
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
             const userData = {
                 ...data,
-                createdAt: new Date(),
+                uid: user.uid,
             }
-            const res = await fetch("/api/users/create", {
-                method: "POST",
+            console.log("user data ", data)
+            const res = await fetch("/api/users/modify", {
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(userData),
             })
-            if (res.status !== 201) {
+            if (res.status !== 200) {
                 console.log("Error creating user.")
-                addAlert("error", "Error creating user.")
+                addAlert("error", "Error updating user.")
                 return 0;
             }
-            addAlert("success", "User Created Successfully");
+            addAlert("success", "User Updated Successfully");
             router.push("/users");
 
         } catch (e) {
             console.log("Error creating user.", e)
-            addAlert("error", "Error creating user.")
+            addAlert("error", "Error updating user.")
 
         } finally {
             setIsSaving(false);
@@ -86,24 +95,12 @@ export default function AddUser() {
 
     return <div className="page">
         {/* Alerts */}
-        {alerts.map((alert) => (
-            <Alert
-                key={alert.id}
-                variant={alert.variant}
-                onClose={() => removeAlert(alert.id)}
-                dismissible
-                className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-            >
-                {getIcon(alert.variant)}
-                {alert.message}
-            </Alert>
-        ))}
-
+        <AlertList alerts={alerts} removeAlert={removeAlert}/>
         {/* If saving is in progress, show a top banner or spinner */}
         {isSaving && (
             <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
                 <i className="fa fa-spinner fa-spin me-2"/>
-                Saving User...
+                Updating User...
             </Alert>
         )}
 
@@ -112,7 +109,7 @@ export default function AddUser() {
             breadcrumbs={[
                 {label: "Home", href: "/"},
                 {label: "Users", href: "/users"},
-                {label: "Add a User", href: "/users/add",},
+                {label: "Update User", href: "/users/update",},
             ]}
         />
 
@@ -143,7 +140,7 @@ export default function AddUser() {
                                 </button>
                                 <button type="submit" className="btn btn-success" disabled={isSaving}>
                                     {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                    Add User
+                                    Update User
                                 </button>
                             </div>
                         </form>
