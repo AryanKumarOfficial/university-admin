@@ -1,30 +1,33 @@
 "use client";
 
 import React, {useMemo, useState} from "react";
-import ConfirmModal from "@/components/sections/leads/ConfirmModal"; // Generic confirmation modal (client)
-import AlertList from "@/components/sections/leads/AlertList"; // Generic alert list (client)
-import Pagination from "@/components/sections/leads/Pagination"; // Generic pagination component (client)
+import ConfirmModal from "@/components/sections/leads/ConfirmModal";
+import AlertList from "@/components/sections/leads/AlertList";
+import Pagination from "@/components/sections/leads/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
+import useDebounce from "@/hooks/useDebounce";
 
 export default function GenericTable({
                                          tableData = [],
                                          tableColumns = [],
-                                         filterOptions = [], // e.g. [{ key: "status", label: "Status", options: ["All", "Active", "Inactive"] }]
-                                         rowActions = [], // e.g. [{ key: "delete", label: "Delete", icon: "fa fa-trash", buttonClass: "btn-outline-danger", requireConfirm: true, title: "Confirm Delete", confirmMessage: "Are you sure you want to delete this item?", onClick: async (item) => { ... } }]
+                                         filterOptions = [], // e.g. [{ key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"] }]
+                                         rowActions = [],
                                          initialFilterValues = {},
                                          pageSize = 5,
                                          globalActions,
-                                         title = "Data"
+                                         title = "Data",
                                      }) {
-    const pathname = usePathname()
+    const pathname = usePathname();
     const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
 
     // Notification state
     const [notifications, setNotifications] = useState([]);
-    // Active filters state
+    // Active filters state – may contain text, select, date, etc.
     const [activeFilters, setActiveFilters] = useState(initialFilterValues);
+    // Debounce text filters to avoid filtering on every keystroke.
+    const debouncedFilters = useDebounce(activeFilters, 300);
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     // Confirmation modal state
@@ -32,27 +35,49 @@ export default function GenericTable({
     const [pendingAction, setPendingAction] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
 
-    // Push a notification
+    // Notification handlers
     const addNotification = (variant, message) => {
         setNotifications((prev) => [...prev, {id: Date.now(), variant, message}]);
     };
 
-    // Remove a notification
     const removeNotification = (id) => {
         setNotifications((prev) => prev.filter((note) => note.id !== id));
     };
 
-    // Apply filtering based on filterOptions and activeFilters
-    const filteredItems = useMemo(() => {
-        let filtered = [...tableData];
-        filterOptions.forEach((filter) => {
-            const filterValue = activeFilters[filter.key];
-            if (filterValue && filterValue !== "All") {
-                filtered = filtered.filter((item) => item[filter.key] === filterValue);
+    // Filtering function: Applies different logic based on filter type
+    const filterData = (data, filters) => {
+        return filterOptions.reduce((filtered, filter) => {
+            const filterValue = filters[filter.key];
+            if (!filterValue || filterValue === "All") return filtered;
+
+            // Apply filtering logic based on filter type
+            switch (filter.type) {
+                case "text":
+                    return filtered.filter((item) =>
+                        String(item[filter.key] || "")
+                            .toLowerCase()
+                            .includes(filterValue.toLowerCase())
+                    );
+                case "date":
+                    return filtered.filter((item) => {
+                        // Convert the stored date to a UTC date string (YYYY-MM-DD)
+                        const itemDate = new Date(item[filter.key]).toISOString().slice(0, 10);
+                        // Debug logs: Uncomment these lines to check the values during development
+                        // console.log("Filter value:", filterValue);
+                        // console.log("Item date:", itemDate);
+                        return itemDate === filterValue;
+                    });
+                case "select":
+                default:
+                    return filtered.filter((item) => item[filter.key] === filterValue);
             }
-        });
-        return filtered;
-    }, [tableData, activeFilters, filterOptions]);
+        }, data);
+    };
+
+    // Apply filtering – for text filters we use debounced values, while other filters update immediately.
+    const filteredItems = useMemo(() => {
+        return filterData([...tableData], debouncedFilters);
+    }, [tableData, debouncedFilters, filterOptions]);
 
     // Calculate pagination
     const totalPages = Math.ceil(filteredItems.length / pageSize);
@@ -61,19 +86,19 @@ export default function GenericTable({
         return filteredItems.slice(start, start + pageSize);
     }, [filteredItems, currentPage, pageSize]);
 
-    // Update a specific filter value
+    // Update filter values
     const updateFilter = (key, value) => {
         setActiveFilters((prev) => ({...prev, [key]: value}));
         setCurrentPage(1);
     };
 
-    // Reset all filters to initial values
+    // Reset all filters to their initial values
     const resetFilters = () => {
         setActiveFilters(initialFilterValues);
         setCurrentPage(1);
     };
 
-    // Handle row action click; show confirmation modal if required
+    // Handle row actions, showing confirmation if necessary
     const handleRowAction = (action, item) => {
         if (action.requireConfirm) {
             setSelectedItem(item);
@@ -84,10 +109,10 @@ export default function GenericTable({
         }
     };
 
-    // Handler for confirmation modal
+    // Confirmation modal handler
     const confirmHandler = async () => {
         setShowConfirmation(false);
-        if (pendingAction && pendingAction.onClick && selectedItem) {
+        if (pendingAction?.onClick && selectedItem) {
             try {
                 await pendingAction.onClick(selectedItem);
                 addNotification("success", `${pendingAction.label} action completed.`);
@@ -149,7 +174,6 @@ export default function GenericTable({
                                     />
                                 );
 
-                            // Allow for custom rendering if a custom filter control is needed
                             case "custom":
                                 return (
                                     <div key={filter.key}>
@@ -163,7 +187,6 @@ export default function GenericTable({
                                 );
 
                             default:
-                                // fallback to text input if type not specified
                                 return (
                                     <input
                                         key={filter.key}
@@ -176,16 +199,16 @@ export default function GenericTable({
                                 );
                         }
                     })}
-
                     <button className="btn btn-danger w-100" onClick={resetFilters}>
                         Clear Filters
                     </button>
                 </div>
+
                 {/* Global actions dropdown (optional) */}
                 {globalActions && globalActions.type === "link" ? (
-                    <Link
-                        className={"btn btn-primary px-4"}
-                        href={globalActions.href}>{globalActions.label}</Link>
+                    <Link className="btn btn-primary px-4" href={globalActions.href}>
+                        {globalActions.label}
+                    </Link>
                 ) : (
                     <div className="dropdown">
                         <button
@@ -268,7 +291,6 @@ export default function GenericTable({
                                     >
                                         Add one now!
                                     </Link>
-
                                 </td>
                             </tr>
                         )}

@@ -75,3 +75,20 @@ export async function POST(req) {
         });
     }
 }
+
+export async function GET() {
+    try {
+        const users = [];
+        const snapshot = await db.collection('users').get();
+        snapshot.forEach((doc) => {
+            users.push({
+                id: doc.id,
+                ...doc.data(),
+            });
+        });
+        return Response.json({users}, {status: 200});
+    } catch (error) {
+        console.error('Error getting users:', error);
+        return Response.json({error: error.message}, {status: 500});
+    }
+}

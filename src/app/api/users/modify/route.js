@@ -6,7 +6,7 @@ export async function PUT(req) {
     try {
         // Expecting the following JSON payload:
         // { uid, name?, email?, phone?, password?, role? }
-        const {uid, name, email, phone, password, role} = await req.json();
+        const {uid, name, email, phone, password, role, createdBy} = await req.json();
 
         if (!uid) {
             console.log("uid required")
@@ -49,6 +49,7 @@ export async function PUT(req) {
             if (email) updateData.email = email;
             if (phone) updateData.phone = phone;
             if (role) updateData.role = role;
+            if (createdBy) updateData.createdBy = createdBy;
 
             const updatePromises = [];
             querySnapshot.forEach((doc) => {

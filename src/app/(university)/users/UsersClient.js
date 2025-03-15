@@ -36,15 +36,16 @@ export default function UsersClient({initialUsers = []}) {
 
     // Filter options
     const filterOptions = [
-        {key: "searchTerm", label: "Search", type: "text"},
+        {key: "name", label: "Name", type: "text"},
         {
             key: "role",
             label: "Role",
             type: "select",
             options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Intern"]
         },
-        {key: "startDate", label: "Registration Date", type: "date"},
+        {key: "createdAt", label: "Created At", type: "date"},
     ];
+
 
     // Row actions
     const rowActions = [
