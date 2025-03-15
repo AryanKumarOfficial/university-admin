@@ -6,7 +6,7 @@ import {usePathname, useRouter} from "next/navigation";
 import {useAuthStore} from "@/stores/auth-store";
 
 const sidebarLinks = {
-    university: [
+    School: [
         {path: "/", icon: "fa fa-tachometer-alt", label: "Dashboard"},
         {path: "/leads", icon: "fa fa-handshake", label: "Leads"},
         {path: "/clients", icon: "fa fa-user-tie", label: "Clients"},
@@ -15,8 +15,8 @@ const sidebarLinks = {
         {path: "/trainees", icon: "fa fa-user-plus", label: "Trainees"},
         {path: "/users", icon: "fa fa-users", label: "Users"}
     ],
-    admin: [
-        {path: "/payments", icon: "fa fa-credit-card", label: "Payments"},
+    Collage: [
+        {path: "/collage", icon: "fa fa-tachometer", label: "Dashboard"},
     ],
 };
 
@@ -170,7 +170,7 @@ function UserDropdown({user, dropdownItems}) {
 }
 
 const Navbar = () => {
-    const [activeTab, setActiveTab] = useState("university");
+    const [activeTab, setActiveTab] = useState("School");
     const {logOut, user} = useAuthStore();
     const pathname = usePathname();
     const router = useRouter();

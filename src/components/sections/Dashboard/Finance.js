@@ -1,20 +1,11 @@
-// Finance.jsx
 "use client";
-import React from 'react';
+import React from "react";
 
-export default function Finance() {
-    // 1. Define your card data in one place:
-    const financeData = [
-        {label: "Fees", color: "indigo", percentage: 35},
-        {label: "Donation", color: "yellow", percentage: 61},
-        {label: "Income", color: "green", percentage: 87},
-        {label: "Expense", color: "pink", percentage: 42},
-        {label: "Profit", color: "blue", percentage: 74},
-        {label: "Loss", color: "red", percentage: 18},
-        {label: "Net", color: "purple", percentage: 92},
-        {label: "Gross", color: "orange", percentage: 55},
-    ];
-
+/**
+ * A reusable component that displays multiple finance-related cards in a row.
+ * @param {Array} financeData - Array of objects containing {label, color, percentage}.
+ */
+export default function Finance({financeData = []}) {
     return (
         <div className="row">
             {financeData.map(({label, color, percentage}) => (
@@ -29,7 +20,10 @@ export default function Finance() {
     );
 }
 
-// 2. Create a small reusable card component:
+/**
+ * A small, reusable card component that displays a label, a progress bar,
+ * and a percentage comparison.
+ */
 function FinanceCard({label, color, percentage}) {
     return (
         <div className="col-xl-3 col-md-6 mb-2">

@@ -1,61 +1,72 @@
 "use client";
-import React from 'react';
+import React from "react";
 
-export default function NewStudents() {
-    const studentsData = [
-        {
-            no: 1,
-            name: "Jens Brincker",
-            professor: "Kenny Josh",
-            dateOfAdmit: "27/05/2016",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Mechanical",
-        },
-        {
-            no: 2,
-            name: "Mark Hay",
-            professor: "Mark",
-            dateOfAdmit: "26/05/2023",
-            feesStatus: "unpaid",
-            feesClass: "warning",
-            branch: "Science",
-        },
-        {
-            no: 3,
-            name: "Anthony Davie",
-            professor: "Cinnabar",
-            dateOfAdmit: "21/05/2023",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Commerce",
-        },
-        {
-            no: 4,
-            name: "David Perry",
-            professor: "Felix",
-            dateOfAdmit: "20/04/2024",
-            feesStatus: "unpaid",
-            feesClass: "danger",
-            branch: "Mechanical",
-        },
-        {
-            no: 5,
-            name: "Anthony Davie",
-            professor: "Beryl",
-            dateOfAdmit: "24/05/2017",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "M.B.A.",
-        },
-    ];
+// 1. Provide a default students array
+const defaultStudentsData = [
+    {
+        no: 1,
+        name: "Jens Brincker",
+        professor: "Kenny Josh",
+        dateOfAdmit: "27/05/2016",
+        feesStatus: "paid",
+        feesClass: "success",
+        branch: "Mechanical",
+    },
+    {
+        no: 2,
+        name: "Mark Hay",
+        professor: "Mark",
+        dateOfAdmit: "26/05/2023",
+        feesStatus: "unpaid",
+        feesClass: "warning",
+        branch: "Science",
+    },
+    {
+        no: 3,
+        name: "Anthony Davie",
+        professor: "Cinnabar",
+        dateOfAdmit: "21/05/2023",
+        feesStatus: "paid",
+        feesClass: "success",
+        branch: "Commerce",
+    },
+    {
+        no: 4,
+        name: "David Perry",
+        professor: "Felix",
+        dateOfAdmit: "20/04/2024",
+        feesStatus: "unpaid",
+        feesClass: "danger",
+        branch: "Mechanical",
+    },
+    {
+        no: 5,
+        name: "Anthony Davie",
+        professor: "Beryl",
+        dateOfAdmit: "24/05/2017",
+        feesStatus: "paid",
+        feesClass: "success",
+        branch: "M.B.A.",
+    },
+];
 
+/**
+ * Reusable component to display a list of new students in a table.
+ *
+ * @param {string} title       - The card's title.
+ * @param {Array}  students    - Array of student objects, each containing:
+ *                                { no, name, professor, dateOfAdmit, feesStatus, feesClass, branch }
+ */
+export default function NewStudents({
+                                        title = "New Student List",
+                                        students = defaultStudentsData,
+                                    }) {
     return (
         <div className="row">
             <div className="col-md-12">
                 <div className="card">
                     <div className="card-header">
-                        <h3 className="card-title">New Student List</h3>
+                        <h3 className="card-title">{title}</h3>
                         <div className="card-options">
                             <a href="#" className="card-options-collapse" data-toggle="card-collapse">
                                 <i className="fe fe-chevron-up"></i>
@@ -84,7 +95,7 @@ export default function NewStudents() {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {studentsData.map((student) => (
+                                {students.map((student) => (
                                     <tr key={student.no}>
                                         <td>{student.no}</td>
                                         <td>{student.name}</td>
