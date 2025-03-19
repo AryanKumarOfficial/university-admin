@@ -10,13 +10,15 @@ const sidebarLinks = {
         {path: "/", icon: "fa fa-tachometer-alt", label: "Dashboard"},
         {path: "/leads", icon: "fa fa-handshake", label: "Leads"},
         {path: "/clients", icon: "fa fa-user-tie", label: "Clients"},
-        {path: "/teachers", icon: "fa fa-chalkboard-teacher", label: "Teachers"},
         {path: "/students", icon: "fa fa-user-graduate", label: "Students"},
-        {path: "/trainees", icon: "fa fa-user-plus", label: "Trainees"},
-        {path: "/users", icon: "fa fa-users", label: "Users"}
+        {path: "/teachers", icon: "fa fa-chalkboard-teacher", label: "Teachers"},
+        // {path: "/users", icon: "fa fa-users", label: "Users"}
     ],
-    Collage: [
+    Training: [
         {path: "/collage", icon: "fa fa-tachometer", label: "Dashboard"},
+        {path: "/collage/leads-tnp", icon: "fa fa-handshake", label: "Leads (TNP)"},
+        {path: "/collage/leads-trainee", icon: "fa fa-handshake", label: "Leads (Trainees)"},
+        {path: "/collage/trainee", icon: "fa fa-user-plus", label: "Trainees"},
     ],
 };
 
