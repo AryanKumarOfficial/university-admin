@@ -5,7 +5,7 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
 
 export default function TraineesClient({ initialTrainees = [] }) {
-    // Column definitions for trainees (update as needed)
+    // Column definitions for trainee (update as needed)
     const columns = [
         { key: "id", header: "#" },
         { key: "name", header: "Name" },
@@ -57,17 +57,17 @@ export default function TraineesClient({ initialTrainees = [] }) {
         },
     ];
 
-    // Global actions for trainees page
+    // Global actions for trainee page
     const globalActions = {
         type: "link",
-        href: "/trainees",
+        href: "/trainee",
         label: "Trainees",
     };
 
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb breadcrumbs={[{ label: "Trainees", href: "/trainees" }]} />
+                <Breadcrumb breadcrumbs={[{ label: "Trainees", href: "/trainee" }]} />
                 <GenericTable
                     title={"Trainees"}
                     tableData={initialTrainees}

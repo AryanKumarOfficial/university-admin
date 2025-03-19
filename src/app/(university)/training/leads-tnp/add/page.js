@@ -119,7 +119,7 @@ export default function AddTNPLead() {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
                 createdAt: new Date(Date.now()).toISOString(), // add timestamp
-                leadType: "collage",
+                leadType: "training",
             };
             delete leadData.newComments;
 
@@ -166,8 +166,8 @@ export default function AddTNPLead() {
                 <Breadcrumb
                     breadcrumbs={[
                         {label: "Home", href: "/"},
-                        {label: "Leads (TNP)", href: "/collage/leads-tnp"},
-                        {label: "Add a Lead", href: "/collage/leads-tnp/add",},
+                        {label: "Leads (TNP)", href: "/training/leads-tnp"},
+                        {label: "Add a Lead", href: "/training/leads-tnp/add",},
                     ]}
                 />
 

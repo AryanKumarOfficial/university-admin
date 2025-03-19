@@ -97,14 +97,14 @@ export default function TNPLeadsClient({initialUsers = []}) {
     // Global action for users page
     const globalActions = {
         type: "link",
-        href: "/collage/leads-tnp/add",
+        href: "/training/leads-tnp/add",
         label: "Add a Lead",
     };
 
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb breadcrumbs={[{label: "Leads (TNP)", href: "/collage/leads-tnp"}]}/>
+                <Breadcrumb breadcrumbs={[{label: "Leads (TNP)", href: "/training/leads-tnp"}]}/>
                 <GenericTable
                     title={"Leads-tnp"}
                     tableData={initialUsers}

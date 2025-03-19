@@ -119,7 +119,7 @@ export default function AddTraineeLead() {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
                 createdAt: new Date(Date.now()).toISOString(), // add timestamp
-                leadType: "collage",
+                leadType: "training",
             };
             delete leadData.newComments;
 
@@ -166,8 +166,8 @@ export default function AddTraineeLead() {
                 <Breadcrumb
                     breadcrumbs={[
                         {label: "Home", href: "/"},
-                        {label: "Leads (Trainee)", href: "/collage/leads-trainee"},
-                        {label: "Add a Lead", href: "/collage/leads-trainee/add",},
+                        {label: "Leads (Trainee)", href: "/training/leads-trainee"},
+                        {label: "Add a Lead", href: "/training/leads-trainee/add",},
                     ]}
                 />
 

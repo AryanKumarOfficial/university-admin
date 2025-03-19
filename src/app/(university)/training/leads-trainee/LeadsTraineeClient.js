@@ -97,14 +97,14 @@ export default function LeadsTraineeClient({initialUsers = []}) {
     // Global action for users page
     const globalActions = {
         type: "link",
-        href: "/collage/leads-trainee/add",
+        href: "/training/leads-trainee/add",
         label: "Add a Lead",
     };
 
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb breadcrumbs={[{label: "Leads (Trainee)", href: "/collage/leads-trainee"}]}/>
+                <Breadcrumb breadcrumbs={[{label: "Leads (Trainee)", href: "/training/leads-trainee"}]}/>
                 <GenericTable
                     title={"Leads-trainee"}
                     tableData={initialUsers}

@@ -1,6 +1,6 @@
 import React from "react";
 import {fetchAllTrainees} from "./fetchTrainees";
-import TraineesClient from "@/app/(university)/trainees/TraineesClient";
+import TraineesClient from "./TraineesClient";
 
 export const revalidate = 0;
 export const dynamic = "force-dynamic"

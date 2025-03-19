@@ -15,10 +15,10 @@ const sidebarLinks = {
         // {path: "/users", icon: "fa fa-users", label: "Users"}
     ],
     Training: [
-        {path: "/collage", icon: "fa fa-tachometer", label: "Dashboard"},
-        {path: "/collage/leads-tnp", icon: "fa fa-handshake", label: "Leads (TNP)"},
-        {path: "/collage/leads-trainee", icon: "fa fa-handshake", label: "Leads (Trainees)"},
-        {path: "/collage/trainee", icon: "fa fa-user-plus", label: "Trainees"},
+        {path: "/training", icon: "fa fa-tachometer", label: "Dashboard"},
+        {path: "/training/leads-tnp", icon: "fa fa-handshake", label: "Leads (TNP)"},
+        {path: "/training/leads-trainee", icon: "fa fa-handshake", label: "Leads (Trainees)"},
+        {path: "/training/trainee", icon: "fa fa-user-plus", label: "Trainees"},
     ],
 };
 
@@ -81,7 +81,7 @@ function SidebarNav({activeTab, onTabChange, currentPath}) {
                             className={`nav-link ${activeTab === tab ? "active" : ""}`}
                             onClick={() => onTabChange(tab)}
                         >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab}
                         </button>
                     </li>
                 ))}
@@ -91,31 +91,17 @@ function SidebarNav({activeTab, onTabChange, currentPath}) {
                     <div
                         key={tab}
                         className={`tab-pane fade ${activeTab === tab ? "show active" : ""}`}
-                        id={`menu-${tab}`}
-                        role="tabpanel"
                     >
                         <nav className="sidebar-nav">
                             <ul className="metismenu">
                                 {links.map(({path, icon, label}) => (
-                                    <li
-                                        key={label}
-                                        className={
-                                            path === "/"
-                                                ? currentPath === "/"
-                                                    ? "active"
-                                                    : ""
-                                                : currentPath.startsWith(path)
-                                                    ? "active"
-                                                    : ""
-                                        }
-                                    >
+                                    <li key={label} className={currentPath === path ? "active" : ""}>
                                         <Link href={path} style={{textDecoration: "none"}}>
                                             <i className={icon}></i>
                                             <span>{label}</span>
                                         </Link>
                                     </li>
                                 ))}
-
                             </ul>
                         </nav>
                     </div>

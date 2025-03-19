@@ -119,7 +119,7 @@ export default function AddCollageLeadForm() {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
                 createdAt: new Date(Date.now()).toISOString(), // add timestamp
-                leadType: "collage",
+                leadType: "training",
             };
             delete leadData.newComments;
 

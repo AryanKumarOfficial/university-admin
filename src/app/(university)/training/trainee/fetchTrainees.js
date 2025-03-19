@@ -8,7 +8,7 @@ import {db} from "@/lib/firebase/client";
  * In a real app, you might do server-side filtering/pagination.
  */
 export async function fetchAllTrainees() {
-    const snapshot = await getDocs(collection(db, "trainees"));
+    const snapshot = await getDocs(collection(db, "trainee"));
     const trainees = [];
     snapshot.forEach((docSnap) => {
         trainees.push({id: docSnap.id, ...docSnap.data()});
