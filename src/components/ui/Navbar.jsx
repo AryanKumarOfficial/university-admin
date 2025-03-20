@@ -1,6 +1,6 @@
 "use client";
 
-import {useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import Link from "next/link";
 import {usePathname, useRouter} from "next/navigation";
 import {useAuthStore} from "@/stores/auth-store";
@@ -12,7 +12,7 @@ const sidebarLinks = {
         {path: "/clients", icon: "fa fa-user-tie", label: "Clients"},
         {path: "/students", icon: "fa fa-user-graduate", label: "Students"},
         {path: "/teachers", icon: "fa fa-chalkboard-teacher", label: "Teachers"},
-        // {path: "/users", icon: "fa fa-users", label: "Users"}
+        {path: "/users", icon: "fa fa-users", label: "Users"}
     ],
     Training: [
         {path: "/training", icon: "fa fa-tachometer", label: "Dashboard"},
@@ -71,11 +71,11 @@ function TopHeader({user}) {
     );
 }
 
-function SidebarNav({activeTab, onTabChange, currentPath}) {
+function SidebarNav({activeTab, onTabChange, currentPath, linksByTab}) {
     return (
         <>
             <ul className="nav nav-tabs">
-                {Object.keys(sidebarLinks).map((tab) => (
+                {Object.keys(linksByTab).map((tab) => (
                     <li key={tab} className="nav-item">
                         <button
                             className={`nav-link ${activeTab === tab ? "active" : ""}`}
@@ -87,7 +87,7 @@ function SidebarNav({activeTab, onTabChange, currentPath}) {
                 ))}
             </ul>
             <div className="tab-content mt-3">
-                {Object.entries(sidebarLinks).map(([tab, links]) => (
+                {Object.entries(linksByTab).map(([tab, links]) => (
                     <div
                         key={tab}
                         className={`tab-pane fade ${activeTab === tab ? "show active" : ""}`}
@@ -110,6 +110,34 @@ function SidebarNav({activeTab, onTabChange, currentPath}) {
         </>
     );
 }
+
+function getSidebarLinksForRole(role) {
+    if (!role) return {};
+
+    if (role === "Admin") {
+        // Admin sees both tabs with all links.
+        return {...sidebarLinks};
+    } else if (role === "Growth Manager") {
+        return {
+            School: sidebarLinks.School.filter(link =>
+                ["Dashboard", "Leads", "Clients"].includes(link.label)
+            ),
+            Training: [...sidebarLinks.Training]
+        };
+    } else {
+        // For any other role, only show the Training tab.
+        let trainingLinks = [...sidebarLinks.Training];
+        if (role === "Course Manager" || role === "Professional") {
+            trainingLinks = trainingLinks.filter(link =>
+                ["Dashboard", "Trainees"].includes(link.label)
+            );
+        } else if (role === "Trainee" || role === "Intern") {
+            trainingLinks = trainingLinks.filter(link => link.label === "Dashboard");
+        }
+        return {Training: trainingLinks};
+    }
+}
+
 
 function UserDropdown({user, dropdownItems}) {
     return (
@@ -159,7 +187,7 @@ function UserDropdown({user, dropdownItems}) {
 
 const Navbar = () => {
     const [activeTab, setActiveTab] = useState("School");
-    const {logOut, user} = useAuthStore();
+    const {logOut, user, role} = useAuthStore();
     const pathname = usePathname();
     const router = useRouter();
     const handleLogout = async () => {
@@ -176,6 +204,22 @@ const Navbar = () => {
         {label: "Logout", type: "button", action: handleLogout},
     ];
 
+    const filteredLinks = useMemo(() => getSidebarLinksForRole(role), [role]);
+
+    // if (!role || Object.keys(filteredLinks).length === 0) {
+    //     return null;
+    // }
+
+    // If the current active tab is not available in the filtered links,
+    // update it to "Training" (or the first available key).
+    useEffect(() => {
+        const tabs = Object.keys(filteredLinks);
+        if (tabs.length && !tabs.includes(activeTab)) {
+            // Here we prefer "Training" if available, otherwise the first available tab.
+            setActiveTab(tabs.includes("Training") ? "Training" : tabs[0]);
+        }
+    }, [filteredLinks, activeTab]);
+
     return (
         <div id="main_content">
             <TopHeader user={user}/>
@@ -186,7 +230,9 @@ const Navbar = () => {
                            title="Grid & List Toggle"></i>
                     </Link>
                 </h5>
-                <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} currentPath={pathname}/>
+                <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} currentPath={pathname}
+                            linksByTab={filteredLinks}
+                />
             </div>
             <div className="page">
                 <div className="section-body" id="page_top">

@@ -60,8 +60,8 @@ export default function TraineesClient({ initialTrainees = [] }) {
     // Global actions for trainee page
     const globalActions = {
         type: "link",
-        href: "/trainee",
-        label: "Trainees",
+        href: "/training/trainee/add",
+        label: "Add a Trainee",
     };
 
     return (
