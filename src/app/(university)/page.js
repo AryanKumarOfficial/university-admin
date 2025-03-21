@@ -13,18 +13,18 @@ export default function Page() {
 
     const cards = [
         {
-            title: "Total Students",
+            title: "Total Leads",
             value: 1200,
-            unit: "students",
+            // unit: "students",
             percentChange: 5,
             trend: "up", // "up" or "down"
             progress: "70%",
             subtitle: "Overall enrollment",
         },
         {
-            title: "New Admissions",
+            title: "Total Clients",
             value: 150,
-            unit: "students",
+            // unit: "students",
             percentChange: 8,
             trend: "up",
             progress: "40%",
@@ -133,12 +133,12 @@ export default function Page() {
             data: [5000, 5200, 5100, 5300, 5400, 5500, 5600],
             yAxisIndex: 1, // Use the second Y-axis for fees
         },
-        {
-            name: "Attendance",
-            type: "line",
-            data: [95, 96, 94, 97, 98, 95, 96],
-            yAxisIndex: 0, // Use the first Y-axis for attendance
-        },
+        // {
+        //     name: "Attendance",
+        //     type: "line",
+        //     data: [95, 96, 94, 97, 98, 95, 96],
+        //     yAxisIndex: 0, // Use the first Y-axis for attendance
+        // },
     ];
 
     // performance
@@ -382,7 +382,7 @@ export default function Page() {
                         <div className="tab-pane fade show active" id="admin-Dashboard" role={"tabpanel"}>
                             <div className="row clearfix">
                                 <UniversityReport
-                                    title={"School"}
+                                    title={"Sales"}
                                     selectedTimeRange={timeRange}
                                     onTimeRangeChange={handleTimeRangeChange}
                                     chartOptions={schoolChartOptions}

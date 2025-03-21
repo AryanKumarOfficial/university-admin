@@ -12,18 +12,18 @@ import NewStudents from "@/components/sections/Dashboard/NewStudents";
 export default function CollageDashboardPage() {
     const collegeDashboardCards = [
         {
-            title: "Total Students",
+            title: "Total Leads (TNP)",
             value: 3500,
-            unit: "students",
+            // unit: "students",
             percentChange: 3,
             trend: "up",
             progress: "75%",
             subtitle: "Overall enrollment",
         },
         {
-            title: "Faculty Members",
+            title: "Total Leads (Trainee)",
             value: 200,
-            unit: "members",
+            // unit: "members",
             percentChange: 1,
             trend: "up",
             progress: "90%",
@@ -90,25 +90,25 @@ export default function CollageDashboardPage() {
             ],
         },
         // Two Y-axes: one for Enrollments & Donations, one for Funding
-        yaxis: [
-            {
-                labels: {
-                    formatter: (val) => val.toFixed(0),
-                },
-                title: {
-                    text: "Enrollments & Donations",
-                },
-            },
-            {
-                opposite: true,
-                labels: {
-                    formatter: (val) => val.toFixed(0),
-                },
-                title: {
-                    text: "Research Funding",
-                },
-            },
-        ],
+        // yaxis: [
+        //     {
+        //         labels: {
+        //             formatter: (val) => val.toFixed(0),
+        //         },
+        //         title: {
+        //             text: "Enrollments & Donations",
+        //         },
+        //     },
+        //     {
+        //         opposite: true,
+        //         labels: {
+        //             formatter: (val) => val.toFixed(0),
+        //         },
+        //         title: {
+        //             text: "Research Funding",
+        //         },
+        //     },
+        // ],
         legend: {
             position: "bottom",
         },
@@ -119,8 +119,8 @@ export default function CollageDashboardPage() {
             size: [5, 0, 5], // Show markers for the two line series; none for the column
         },
         tooltip: {
-            shared: true,    // Display all series info together on hover
-            intersect: false,
+            shared: false,    // Display all series info together on hover
+            intersect: true,
         },
     };
 
@@ -391,7 +391,7 @@ export default function CollageDashboardPage() {
                         <div className="tab-pane fade show active" id="admin-Dashboard" role={"tabpanel"}>
                             <div className="row clearfix">
                                 <UniversityReport
-                                    title={"Collage"}
+                                    title={"Sales"}
                                     selectedTimeRange={timeRange}
                                     onTimeRangeChange={handleTimeRangeChange}
                                     chartOptions={collegeChartOptions}
@@ -431,8 +431,8 @@ export default function CollageDashboardPage() {
                                 />
                             </div>
                             <NewStudents
-                            title={"New Collage Admissions"}
-                            students={collegeStudents}
+                                title={"New Collage Admissions"}
+                                students={collegeStudents}
                             />
                         </div>
                     </div>

@@ -18,7 +18,6 @@ export default function Pagination({
 
     return (
         <div className="btn-group">
-            pages
             {pages.map((p) => (
                 <button
                     key={p}

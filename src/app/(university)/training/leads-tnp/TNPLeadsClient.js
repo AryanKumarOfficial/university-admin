@@ -11,17 +11,46 @@ export default function TNPLeadsClient({initialUsers = []}) {
     // Column definitions for users
     const columns = [
         {key: "id", header: "#"},
-        {key: "name", header: "Name"},
-        {key: "contact-person", header: "Contact Person"},
-        {key: "contact-number", header: "Contact Number"},
+        {key: "collegeName", header: "collage Name"},
+        {key: "contactName", header: "Contact Person"},
+        {key: "contactNumber", header: "Contact Number"},
         {key: "location", header: "Location"},
         {
-            key: "students", header: "Students",
+            key: "response", header: "Response",
 
         },
-        {key: "createdBy", header: "created By"},
         {
-            key: "createdAt", header: "Registered At",
+            key: "comments", header: "Comment",
+            render: (value) => (
+                <span className="text-muted">
+
+                    {value.length > 0 ? value[0].text : `No Comments`}
+                </span>
+            ),
+        },
+        {
+            key: "date",
+            header: "Date",
+            render: (value) => (
+                <span className="text-muted">
+                    {value ? new Date(value).toLocaleDateString("en-IN", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                    }) : "Not Provided"}
+                </span>
+            )
+        },
+        {
+            key: "time", header: "Time",
+            render: (value) => (
+                <span className="text-muted">
+                    {value ? formatTime(value) : "Not Provided"}
+                </span>
+            ),
+        },
+        {
+            key: "createdAt", header: "Created At",
             render: (value) => (
                 <span className="text-muted">
                     {new Date(value).toLocaleDateString("en-IN", {
@@ -32,17 +61,12 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 </span>
             ),
         },
+
     ];
 
     // Filter options
     const filterOptions = [
-        {key: "name", label: "Name", type: "text"},
-        // {
-        //     key: "role",
-        //     label: "Role",
-        //     type: "select",
-        //     options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Intern"]
-        // },
+        {key: "collegeName", label: "Name", type: "text"},
         {key: "createdAt", label: "Created At", type: "date"},
     ];
 
@@ -60,13 +84,13 @@ export default function TNPLeadsClient({initialUsers = []}) {
             onClick: async (item) => {
                 if (item) {
                     console.log("Deleting lead with id:", item.id);
-                    const res = await fetch(`/api/users/delete`, {
+                    const res = await fetch(`/api/training/tnp-leads`, {
                         method: "DELETE",
                         headers: {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            uid: item.id,
+                            id: item.id,
                         })
                     })
                     if (res.status !== 200) {

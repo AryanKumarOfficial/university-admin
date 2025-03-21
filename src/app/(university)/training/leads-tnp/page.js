@@ -13,6 +13,6 @@ export default async function LeadsTNPPage() {
     const leads = await FetchAllTNPLeads();
 
     return (
-        <TNPLeadsClient initialClients={leads}/>
+        <TNPLeadsClient initialUsers={leads}/>
     );
 }
