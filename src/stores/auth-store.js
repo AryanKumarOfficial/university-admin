@@ -2,6 +2,8 @@
 import {create} from 'zustand';
 import {devtools, persist, subscribeWithSelector} from 'zustand/middleware';
 import {immer} from 'zustand/middleware/immer';
+import {SignJWT} from 'jose';
+
 import {
     createUserWithEmailAndPassword,
     onAuthStateChanged,
@@ -12,6 +14,7 @@ import {
 import {auth, db} from '@/lib/firebase/client'; // make sure db is exported from your firebase client config
 import {collection, getDocs, query, where} from 'firebase/firestore';
 import Cookies from 'js-cookie';
+import jwt from "jsonwebtoken";
 
 // Initial state for easy resetting; now includes `role`
 const initialState = {
@@ -116,15 +119,25 @@ export const useAuthStore = create(
                                 password
                             );
                             // Update the user's display name.
+                            console.log("secret", process.env.NEXT_PUBLIC_JWT_SECRET);
                             await updateProfile(userCredential.user, {displayName: name});
-                            const token = await userCredential.user.getIdToken();
+                            await get().fetchUserRole(userCredential.user.uid);
+                            const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
+                            const tokenRow = await userCredential.user.getIdToken();
+                            const decoded = jwt.decode(tokenRow);
+                            const payload = {...decoded, role: get().role};
+                            console.log('Payload:', payload);
+                            const token = await new SignJWT({payload})
+                                .setProtectedHeader({alg: 'HS256'})
+                                .setIssuedAt()
+                                .setExpirationTime('1d')
+                                .sign(secret);
                             Cookies.set('firebase-auth-token', token, {expires: 1});
                             set((state) => {
                                 state.user = userCredential.user;
                                 state.loading = false;
                             });
                             // Fetch and update the role for the newly registered user.
-                            await get().fetchUserRole(userCredential.user.uid);
                             notifyListeners(get());
                         } catch (error) {
                             const errorMessage =
@@ -151,14 +164,23 @@ export const useAuthStore = create(
                                 email,
                                 password
                             );
-                            const token = await userCredential.user.getIdToken();
+                            await get().fetchUserRole(userCredential.user.uid);
+                            const secret = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
+                            const tokenRow = await userCredential.user.getIdToken();
+                            const decoded = jwt.decode(tokenRow);
+                            const payload = {...decoded, role: get().role};
+                            console.log('Payload:', payload);
+                            const token = await new SignJWT({payload})
+                                .setProtectedHeader({alg: 'HS256'})
+                                .setIssuedAt()
+                                .setExpirationTime('1d')
+                                .sign(secret);
                             Cookies.set('firebase-auth-token', token, {expires: 1});
                             set((state) => {
                                 state.user = userCredential.user;
                                 state.loading = false;
                             });
                             // Fetch and update the user role upon sign in.
-                            await get().fetchUserRole(userCredential.user.uid);
                             notifyListeners(get());
                         } catch (error) {
                             const errorMessage =

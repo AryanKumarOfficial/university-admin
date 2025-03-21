@@ -1,40 +1,91 @@
 import {NextResponse} from "next/server";
-import {auth} from "@/lib/firebase/client";
+import {jwtVerify} from "jose";
 
+// Public routes do not require authentication.
 const publicRoutes = ["/login", "/register"];
 
 export async function middleware(request) {
     const {pathname} = request.nextUrl;
-    // Retrieve the session token once
-    const session = request.cookies.get("firebase-auth-token")?.value;
+    const token = request.cookies.get("firebase-auth-token")?.value;
 
-    // If the route is public (auth routes)
+    // Handle public routes.
     if (publicRoutes.includes(pathname)) {
-        // If the user is already authenticated, redirect to home.
-        if (session) {
+        // If a token exists, the user is already authenticated, so redirect to home.
+        if (token) {
             return NextResponse.redirect(new URL("/", request.url));
         }
-        // Otherwise, allow access to the auth route.
         return NextResponse.next();
     }
 
-    // For protected routes, if there's no session, redirect to login.
-    if (!session) {
+    // For protected routes, if no token, redirect to login.
+    if (!token) {
         return NextResponse.redirect(new URL("/login", request.url));
     }
 
-    // Validate the session by checking the Firebase token.
     try {
-        await auth.currentUser?.getIdToken(true);
+        // Decode the token.
+        // In production, replace this with jwt.verify(token, YOUR_PUBLIC_KEY) to ensure authenticity.
+        const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
+
+        const {payload: decoded} = await jwtVerify(token, secretKey, {
+            algorithms: ["HS256"],
+        })
+
+        console.log("Decoded token:", decoded);
+        if (!decoded) {
+            throw new Error("Invalid token");
+        }
+        const userRole = decoded.payload.role; // Assumes the token includes a 'role' claim.
+        console.log("User role:", userRole);
+
+        // Admin users have full access.
+        if (userRole === "Admin") {
+            return NextResponse.next();
+        }
+
+        // For Growth Managers:
+        // - They can access any /training route.
+        // - For "school" routes (at root level), only allow specific paths.
+        if (userRole === "Growth Manager") {
+            const allowedSchoolPaths = ["/", "/leads", "/clients"];
+            if (pathname.startsWith("/training")) {
+                return NextResponse.next();
+            }
+            if (allowedSchoolPaths.includes(pathname)) {
+                return NextResponse.next();
+            }
+            // Otherwise, redirect to an unauthorized page.
+            return NextResponse.redirect(new URL("/", request.url));
+        }
+        if (userRole === "Trainee" || userRole === "Intern") {
+            if (pathname === "/training") {
+                return NextResponse.next();
+            }
+            // Otherwise, redirect to the /training route.
+            return NextResponse.redirect(new URL("/training", request.url));
+        }
+
+        if (userRole === "Course Manager" || userRole === "Professional") {
+            const allowedSchoolPaths = ["/training", "/training/trainee"];
+            if (allowedSchoolPaths.includes(pathname)) {
+                return NextResponse.next();
+            }
+            // Otherwise, redirect to the /courses route.
+            return NextResponse.redirect(new URL("/training", request.url));
+        }
+        // For other roles, you can add additional logic as needed.
         return NextResponse.next();
     } catch (error) {
+        console.error("Middleware error:", error);
+        // If an error occurs, delete the token and redirect to login.
         const response = NextResponse.redirect(new URL("/login", request.url));
         response.cookies.delete("firebase-auth-token");
         return response;
     }
 }
 
-// Use route matcher to exclude asset routes
+// The matcher excludes asset routes and API routes.
+// For more info, see: https://nextjs.org/docs/advanced-features/middleware#matcher
 export const config = {
     matcher: ["/((?!api|_next/static|_next/image|favicon.ico|assets).*)"],
 };
