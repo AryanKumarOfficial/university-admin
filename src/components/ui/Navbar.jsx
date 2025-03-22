@@ -111,6 +111,7 @@ function SidebarNav({activeTab, onTabChange, currentPath, linksByTab}) {
     );
 }
 
+
 function getSidebarLinksForRole(role) {
     if (!role) return {};
 
@@ -137,7 +138,6 @@ function getSidebarLinksForRole(role) {
         return {Training: trainingLinks};
     }
 }
-
 
 function UserDropdown({user, dropdownItems}) {
     return (
@@ -206,12 +206,6 @@ const Navbar = () => {
 
     const filteredLinks = useMemo(() => getSidebarLinksForRole(role), [role]);
 
-    // if (!role || Object.keys(filteredLinks).length === 0) {
-    //     return null;
-    // }
-
-    // If the current active tab is not available in the filtered links,
-    // update it to "Training" (or the first available key).
     useEffect(() => {
         const tabs = Object.keys(filteredLinks);
         if (tabs.length && !tabs.includes(activeTab)) {
@@ -219,6 +213,15 @@ const Navbar = () => {
             setActiveTab(tabs.includes("Training") ? "Training" : tabs[0]);
         }
     }, [filteredLinks, activeTab]);
+
+    const handleTabChange = (tab) => {
+        setActiveTab(tab);
+        const tabLinks = filteredLinks[tab];
+        if (tabLinks && tabLinks.length > 0) {
+            router.push(tabLinks[0].path);
+        }
+    };
+
 
     return (
         <div id="main_content">
@@ -230,7 +233,7 @@ const Navbar = () => {
                            title="Grid & List Toggle"></i>
                     </Link>
                 </h5>
-                <SidebarNav activeTab={activeTab} onTabChange={setActiveTab} currentPath={pathname}
+                <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} currentPath={pathname}
                             linksByTab={filteredLinks}
                 />
             </div>
