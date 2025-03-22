@@ -112,7 +112,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
             onClick: (item) => {
                 if (item) {
                     console.log("Editing user with id:", item.id);
-                    router.push(`/leads-tnp/update/${item.id}`);
+                    router.push(`/training/leads-tnp/update/${item.id}`);
                 }
             },
         },
@@ -128,9 +128,9 @@ export default function TNPLeadsClient({initialUsers = []}) {
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb breadcrumbs={[{label: "Leads (TNP)", href: "/training/leads-tnp"}]}/>
+                <Breadcrumb breadcrumbs={[{label: "Leads TNP", href: "/training/leads-tnp"}]}/>
                 <GenericTable
-                    title={"Leads-tnp"}
+                    title={"TNP Leads"}
                     tableData={initialUsers}
                     tableColumns={columns}
                     filterOptions={filterOptions}

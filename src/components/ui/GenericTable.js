@@ -281,16 +281,16 @@ export default function GenericTable({
                             <tr>
                                 <td colSpan={tableColumns.length + 1} className="text-center">
                                     No {title} found.{" "}
-                                    <Link
-                                        href={
-                                            title.toLowerCase() === "data"
-                                                ? `${normalizedPath}/add`
-                                                : `/${title.toLowerCase()}/add`
-                                        }
-                                        className="fw-bold"
-                                    >
-                                        Add one now!
-                                    </Link>
+                                    {/*<Link*/}
+                                    {/*    href={*/}
+                                    {/*        title.toLowerCase() === "data"*/}
+                                    {/*            ? `${normalizedPath}/add`*/}
+                                    {/*            : `/${title.toLowerCase()}/add`*/}
+                                    {/*    }*/}
+                                    {/*    className="fw-bold"*/}
+                                    {/*>*/}
+                                    {/*    Add one now!*/}
+                                    {/*</Link>*/}
                                 </td>
                             </tr>
                         )}
