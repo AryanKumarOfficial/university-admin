@@ -8,46 +8,48 @@ import {useRouter} from "next/navigation";
 
 export default function LeadsTraineeClient({initialUsers = []}) {
     const router = useRouter();
-    // Column definitions for users
+
     const columns = [
         {key: "id", header: "#"},
-        {key: "name", header: "Name"},
-        {key: "contact-person", header: "Contact Person"},
-        {key: "contact-number", header: "Contact Number"},
+        {key: "traineeName", header: "Trainee Name"},
+        {key: "traineeCollegeName", header: "College"},
+        {key: "contactNumber", header: "Contact Number"},
         {key: "location", header: "Location"},
+        {key: "response", header: "Response"},
+        {key: "date", header: "Date"},
+        {key: "time", header: "Time"},
         {
-            key: "students", header: "Students",
-
+            key: "comments",
+            header: "Comment",
+            render: (value, rowData) => {
+                if (Array.isArray(rowData.comments) && rowData.comments.length > 0) {
+                    return rowData.comments[0].text;
+                }
+                return "";
+            },
         },
-        {key: "createdBy", header: "created By"},
         {
-            key: "createdAt", header: "Registered At",
+            key: "createdAt",
+            header: "Created At",
             render: (value) => (
                 <span className="text-muted">
-                    {new Date(value).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    }) + " - " + formatTime(value)}
-                </span>
+          {new Date(value).toLocaleDateString("en-IN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+              }) +
+              " - " +
+              formatTime(value)}
+        </span>
             ),
         },
     ];
 
-    // Filter options
     const filterOptions = [
-        {key: "name", label: "Name", type: "text"},
-        // {
-        //     key: "role",
-        //     label: "Role",
-        //     type: "select",
-        //     options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Intern"]
-        // },
+        {key: "traineeName", label: "Trainee Name", type: "text"},
         {key: "createdAt", label: "Created At", type: "date"},
     ];
 
-
-    // Row actions
     const rowActions = [
         {
             key: "delete",
@@ -60,15 +62,11 @@ export default function LeadsTraineeClient({initialUsers = []}) {
             onClick: async (item) => {
                 if (item) {
                     console.log("Deleting lead with id:", item.id);
-                    const res = await fetch(`/api/users/delete`, {
+                    const res = await fetch(`/api/training/leads-trainee`, {
                         method: "DELETE",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            uid: item.id,
-                        })
-                    })
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({id: item.id}),
+                    });
                     if (res.status !== 200) {
                         console.log("Error deleting lead with id:", res.status);
                     } else {
@@ -87,14 +85,13 @@ export default function LeadsTraineeClient({initialUsers = []}) {
             requireConfirm: false,
             onClick: (item) => {
                 if (item) {
-                    console.log("Editing user with id:", item.id);
-                    router.push(`/leads-tnp/update/${item.id}`);
+                    console.log("Editing lead with id:", item.id);
+                    router.push(`/training/leads-trainee/update/${item.id}`);
                 }
             },
         },
     ];
 
-    // Global action for users page
     const globalActions = {
         type: "link",
         href: "/training/leads-trainee/add",
@@ -104,14 +101,16 @@ export default function LeadsTraineeClient({initialUsers = []}) {
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb breadcrumbs={[{label: "Leads (Trainee)", href: "/training/leads-trainee"}]}/>
+                <Breadcrumb
+                    breadcrumbs={[{label: "Leads (Trainee)", href: "/training/leads-trainee"}]}
+                />
                 <GenericTable
-                    title={"Leads-trainee"}
+                    title={"Leads-Trainee"}
                     tableData={initialUsers}
                     tableColumns={columns}
                     filterOptions={filterOptions}
                     rowActions={rowActions}
-                    initialFilterValues={{status: "All", role: "All"}}
+                    initialFilterValues={{status: "All"}}
                     pageSize={3}
                     globalActions={globalActions}
                 />
