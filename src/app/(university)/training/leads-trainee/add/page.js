@@ -7,12 +7,10 @@ import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 
 import {db} from "@/lib/firebase/client";
-import {LeadSchema} from "@/schema/lead";
+import {TraineeLeadSchema} from "@/schema/TraineeLeadSchema";
 
 // Modular form sections (same ones used in update)
-import BasicInfoSection from "@/components/sections/leads/BasicInfoSection";
-import FollowUpSection from "@/components/sections/leads/FollowUpSection";
-import DecisionMakingSection from "@/components/sections/leads/DecisionMakingSection";
+import BasicInfoSection from "@/components/sections/training/traineeLeads/BasicInfoSection";
 import CommentsSection from "@/components/sections/leads/CommentsSection";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -40,7 +38,7 @@ export default function AddTraineeLead() {
         formState: {errors},
         reset,
     } = useForm({
-        resolver: zodResolver(LeadSchema),
+        resolver: zodResolver(TraineeLeadSchema),
         defaultValues: {
             // Basic Info
             schoolName: "",
@@ -48,7 +46,7 @@ export default function AddTraineeLead() {
             state: "",
             city: "",
             area: "",
-            response: "Not interested",
+            response: "Not Interested",
             numStudents: "",
             annualFees: "",
             hasWebsite: "no",
@@ -128,7 +126,7 @@ export default function AddTraineeLead() {
 
             addAlert("success", "Lead added successfully!");
             reset(); // clear the form
-            router.push("/leads");
+            router.push("/training/leads-trainee");
         } catch (error) {
             console.error("Error adding lead:", error);
             addAlert("danger", "Failed to add lead");
@@ -180,22 +178,10 @@ export default function AddTraineeLead() {
                                     <BasicInfoSection register={register} errors={errors} response={response}
                                                       title={"Trainee"}/>
 
-                                    {/* Follow Up if "Call later" */}
-                                    {response === "Call later" && (
-                                        <FollowUpSection register={register} errors={errors}/>
-                                    )}
-
-                                    {/* Contacts */}
-                                    <DecisionMakingSection
-                                        contactFields={contactFields}
-                                        appendContact={appendContact}
-                                        removeContact={removeContact}
-                                        register={register}
-                                        errors={errors}
-                                    />
 
                                     {/* Comments (no old comments => empty array) */}
                                     <CommentsSection
+                                        showExistingComments={false}
                                         existingComments={[]} // new lead => no old comments
                                         newCommentFields={newCommentFields}
                                         prependNewComment={prependNewComment}
