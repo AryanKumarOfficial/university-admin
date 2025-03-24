@@ -90,6 +90,32 @@ export default function LeadsTraineeClient({initialUsers = []}) {
                 }
             },
         },
+        {
+            key: "convert",
+            label: "Convert",
+            icon: "",
+            buttonClass: "btn-outline-info",
+            requireConfirm: true,
+            title: "Confirm Convert to Trainee",
+            confirmMessage: "Are you sure you want to convert this lead?",
+            onClick: async (item) => {
+                if (item) {
+                    console.log("Deleting lead with id:", item.id);
+                    const res = await fetch(`/api/training/leads-trainee/convert`, {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({id: item.id}),
+                    });
+                    if (res.status !== 200) {
+                        console.log("Error deleting lead with id:", res.status);
+                    } else {
+                        router.refresh();
+                    }
+                } else {
+                    console.log("Error deleting lead with id:", item.id);
+                }
+            },
+        },
     ];
 
     const globalActions = {

@@ -9,19 +9,19 @@ export default function TraineesClient({ initialTrainees = [] }) {
     const columns = [
         { key: "id", header: "#" },
         { key: "name", header: "Name" },
-        { key: "status", header: "Status" },
-        { key: "age", header: "Age" },
+        { key: "collage", header: "Collage Name" },
+        // { key: "age", header: "Age" },
         { key: "phone", header: "Phone" },
-        { key: "email", header: "Email" },
-        { key: "action", header: "Action" },
+        { key: "location", header: "location" },
+        // { key: "action", header: "Action" },
         { key: "createdAt", header: "Joined Date" },
-        { key: "updatedAt", header: "Updated At" },
+        // { key: "updatedAt", header: "Updated At" },
     ];
 
     // Filter options
     const filterOptions = [
-        { key: "searchTerm", label: "Search", type: "text" },
-        { key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"] },
+        { key: "name", label: "Search", type: "text" },
+        // { key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"] },
         { key: "startDate", label: "Joined Date", type: "date" },
     ];
 

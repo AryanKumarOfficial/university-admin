@@ -1,5 +1,5 @@
 "use client";
-import React, {useState} from 'react'
+import React, {useEffect, useState} from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
 import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
@@ -8,26 +8,79 @@ import Finance from "@/components/sections/Dashboard/Finance";
 import ExamToppers from "@/components/sections/Dashboard/Toppers";
 import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
 import NewStudents from "@/components/sections/Dashboard/NewStudents";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {db} from "@/lib/firebase/client";
 
 export default function CollageDashboardPage() {
+    const [tnpLeads, setTnpLeads] = useState(0);
+    const [traineeLeads, setTraineeLeads] = useState(0);
+
+    // State for Sales Report (Growth Managers leads)
+    const [salesReportCategories, setSalesReportCategories] = useState([]);
+    const [salesReportSeries, setSalesReportSeries] = useState([]);
+
+    async function countDocuments() {
+        const querySnapshot = await getDocs(collection(db, "leads-trainee"));
+        const querySnapshot2 = await getDocs(collection(db, "leads-tnp"));
+        setTraineeLeads(querySnapshot.size);
+        setTnpLeads(querySnapshot2.size);
+    }
+
+    // Fetch the Growth Manager users and count their trainee leads.
+    async function fetchSalesReport() {
+        try {
+            // Query users collection for documents with role "Growth Manager"
+            const usersQuery = query(
+                collection(db, "users"),
+                where("role", "==", "Growth Manager")
+            );
+            const usersSnapshot = await getDocs(usersQuery);
+            const managers = [];
+            usersSnapshot.forEach((doc) => {
+                managers.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Fetch all leads from both "leads-trainee" and "tnp-lead" collections
+            const traineeLeadsSnapshot = await getDocs(collection(db, "leads-trainee"));
+            const tnpLeadsSnapshot = await getDocs(collection(db, "leads-tnp"));
+            const leadsDocs = [...traineeLeadsSnapshot.docs, ...tnpLeadsSnapshot.docs];
+
+            // For each manager, count leads (from both collections) where createdBy equals the manager's email
+            const counts = managers.map((manager) => {
+                const count = leadsDocs.filter((leadDoc) => {
+                    const leadData = leadDoc.data();
+                    return leadData.createdBy === manager.email;
+                }).length;
+                return count;
+            });
+
+            setSalesReportCategories(managers.map((m) => m.name));
+            setSalesReportSeries(counts);
+        } catch (error) {
+            console.error("Error fetching sales report:", error);
+        }
+    }
+
+
+    useEffect(() => {
+        (async () => {
+            await countDocuments();
+            await fetchSalesReport();
+        })();
+    }, []);
+
     const collegeDashboardCards = [
         {
             title: "Total Leads (TNP)",
-            value: 3500,
-            // unit: "students",
-            percentChange: 3,
+            value: tnpLeads,
             trend: "up",
-            progress: "75%",
-            subtitle: "Overall enrollment",
+            subtitle: "TNP leads received",
         },
         {
             title: "Total Leads (Trainee)",
-            value: 200,
-            // unit: "members",
-            percentChange: 1,
+            value: traineeLeads,
             trend: "up",
-            progress: "90%",
-            subtitle: "Active full-time faculty",
+            subtitle: "Trainee leads received",
         },
         {
             title: "Research Publications",
@@ -48,6 +101,7 @@ export default function CollageDashboardPage() {
             subtitle: "Contributions received",
         },
     ];
+
     /**
      * College Dashboard Config
      */
@@ -56,90 +110,42 @@ export default function CollageDashboardPage() {
     // Handle time range changes (e.g., updating chart data based on selection)
     const handleTimeRangeChange = (range) => {
         setTimeRange(range);
-        // Optionally update chartOptions or chartSeries based on the new range.
+        // Optionally update chart options/series based on the new range.
     };
 
+    // Update the UniversityReport chart options and series to show leads counts for each sales person.
     const collegeChartOptions = {
         chart: {
-            type: "line",
+            type: "bar",
             toolbar: {show: false},
-        },
-        stroke: {
-            curve: "smooth",      // Smooth lines
-            width: [3, 0, 3],     // First & third series (lines) get width=3; second (column) is 0
         },
         plotOptions: {
             bar: {
-                columnWidth: "30%", // Slightly narrower columns
-                borderRadius: 4,    // Rounded corners for columns
+                columnWidth: "50%",
+                borderRadius: 4,
             },
         },
-        colors: ["#00E396", "#775DD0", "#FF4560"], // Custom color palette
+        colors: ["#00E396"],
         xaxis: {
-            categories: [
-                "Aug 01",
-                "Aug 02",
-                "Aug 03",
-                "Aug 04",
-                "Aug 05",
-                "Aug 06",
-                "Aug 07",
-                "Aug 08",
-                "Aug 09",
-                "Aug 10",
-            ],
+            categories: salesReportCategories, // Sales person names
         },
-        // Two Y-axes: one for Enrollments & Donations, one for Funding
-        // yaxis: [
-        //     {
-        //         labels: {
-        //             formatter: (val) => val.toFixed(0),
-        //         },
-        //         title: {
-        //             text: "Enrollments & Donations",
-        //         },
-        //     },
-        //     {
-        //         opposite: true,
-        //         labels: {
-        //             formatter: (val) => val.toFixed(0),
-        //         },
-        //         title: {
-        //             text: "Research Funding",
-        //         },
-        //     },
-        // ],
         legend: {
             position: "bottom",
         },
         dataLabels: {
-            enabled: false, // Hide data labels by default
-        },
-        markers: {
-            size: [5, 0, 5], // Show markers for the two line series; none for the column
+            enabled: false,
         },
         tooltip: {
-            shared: false,    // Display all series info together on hover
+            shared: false,
             intersect: true,
         },
     };
 
     const collegeChartSeries = [
         {
-            name: "Enrollments",
-            type: "line",
-            data: [300, 320, 310, 330, 340, 350, 360, 370, 380, 390],
-        },
-        {
-            name: "Research Funding",
-            type: "column",
-            data: [20000, 21000, 20500, 22000, 21500, 23000, 24000, 23500, 24500, 25000],
-            yAxisIndex: 1, // Use the second Y-axis for this series
-        },
-        {
-            name: "Alumni Donations",
-            type: "line",
-            data: [5000, 5200, 5100, 5300, 5400, 5500, 5600, 5700, 5800, 5900],
+            name: "Leads",
+            type: "bar",
+            data: salesReportSeries, // Lead counts for each sales person
         },
     ];
 
@@ -260,10 +266,9 @@ export default function CollageDashboardPage() {
 
     // device analytics
     const collegeDeviceData = {
-        // ApexCharts config
         chartOptions: {
             labels: ["Tablet", "Mobile", "Desktop"],
-            colors: ["#4CAF50", "#FF9800", "#03A9F4"], // Green, Orange, Light Blue
+            colors: ["#4CAF50", "#FF9800", "#03A9F4"],
             legend: {
                 position: "bottom",
             },
@@ -278,11 +283,7 @@ export default function CollageDashboardPage() {
                 },
             },
         },
-
-        // Numeric data for each device
         chartSeries: [35, 50, 15],
-
-        // Footer stats
         footerData: [
             {
                 label: "Desktop",
@@ -305,7 +306,7 @@ export default function CollageDashboardPage() {
         ],
     };
 
-    // mew students
+    // new students
     const collegeStudents = [
         {
             no: 201,
@@ -379,7 +380,7 @@ export default function CollageDashboardPage() {
             feesClass: "danger",
             branch: "B.Sc. IT",
         },
-    ]
+    ];
 
     return (
         <div className={"page"}>
@@ -388,24 +389,22 @@ export default function CollageDashboardPage() {
                 <div className="container-fluid">
                     <DataCard cards={collegeDashboardCards}/>
                     <div className={"tab-content"}>
-                        <div className="tab-pane fade show active" id="admin-Dashboard" role={"tabpanel"}>
+                        <div
+                            className="tab-pane fade show active"
+                            id="admin-Dashboard"
+                            role={"tabpanel"}
+                        >
                             <div className="row clearfix">
                                 <UniversityReport
-                                    title={"Sales"}
+                                    title={"Leads Report"}
                                     selectedTimeRange={timeRange}
                                     onTimeRangeChange={handleTimeRangeChange}
                                     chartOptions={collegeChartOptions}
                                     chartSeries={collegeChartSeries}
-                                    timeRangeOptions={[{
-                                        label: "1D",
-                                        value: "1D",
-                                    }, {
-                                        label: "1W",
-                                        value: "1W",
-                                    }, {
-                                        label: "1M",
-                                        value: "1M",
-                                    },
+                                    timeRangeOptions={[
+                                        {label: "1D", value: "1D"},
+                                        {label: "1W", value: "1W"},
+                                        {label: "1M", value: "1M"},
                                     ]}
                                 />
                                 <Performance
@@ -414,14 +413,9 @@ export default function CollageDashboardPage() {
                                     height={400}
                                 />
                             </div>
-                            <Finance
-                                financeData={collegeFinanceData}
-                            />
+                            <Finance financeData={collegeFinanceData}/>
                             <div className="row clearfix row-deck my-3">
-                                <ExamToppers
-                                    title={"Collage Toppers"}
-                                    toppers={collegeToppers}
-                                />
+                                <ExamToppers title={"Collage Toppers"} toppers={collegeToppers}/>
                                 <DeviceAnalytics
                                     title={"Collage Device Usage"}
                                     chartOptions={collegeDeviceData.chartOptions}
@@ -430,14 +424,11 @@ export default function CollageDashboardPage() {
                                     height={250}
                                 />
                             </div>
-                            <NewStudents
-                                title={"New Collage Admissions"}
-                                students={collegeStudents}
-                            />
+                            <NewStudents title={"New Collage Admissions"} students={collegeStudents}/>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }

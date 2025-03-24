@@ -6,7 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 
-import {db} from "@/lib/firebase/client";
+import {auth, db} from "@/lib/firebase/client"; // Import auth along with db
 import {TraineeLeadSchema} from "@/schema/TraineeLeadSchema";
 
 // Modular form sections (same ones used in update)
@@ -42,7 +42,6 @@ export default function AddTraineeLead() {
         defaultValues: {
             // Basic Info
             schoolName: "",
-            // leadType: "school",
             state: "",
             city: "",
             area: "",
@@ -61,7 +60,6 @@ export default function AddTraineeLead() {
     });
 
     // 2) useFieldArray for contacts & newComments
-    // Correct destructuring for contacts
     const {
         fields: contactFields,
         append: appendContact,
@@ -71,7 +69,6 @@ export default function AddTraineeLead() {
         name: "contacts",
     });
 
-    // Correct destructuring for new comments
     const {
         fields: newCommentFields,
         prepend: prependNewComment,
@@ -108,20 +105,25 @@ export default function AddTraineeLead() {
         }
     };
 
-    // 5) On Submit: create a new lead in Firestore
+    // 5) On Submit: create a new lead in Firestore with the logged in user's email added as createdBy
     const onSubmit = async (data) => {
         setIsSaving(true); // Start saving
         try {
-            // Combine new comments into a single 'comments' field
+            // Get the current user's email from Firebase Authentication
+            const createdBy = auth.currentUser?.email || "unknown";
+
+            // Combine new comments into a single 'comments' field and add additional fields
             const leadData = {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
-                createdAt: new Date(Date.now()).toISOString(), // add timestamp
+                createdAt: new Date().toISOString(),
                 leadType: "training",
+                converted: false,
+                createdBy,
             };
             delete leadData.newComments;
 
-            // Save to Firestore
+            // Save to Firestore in the "leads-trainee" collection
             await addDoc(collection(db, "leads-trainee"), leadData);
 
             addAlert("success", "Lead added successfully!");
@@ -160,12 +162,12 @@ export default function AddTraineeLead() {
                     </Alert>
                 )}
 
-                {/* Breadcrumb (Optional) */}
+                {/* Breadcrumb */}
                 <Breadcrumb
                     breadcrumbs={[
                         {label: "Home", href: "/"},
                         {label: "Leads (Trainee)", href: "/training/leads-trainee"},
-                        {label: "Add a Lead", href: "/training/leads-trainee/add",},
+                        {label: "Add a Lead", href: "/training/leads-trainee/add"},
                     ]}
                 />
 
@@ -175,9 +177,12 @@ export default function AddTraineeLead() {
                             <div className="tab-pane active show fade" id="lead-add">
                                 <form onSubmit={handleSubmit(onSubmit)}>
                                     {/* Basic Info */}
-                                    <BasicInfoSection register={register} errors={errors} response={response}
-                                                      title={"Trainee"}/>
-
+                                    <BasicInfoSection
+                                        register={register}
+                                        errors={errors}
+                                        response={response}
+                                        title={"Trainee"}
+                                    />
 
                                     {/* Comments (no old comments => empty array) */}
                                     <CommentsSection
@@ -195,7 +200,7 @@ export default function AddTraineeLead() {
                                             type="reset"
                                             className="btn btn-danger"
                                             onClick={() => {
-                                                reset()
+                                                reset();
                                                 router.push("/leads");
                                             }}
                                             disabled={isSaving}
