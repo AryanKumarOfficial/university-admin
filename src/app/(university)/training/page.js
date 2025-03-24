@@ -450,6 +450,7 @@ export default function CollegeDashboardPage() {
                     <DataCard cards={collegeDashboardCards}/>
                     <div className="tab-content">
                         <div className="tab-pane fade show active" id="admin-Dashboard" role="tabpanel">
+                            <Finance financeData={collegeFinanceData}/>
                             <div className="row clearfix">
                                 <LeadsReport
                                     title="College Leads"
@@ -466,11 +467,10 @@ export default function CollegeDashboardPage() {
                                     onTimeRangeChange={setTimeRange}
                                     loading={loading}
                                 />
-                                <Performance title="College Performance" data={collegeData} height={400}/>
                             </div>
-                            <Finance financeData={collegeFinanceData}/>
                             <div className="row clearfix row-deck my-3">
-                                <ExamToppers title="College Toppers" toppers={collegeToppers}/>
+                                {/*<ExamToppers title="College Toppers" toppers={collegeToppers}/>*/}
+                                <Performance title="College Performance" data={collegeData} height={400}/>
                                 <DeviceAnalytics
                                     title="College Device Usage"
                                     chartOptions={collegeDeviceData.chartOptions}
@@ -479,7 +479,7 @@ export default function CollegeDashboardPage() {
                                     height={250}
                                 />
                             </div>
-                            <NewStudents title="New College Admissions" students={collegeStudents}/>
+                            {/*<NewStudents title="New College Admissions" students={collegeStudents}/>*/}
                         </div>
                     </div>
                 </div>

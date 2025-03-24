@@ -3,7 +3,7 @@ import React from 'react';
 
 const DataCard = ({cards = []}) => {
     return (
-        <div className="section-body mt-4">
+        <div className="section-body my-4 w-100">
             <div className="container-fluid">
                 <div className="row clearfix row-deck">
                     {cards.map((card, index) => (

@@ -16,7 +16,7 @@ const LeadsReport = memo(({
     const hasData = chartSeries?.[0]?.data?.some(val => val > 0);
 
     return (
-        <div className="col-xl-8 col-lg-8 col-md-12 my-3">
+        <div className="col-xl-12 col-lg-12 col-md-12 my-3">
             <div className="card">
                 <div className="card-header flex justify-content-between">
                     <h3 className="card-title">{title} Report</h3>
