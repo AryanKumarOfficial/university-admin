@@ -31,12 +31,10 @@ export async function middleware(request) {
             algorithms: ["HS256"],
         })
 
-        console.log("Decoded token:", decoded);
         if (!decoded) {
             throw new Error("Invalid token");
         }
         const userRole = decoded.payload.role; // Assumes the token includes a 'role' claim.
-        console.log("User role:", userRole);
 
         // Admin users have full access.
         if (userRole === "Admin") {

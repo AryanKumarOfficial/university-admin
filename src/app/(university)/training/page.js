@@ -1,8 +1,8 @@
 "use client";
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
-import UniversityReport from "@/components/sections/Dashboard/UniversityReport";
+import LeadsReport from "@/components/sections/Dashboard/LeadsReport";
 import Performance from "@/components/sections/Dashboard/Performance";
 import Finance from "@/components/sections/Dashboard/Finance";
 import ExamToppers from "@/components/sections/Dashboard/Toppers";
@@ -11,64 +11,173 @@ import NewStudents from "@/components/sections/Dashboard/NewStudents";
 import {collection, getDocs, query, where} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
-export default function CollageDashboardPage() {
+export default function CollegeDashboardPage() {
     const [tnpLeads, setTnpLeads] = useState(0);
     const [traineeLeads, setTraineeLeads] = useState(0);
 
-    // State for Sales Report (Growth Managers leads)
+    // State for Sales Report (Growth Manager leads)
     const [salesReportCategories, setSalesReportCategories] = useState([]);
     const [salesReportSeries, setSalesReportSeries] = useState([]);
 
-    async function countDocuments() {
-        const querySnapshot = await getDocs(collection(db, "leads-trainee"));
-        const querySnapshot2 = await getDocs(collection(db, "leads-tnp"));
-        setTraineeLeads(querySnapshot.size);
-        setTnpLeads(querySnapshot2.size);
-    }
+    // State for time filter
+    const [timeRange, setTimeRange] = useState("1D");
+    const [loading, setLoading] = useState(true);
 
-    // Fetch the Growth Manager users and count their trainee leads.
-    async function fetchSalesReport() {
+    // Count documents for overall leads
+    const countDocuments = useCallback(async () => {
         try {
-            // Query users collection for documents with role "Growth Manager"
-            const usersQuery = query(
-                collection(db, "users"),
-                where("role", "==", "Growth Manager")
+            const [traineeSnapshot, tnpSnapshot] = await Promise.all([
+                getDocs(collection(db, "leads-trainee")),
+                getDocs(collection(db, "leads-tnp")),
+            ]);
+            setTraineeLeads(traineeSnapshot.size);
+            setTnpLeads(tnpSnapshot.size);
+        } catch (error) {
+            console.error("Error counting documents:", error);
+        }
+    }, []);
+
+    // Fetch Growth Manager leads using a date filter with Firestore query
+    const fetchSalesReport = useCallback(async () => {
+        try {
+            setLoading(true);
+            const now = new Date();
+            let startDate, endDate;
+
+            if (timeRange === "1D") {
+                // For "1D", we show only today's docs.
+                startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0); // Today's midnight
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 1); // Tomorrow's midnight
+                console.log("1D Filter (Today): startDate =", startDate, "endDate =", endDate);
+            } else {
+                // For other ranges, use relative time from now.
+                switch (timeRange) {
+                    case "1W":
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - 7);
+                        break;
+                    case "1M":
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 1);
+                        break;
+                    case "3M":
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 3);
+                        break;
+                    case "1Y":
+                        startDate = new Date(now);
+                        startDate.setFullYear(now.getFullYear() - 1);
+                        break;
+                    default:
+                        startDate = now;
+                        break;
+                }
+                endDate = now;
+                console.log(`${timeRange} Filter: startDate =`, startDate, "endDate =", endDate);
+            }
+
+            // Fetch all leads from both collections (client-side filtering)
+            const [traineeSnapshot, tnpSnapshot] = await Promise.all([
+                getDocs(collection(db, "leads-trainee")),
+                getDocs(collection(db, "leads-tnp")),
+            ]);
+
+            // Helper function: convert ISO string to JS Date and filter by date range
+            const filterDocsByDate = (snapshot) =>
+                snapshot.docs.filter(doc => {
+                    let createdAt = doc.data().createdAt;
+                    if (!createdAt) {
+                        console.warn("Doc missing createdAt", doc.id);
+                        return false;
+                    }
+                    // Convert ISO string to JS Date if necessary.
+                    if (typeof createdAt === "string") {
+                        createdAt = new Date(createdAt);
+                    }
+                    console.log(`Doc ${doc.id} createdAt:`, createdAt);
+                    return (createdAt >= startDate && createdAt < endDate);
+                });
+
+            const filteredTraineeLeads = filterDocsByDate(traineeSnapshot);
+            const filteredTnpLeads = filterDocsByDate(tnpSnapshot);
+
+            console.log("Filtered trainee leads:", filteredTraineeLeads.length);
+            console.log("Filtered TNP leads:", filteredTnpLeads.length);
+
+            // Fetch Growth Managers
+            const usersSnapshot = await getDocs(
+                query(collection(db, "users"), where("role", "==", "Growth Manager"))
             );
-            const usersSnapshot = await getDocs(usersQuery);
-            const managers = [];
-            usersSnapshot.forEach((doc) => {
-                managers.push({ id: doc.id, ...doc.data() });
-            });
+            const managers = usersSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+            console.log("Managers:", managers);
 
-            // Fetch all leads from both "leads-trainee" and "tnp-lead" collections
-            const traineeLeadsSnapshot = await getDocs(collection(db, "leads-trainee"));
-            const tnpLeadsSnapshot = await getDocs(collection(db, "leads-tnp"));
-            const leadsDocs = [...traineeLeadsSnapshot.docs, ...tnpLeadsSnapshot.docs];
+            // Combine the filtered leads and count them per manager
+            const leadsDocs = [...filteredTraineeLeads, ...filteredTnpLeads];
+            console.log("Total filtered leads:", leadsDocs.length);
 
-            // For each manager, count leads (from both collections) where createdBy equals the manager's email
-            const counts = managers.map((manager) => {
-                const count = leadsDocs.filter((leadDoc) => {
-                    const leadData = leadDoc.data();
-                    return leadData.createdBy === manager.email;
-                }).length;
-                return count;
-            });
+            const counts = managers.map(manager =>
+                leadsDocs.filter(leadDoc => leadDoc.data().createdBy === manager.email).length
+            );
+            console.log("Counts per manager:", counts);
 
-            setSalesReportCategories(managers.map((m) => m.name));
+            // Use manager name or email for the chart's x-axis
+            setSalesReportCategories(managers.map(m => m.name || m.email));
             setSalesReportSeries(counts);
         } catch (error) {
             console.error("Error fetching sales report:", error);
+        } finally {
+            setLoading(false);
         }
-    }
+    }, [timeRange]);
 
-
+    // Fetch data on mount and whenever the timeRange changes
     useEffect(() => {
-        (async () => {
+        const fetchData = async () => {
             await countDocuments();
             await fetchSalesReport();
-        })();
-    }, []);
+        };
+        fetchData();
+    }, [countDocuments, fetchSalesReport]);
 
+    // Memoize chart configuration
+    const collegeChartOptions = useMemo(() => ({
+        chart: {
+            type: "bar",
+            toolbar: {show: false},
+        },
+        plotOptions: {
+            bar: {
+                columnWidth: "50%",
+                borderRadius: 4,
+            },
+        },
+        colors: ["#00E396"],
+        xaxis: {
+            categories: salesReportCategories,
+        },
+        legend: {
+            position: "bottom",
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        tooltip: {
+            shared: false,
+            intersect: true,
+        },
+    }), [salesReportCategories]);
+
+    const collegeChartSeries = useMemo(() => [
+        {
+            name: "Leads",
+            type: "bar",
+            data: salesReportSeries,
+        }
+    ], [salesReportSeries]);
+
+    // Dashboard Cards
     const collegeDashboardCards = [
         {
             title: "Total Leads (TNP)",
@@ -102,54 +211,7 @@ export default function CollageDashboardPage() {
         },
     ];
 
-    /**
-     * College Dashboard Config
-     */
-    const [timeRange, setTimeRange] = useState("1D");
-
-    // Handle time range changes (e.g., updating chart data based on selection)
-    const handleTimeRangeChange = (range) => {
-        setTimeRange(range);
-        // Optionally update chart options/series based on the new range.
-    };
-
-    // Update the UniversityReport chart options and series to show leads counts for each sales person.
-    const collegeChartOptions = {
-        chart: {
-            type: "bar",
-            toolbar: {show: false},
-        },
-        plotOptions: {
-            bar: {
-                columnWidth: "50%",
-                borderRadius: 4,
-            },
-        },
-        colors: ["#00E396"],
-        xaxis: {
-            categories: salesReportCategories, // Sales person names
-        },
-        legend: {
-            position: "bottom",
-        },
-        dataLabels: {
-            enabled: false,
-        },
-        tooltip: {
-            shared: false,
-            intersect: true,
-        },
-    };
-
-    const collegeChartSeries = [
-        {
-            name: "Leads",
-            type: "bar",
-            data: salesReportSeries, // Lead counts for each sales person
-        },
-    ];
-
-    // performance
+    // Sample Performance data
     const collegeData = {
         categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
         series: [
@@ -168,7 +230,7 @@ export default function CollageDashboardPage() {
         ],
     };
 
-    // finance
+    // Sample Finance data
     const collegeFinanceData = [
         {label: "Fees", color: "indigo", percentage: 60},
         {label: "Donation", color: "yellow", percentage: 45},
@@ -180,7 +242,7 @@ export default function CollageDashboardPage() {
         {label: "Grants", color: "orange", percentage: 55},
     ];
 
-    // toppers
+    // Sample Toppers data
     const collegeToppers = [
         {
             no: 11,
@@ -264,7 +326,7 @@ export default function CollageDashboardPage() {
         },
     ];
 
-    // device analytics
+    // Sample Device Analytics data
     const collegeDeviceData = {
         chartOptions: {
             labels: ["Tablet", "Mobile", "Desktop"],
@@ -306,7 +368,7 @@ export default function CollageDashboardPage() {
         ],
     };
 
-    // new students
+    // Sample New Students data
     const collegeStudents = [
         {
             no: 201,
@@ -383,48 +445,43 @@ export default function CollageDashboardPage() {
     ];
 
     return (
-        <div className={"page"}>
+        <div className="page">
             <Breadcrumb/>
             <div className="section-body mt-4">
                 <div className="container-fluid">
                     <DataCard cards={collegeDashboardCards}/>
-                    <div className={"tab-content"}>
-                        <div
-                            className="tab-pane fade show active"
-                            id="admin-Dashboard"
-                            role={"tabpanel"}
-                        >
+                    <div className="tab-content">
+                        <div className="tab-pane fade show active" id="admin-Dashboard" role="tabpanel">
                             <div className="row clearfix">
-                                <UniversityReport
-                                    title={"Leads Report"}
-                                    selectedTimeRange={timeRange}
-                                    onTimeRangeChange={handleTimeRangeChange}
+                                <LeadsReport
+                                    title="College Leads"
                                     chartOptions={collegeChartOptions}
                                     chartSeries={collegeChartSeries}
                                     timeRangeOptions={[
                                         {label: "1D", value: "1D"},
                                         {label: "1W", value: "1W"},
                                         {label: "1M", value: "1M"},
+                                        {label: "3M", value: "3M"},
+                                        {label: "1Y", value: "1Y"},
                                     ]}
+                                    selectedTimeRange={timeRange}
+                                    onTimeRangeChange={setTimeRange}
+                                    loading={loading}
                                 />
-                                <Performance
-                                    title={"Collage Performance"}
-                                    data={collegeData}
-                                    height={400}
-                                />
+                                <Performance title="College Performance" data={collegeData} height={400}/>
                             </div>
                             <Finance financeData={collegeFinanceData}/>
                             <div className="row clearfix row-deck my-3">
-                                <ExamToppers title={"Collage Toppers"} toppers={collegeToppers}/>
+                                <ExamToppers title="College Toppers" toppers={collegeToppers}/>
                                 <DeviceAnalytics
-                                    title={"Collage Device Usage"}
+                                    title="College Device Usage"
                                     chartOptions={collegeDeviceData.chartOptions}
                                     chartSeries={collegeDeviceData.chartSeries}
                                     footerData={collegeDeviceData.footerData}
                                     height={250}
                                 />
                             </div>
-                            <NewStudents title={"New Collage Admissions"} students={collegeStudents}/>
+                            <NewStudents title="New College Admissions" students={collegeStudents}/>
                         </div>
                     </div>
                 </div>

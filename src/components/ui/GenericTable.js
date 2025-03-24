@@ -156,7 +156,9 @@ export default function GenericTable({
                                     <input
                                         key={filter.key}
                                         type="date"
-                                        className="form-control"
+                                        lang="en-GB"
+                                        max={new Date().toISOString().slice(0, 10)}
+                                        className="form-control input-group-prepend"
                                         value={activeFilters[filter.key] || ""}
                                         onChange={(e) => updateFilter(filter.key, e.target.value)}
                                     />
