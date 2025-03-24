@@ -9,11 +9,13 @@ import ExamToppers from "@/components/sections/Dashboard/Toppers";
 import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
 import NewStudents from "@/components/sections/Dashboard/NewStudents";
 import {collection, getDocs, query, where} from "firebase/firestore";
-import {db} from "@/lib/firebase/client";
+import {auth, db} from "@/lib/firebase/client";
 
 export default function CollegeDashboardPage() {
     const [tnpLeads, setTnpLeads] = useState(0);
     const [traineeLeads, setTraineeLeads] = useState(0);
+    const [myTnpLeads, setMyTnpLeads] = useState(0);
+    const [myTraineeLeads, setMyTraineeLeads] = useState(0);
 
     // State for Sales Report (Growth Manager leads)
     const [salesReportCategories, setSalesReportCategories] = useState([]);
@@ -32,6 +34,8 @@ export default function CollegeDashboardPage() {
             ]);
             setTraineeLeads(traineeSnapshot.size);
             setTnpLeads(tnpSnapshot.size);
+            setMyTnpLeads(traineeSnapshot.docs.filter(doc => doc.data().createdBy === auth.currentUser.email).length)
+            setMyTraineeLeads(tnpSnapshot.docs.filter(doc => doc.data().createdBy === auth.currentUser.email).length)
         } catch (error) {
             console.error("Error counting documents:", error);
         }
@@ -192,22 +196,16 @@ export default function CollegeDashboardPage() {
             subtitle: "Trainee leads received",
         },
         {
-            title: "Research Publications",
-            value: 120,
-            unit: "papers",
-            percentChange: -2,
-            trend: "down",
-            progress: "65%",
-            subtitle: "Papers published this year",
+            title: "My Leads (TNP)",
+            value: myTnpLeads,
+            trend: "up",
+            subtitle: "TNP leads received",
         },
         {
-            title: "Alumni Donations",
-            value: "$75,000",
-            unit: "USD",
-            percentChange: 5,
+            title: "MY Leads (Trainee)",
+            value: myTraineeLeads,
             trend: "up",
-            progress: "55%",
-            subtitle: "Contributions received",
+            subtitle: "Trainee leads received",
         },
     ];
 
