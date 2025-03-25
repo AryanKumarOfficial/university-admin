@@ -77,9 +77,9 @@ export default function DeviceAnalytics({
                             <div key={index} className="p-2 flex-fill">
                                 <span className="text-muted">{item.label}</span>
                                 <h5>{item.count}</h5>
-                                <small className={item.changeType === "up" ? "text-success" : "text-danger"}>
-                                    <i className={`fa fa-angle-${item.changeType === "up" ? "up" : "down"}`}></i> {item.change}
-                                </small>
+                                {/*<small className={item.changeType === "up" ? "text-success" : "text-danger"}>*/}
+                                {/*    <i className={`fa fa-angle-${item.changeType === "up" ? "up" : "down"}`}></i> {item.change}*/}
+                                {/*</small>*/}
                             </div>
                         ))}
                     </div>

@@ -1,13 +1,13 @@
 "use client";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
 import LeadsReport from "@/components/sections/Dashboard/LeadsReport";
 import Performance from "@/components/sections/Dashboard/Performance";
 import Finance from "@/components/sections/Dashboard/Finance";
 import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase/client";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {auth, db} from "@/lib/firebase/client";
 
 export default function CollegeDashboardPage() {
     // Dashboard states
@@ -22,7 +22,7 @@ export default function CollegeDashboardPage() {
     const [loading, setLoading] = useState(true);
 
     // Filter states
-    const [activeFilters, setActiveFilters] = useState({ leadType: "TNP" });
+    const [activeFilters, setActiveFilters] = useState({leadType: "TNP"});
     const [selectedLeadType, setSelectedLeadType] = useState("TNP");
 
     // Define filter options
@@ -38,7 +38,7 @@ export default function CollegeDashboardPage() {
 
     // Update a filter value
     const updateFilter = (key, value) => {
-        setActiveFilters((prev) => ({ ...prev, [key]: value }));
+        setActiveFilters((prev) => ({...prev, [key]: value}));
         if (key === "leadType") {
             setSelectedLeadType(value);
         }
@@ -46,7 +46,7 @@ export default function CollegeDashboardPage() {
 
     // Reset filters to default values
     const resetFilters = () => {
-        const initialFilters = { leadType: "TNP" };
+        const initialFilters = {leadType: "TNP"};
         setActiveFilters(initialFilters);
         setSelectedLeadType(initialFilters.leadType);
     };
@@ -221,6 +221,71 @@ export default function CollegeDashboardPage() {
         fetchFinanceData();
     }, [selectedLeadType]);
 
+    // New state for trainee leads device analytics
+    const [traineeDeviceData, setTraineeDeviceData] = useState({
+        chartOptions: {
+            labels: ["Converted", "Wrong/Not Interested", "Not Cleared"],
+            colors: ["#4CAF50", "#FF0000", "#03A9FA"],
+            legend: {position: "bottom"},
+            dataLabels: {enabled: false},
+            plotOptions: {pie: {donut: {size: "60%"}}}
+        },
+        chartSeries: [0, 0, 0],
+        footerData: [
+            {label: "Converted", count: "0", changeType: "up", change: "0%"},
+            {label: "Wrong/Not Interested", count: "0", changeType: "down", change: "0%"},
+            {label: "Not Cleared", count: "0", changeType: "up", change: "2%"}
+        ]
+    });
+
+    // Fetch trainee leads data for device analytics (pie chart)
+    useEffect(() => {
+        const fetchTraineeDeviceAnalytics = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, "leads-trainee"));
+                let converted = 0,
+                    wrongNotInterested = 0,
+                    notCleared = 0;
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.converted === true) {
+                        converted++;
+                    } else if (
+                        data.response === "Wrong number" ||
+                        data.response === "Not Interested"
+                    ) {
+                        wrongNotInterested++;
+                    } else {
+                        notCleared++;
+                    }
+                });
+                setTraineeDeviceData({
+                    chartOptions: {
+                        labels: ["Converted", "Wrong/Not Interested", "Not Cleared"],
+                        colors: ["#4CAF50", "#FF0000", "#03A9FA"],
+                        legend: {position: "bottom"},
+                        dataLabels: {enabled: false},
+                        plotOptions: {pie: {donut: {size: "60%"}}}
+                    },
+                    chartSeries: [converted, wrongNotInterested, notCleared],
+                    footerData: [
+                        {label: "Converted", count: converted.toString(), changeType: "up", change: "0%"},
+                        {
+                            label: "Wrong/Not Interested",
+                            count: wrongNotInterested.toString(),
+                            changeType: "down",
+                            change: "0%"
+                        },
+                        {label: "Not Cleared", count: notCleared.toString(), changeType: "up", change: "0%"}
+                    ]
+                });
+            } catch (error) {
+                console.error("Error fetching trainee device analytics:", error);
+            }
+        };
+        fetchTraineeDeviceAnalytics();
+    }, []);
+
     // Fetch overall data on mount and when timeRange changes
     useEffect(() => {
         const fetchData = async () => {
@@ -230,12 +295,12 @@ export default function CollegeDashboardPage() {
         fetchData();
     }, [countDocuments, fetchSalesReport]);
 
-    // Chart Configurations
+    // Chart Configurations for Sales Report
     const collegeChartOptions = useMemo(
         () => ({
             chart: {
                 type: "bar",
-                toolbar: { show: false }
+                toolbar: {show: false}
             },
             plotOptions: {
                 bar: {
@@ -304,35 +369,18 @@ export default function CollegeDashboardPage() {
     const collegeData = {
         categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
         series: [
-            { name: "Admissions", data: [80, 90, 70, 60, 95, 100] },
-            { name: "Research Grants", data: [60, 70, 85, 90, 75, 80] },
-            { name: "Alumni Donations", data: [40, 50, 45, 60, 65, 70] }
-        ]
-    };
-
-    // Device Analytics Data
-    const collegeDeviceData = {
-        chartOptions: {
-            labels: ["Tablet", "Mobile", "Desktop"],
-            colors: ["#4CAF50", "#FF9800", "#03A9F4"],
-            legend: { position: "bottom" },
-            dataLabels: { enabled: false },
-            plotOptions: { pie: { donut: { size: "60%" } } }
-        },
-        chartSeries: [35, 50, 15],
-        footerData: [
-            { label: "Desktop", count: "1.80K", changeType: "down", change: "0.85%" },
-            { label: "Mobile", count: "4.10K", changeType: "up", change: "2.10%" },
-            { label: "Tablet", count: "3.25K", changeType: "up", change: "3.40%" }
+            {name: "Admissions", data: [80, 90, 70, 60, 95, 100]},
+            {name: "Research Grants", data: [60, 70, 85, 90, 75, 80]},
+            {name: "Alumni Donations", data: [40, 50, 45, 60, 65, 70]}
         ]
     };
 
     return (
         <div className="page">
-            <Breadcrumb />
+            <Breadcrumb/>
             <div className="section-body mt-4">
                 <div className="container-fluid">
-                    <DataCard cards={collegeDashboardCards} />
+                    <DataCard cards={collegeDashboardCards}/>
 
                     {/* Optimized Filters Panel */}
                     <div className="card mb-3 shadow-sm">
@@ -343,8 +391,7 @@ export default function CollegeDashboardPage() {
                                         return (
                                             <div className="col-auto" key={filter.key}>
                                                 <label htmlFor={filter.key} className="form-label">
-                                                    {/*{filter.label}*/}
-                                                    {/*Filters*/}
+                                                    {filter.label}
                                                 </label>
                                                 <select
                                                     id={filter.key}
@@ -354,7 +401,6 @@ export default function CollegeDashboardPage() {
                                                         updateFilter(filter.key, e.target.value)
                                                     }
                                                 >
-                                                    {/*<option value="">All</option>*/}
                                                     {filter.options?.map((option) => (
                                                         <option key={option} value={option}>
                                                             {option}
@@ -364,7 +410,6 @@ export default function CollegeDashboardPage() {
                                             </div>
                                         );
                                     }
-                                    // Add cases for other filter types if needed
                                     return null;
                                 })}
                                 <div className="col-auto align-self-end">
@@ -380,24 +425,20 @@ export default function CollegeDashboardPage() {
                     </div>
 
                     <div className="tab-content">
-                        <div
-                            className="tab-pane fade show active"
-                            id="admin-Dashboard"
-                            role="tabpanel"
-                        >
+                        <div className="tab-pane fade show active" id="admin-Dashboard" role="tabpanel">
                             {/* Finance Component with dynamic financeData */}
-                            <Finance financeData={financeData} />
+                            <Finance financeData={financeData}/>
                             <div className="row clearfix">
                                 <LeadsReport
                                     title="College Leads"
                                     chartOptions={collegeChartOptions}
                                     chartSeries={collegeChartSeries}
                                     timeRangeOptions={[
-                                        { label: "1D", value: "1D" },
-                                        { label: "1W", value: "1W" },
-                                        { label: "1M", value: "1M" },
-                                        { label: "3M", value: "3M" },
-                                        { label: "1Y", value: "1Y" }
+                                        {label: "1D", value: "1D"},
+                                        {label: "1W", value: "1W"},
+                                        {label: "1M", value: "1M"},
+                                        {label: "3M", value: "3M"},
+                                        {label: "1Y", value: "1Y"}
                                     ]}
                                     selectedTimeRange={timeRange}
                                     onTimeRangeChange={setTimeRange}
@@ -405,12 +446,13 @@ export default function CollegeDashboardPage() {
                                 />
                             </div>
                             <div className="row clearfix row-deck my-3">
-                                <Performance title="College Performance" data={collegeData} height={400} />
+                                <Performance title="College Performance" data={collegeData} height={400}/>
+                                {/* DeviceAnalytics now uses the traineeDeviceData for its pie chart */}
                                 <DeviceAnalytics
-                                    title="College Device Usage"
-                                    chartOptions={collegeDeviceData.chartOptions}
-                                    chartSeries={collegeDeviceData.chartSeries}
-                                    footerData={collegeDeviceData.footerData}
+                                    title="Trainee Leads Conversion"
+                                    chartOptions={traineeDeviceData.chartOptions}
+                                    chartSeries={traineeDeviceData.chartSeries}
+                                    footerData={traineeDeviceData.footerData}
                                     height={250}
                                 />
                             </div>
