@@ -76,6 +76,8 @@ export default function CollegeDashboardPage() {
     }, []);
 
     // Fetch Sales Report Data
+// Fetch Sales Report Data with dual series for TNP and Trainee leads
+// Fetch Sales Report Data
     const fetchSalesReport = useCallback(async () => {
         try {
             setLoading(true);
@@ -139,16 +141,23 @@ export default function CollegeDashboardPage() {
                 ...doc.data()
             }));
 
-            const leadsDocs = [...filteredTraineeLeads, ...filteredTnpLeads];
-
-            const counts = managers.map((manager) =>
-                leadsDocs.filter(
-                    (leadDoc) => leadDoc.data().createdBy === manager.email
+            // Count leads for each manager
+            const tnpCounts = managers.map((manager) =>
+                filteredTnpLeads.filter(
+                    (doc) => doc.data().createdBy === manager.email
+                ).length
+            );
+            const traineeCounts = managers.map((manager) =>
+                filteredTraineeLeads.filter(
+                    (doc) => doc.data().createdBy === manager.email
                 ).length
             );
 
             setSalesReportCategories(managers.map((m) => m.name || m.email));
-            setSalesReportSeries(counts);
+            setSalesReportSeries([
+                {name: "TNP Leads", type: "bar", data: tnpCounts},
+                {name: "Trainee Leads", type: "bar", data: traineeCounts}
+            ]);
         } catch (error) {
             console.error("Error fetching sales report:", error);
         } finally {
@@ -373,7 +382,7 @@ export default function CollegeDashboardPage() {
                     borderRadius: 4
                 }
             },
-            colors: ["#00E396"],
+            colors: ["#00E396", "#FF9800"],
             xaxis: {
                 categories: salesReportCategories
             },
@@ -391,16 +400,9 @@ export default function CollegeDashboardPage() {
         [salesReportCategories]
     );
 
-    const collegeChartSeries = useMemo(
-        () => [
-            {
-                name: "Leads",
-                type: "bar",
-                data: salesReportSeries
-            }
-        ],
-        [salesReportSeries]
-    );
+
+    const collegeChartSeries = useMemo(() => salesReportSeries, [salesReportSeries]);
+
 
     // Dashboard Cards
     const collegeDashboardCards = [
@@ -495,7 +497,7 @@ export default function CollegeDashboardPage() {
                             <Finance financeData={financeData}/>
                             <div className="row clearfix">
                                 <LeadsReport
-                                    title="College Leads"
+                                    title="Leads"
                                     chartOptions={collegeChartOptions}
                                     chartSeries={collegeChartSeries}
                                     timeRangeOptions={[
