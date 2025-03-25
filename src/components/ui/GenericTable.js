@@ -234,17 +234,6 @@ export default function GenericTable({
             <div className="card">
                 <div className="card-header">
                     <h3 className="card-title">{title}</h3>
-                    <div className="card-options">
-                        <a href="#" className="card-options-collapse" data-toggle="card-collapse">
-                            <i className="fe fe-chevron-up"></i>
-                        </a>
-                        <a href="#" className="card-options-fullscreen" data-toggle="card-fullscreen">
-                            <i className="fe fe-maximize"></i>
-                        </a>
-                        <a href="#" className="card-options-remove" data-toggle="card-remove">
-                            <i className="fe fe-x"></i>
-                        </a>
-                    </div>
                 </div>
                 <div className="card-body">
                     <div className="table-responsive">
