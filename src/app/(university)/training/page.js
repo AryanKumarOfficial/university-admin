@@ -10,7 +10,7 @@ import {collection, getDocs, query, where} from "firebase/firestore";
 import {auth, db} from "@/lib/firebase/client";
 
 export default function CollegeDashboardPage() {
-    // Dashboard states
+    // Dashboard States
     const [tnpLeads, setTnpLeads] = useState(0);
     const [traineeLeads, setTraineeLeads] = useState(0);
     const [myTnpLeads, setMyTnpLeads] = useState(0);
@@ -21,11 +21,9 @@ export default function CollegeDashboardPage() {
     const [timeRange, setTimeRange] = useState("1D");
     const [loading, setLoading] = useState(true);
 
-    // Filter states - default now set to "All"
+    // Filter States
     const [activeFilters, setActiveFilters] = useState({leadType: "All"});
     const [selectedLeadType, setSelectedLeadType] = useState("All");
-
-    // Define filter options with "All" added
     const filterOptions = [
         {
             key: "leadType",
@@ -33,22 +31,30 @@ export default function CollegeDashboardPage() {
             type: "select",
             options: ["All", "TNP", "Trainee"]
         }
-        // Additional filters can be added here
     ];
 
-    // Update a filter value
     const updateFilter = (key, value) => {
         setActiveFilters((prev) => ({...prev, [key]: value}));
-        if (key === "leadType") {
-            setSelectedLeadType(value);
-        }
+        if (key === "leadType") setSelectedLeadType(value);
     };
 
-    // Reset filters to default values (now "All")
     const resetFilters = () => {
         const initialFilters = {leadType: "All"};
         setActiveFilters(initialFilters);
         setSelectedLeadType(initialFilters.leadType);
+    };
+
+    // Utility: Fetch current user role
+    const getUserRole = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            const usersSnapshot = await getDocs(
+                query(collection(db, "users"), where("email", "==", user.email))
+            );
+            const userSnapshot = usersSnapshot.docs[0];
+            return userSnapshot.data().role;
+        }
+        return null;
     };
 
     // Count documents for overall leads
@@ -75,15 +81,12 @@ export default function CollegeDashboardPage() {
         }
     }, []);
 
-    // Fetch Sales Report Data
-// Fetch Sales Report Data with dual series for TNP and Trainee leads
-// Fetch Sales Report Data
+    // Fetch Sales Report Data with dual series (TNP & Trainee)
     const fetchSalesReport = useCallback(async () => {
         try {
             setLoading(true);
             const now = new Date();
             let startDate, endDate;
-
             if (timeRange === "1D") {
                 startDate = new Date(now);
                 startDate.setHours(0, 0, 0, 0);
@@ -109,7 +112,6 @@ export default function CollegeDashboardPage() {
                         break;
                     default:
                         startDate = now;
-                        break;
                 }
                 endDate = now;
             }
@@ -123,16 +125,14 @@ export default function CollegeDashboardPage() {
                 snapshot.docs.filter((doc) => {
                     let createdAt = doc.data().createdAt;
                     if (!createdAt) return false;
-                    if (typeof createdAt === "string") {
-                        createdAt = new Date(createdAt);
-                    }
+                    if (typeof createdAt === "string") createdAt = new Date(createdAt);
                     return createdAt >= startDate && createdAt < endDate;
                 });
 
             const filteredTraineeLeads = filterDocsByDate(traineeSnapshot);
             const filteredTnpLeads = filterDocsByDate(tnpSnapshot);
 
-            // Fetch Growth Managers
+            // Fetch Growth Managers and count leads per manager
             const usersSnapshot = await getDocs(
                 query(collection(db, "users"), where("role", "==", "Growth Manager"))
             );
@@ -141,16 +141,13 @@ export default function CollegeDashboardPage() {
                 ...doc.data()
             }));
 
-            // Count leads for each manager
             const tnpCounts = managers.map((manager) =>
-                filteredTnpLeads.filter(
-                    (doc) => doc.data().createdBy === manager.email
-                ).length
+                filteredTnpLeads.filter((doc) => doc.data().createdBy === manager.email)
+                    .length
             );
             const traineeCounts = managers.map((manager) =>
-                filteredTraineeLeads.filter(
-                    (doc) => doc.data().createdBy === manager.email
-                ).length
+                filteredTraineeLeads.filter((doc) => doc.data().createdBy === manager.email)
+                    .length
             );
 
             setSalesReportCategories(managers.map((m) => m.name || m.email));
@@ -166,7 +163,6 @@ export default function CollegeDashboardPage() {
     }, [timeRange]);
 
     // Finance Data Calculation
-    // Make sure statuses match your Firestore data (case-sensitive)
     const statuses = [
         "Wrong number",
         "Not Interested",
@@ -177,7 +173,6 @@ export default function CollegeDashboardPage() {
         "Meeting scheduled",
         "Follow up required"
     ];
-
     const colorMapping = {
         "Wrong number": "red",
         "Not Interested": "gray",
@@ -189,7 +184,6 @@ export default function CollegeDashboardPage() {
         "Follow up required": "orange"
     };
 
-    // Function to calculate percentages from an array of documents
     const calculatePercentagesFromDocs = (docs) => {
         const totalCount = docs.length;
         const countByStatus = {};
@@ -210,34 +204,20 @@ export default function CollegeDashboardPage() {
             };
         });
     };
-    const userRole = async () => {
-        const user = auth.currentUser;
-        if (user) {
-            const usersSnapshot = await getDocs(
-                query(collection(db, "users"), where("email", "==", user.email))
-            );
-            const userSnapshot = usersSnapshot.docs[0];
-            return userSnapshot.data().role;
-        }
-        return null;
-    }
 
-// Fetch finance data based on the selected lead type and user role
+    // Fetch Finance Data based on selected lead type and user role
     useEffect(() => {
         const fetchFinanceData = async () => {
             try {
-                // Fetch the user's role once
-                const role = await userRole();
+                const role = await getUserRole();
                 let docs = [];
                 if (selectedLeadType === "All") {
-                    // Fetch both collections
                     const [tnpSnapshot, traineeSnapshot] = await Promise.all([
                         getDocs(collection(db, "leads-tnp")),
                         getDocs(collection(db, "leads-trainee"))
                     ]);
                     let tnpDocs = tnpSnapshot.docs;
                     let traineeDocs = traineeSnapshot.docs;
-                    // If the user is not an Admin, filter documents by createdBy field
                     if (role !== "Admin") {
                         tnpDocs = tnpDocs.filter(
                             (doc) => doc.data().createdBy === auth.currentUser.email
@@ -248,7 +228,6 @@ export default function CollegeDashboardPage() {
                     }
                     docs = [...tnpDocs, ...traineeDocs];
                 } else {
-                    // Fetch one specific collection based on selectedLeadType
                     const collectionRef = collection(
                         db,
                         selectedLeadType === "TNP" ? "leads-tnp" : "leads-trainee"
@@ -261,8 +240,7 @@ export default function CollegeDashboardPage() {
                         );
                     }
                 }
-                const data = calculatePercentagesFromDocs(docs);
-                setFinanceData(data);
+                setFinanceData(calculatePercentagesFromDocs(docs));
             } catch (error) {
                 console.error("Error calculating finance data:", error);
             }
@@ -270,8 +248,7 @@ export default function CollegeDashboardPage() {
         fetchFinanceData();
     }, [selectedLeadType]);
 
-
-    // New state for trainee leads device analytics
+    // Trainee Device Analytics State & Fetching
     const [traineeDeviceData, setTraineeDeviceData] = useState({
         chartOptions: {
             labels: ["Converted", "Wrong/Not Interested", "In Progress"],
@@ -288,21 +265,16 @@ export default function CollegeDashboardPage() {
         ]
     });
 
-    // Fetch trainee leads data for device analytics (pie chart)
     useEffect(() => {
         const fetchDeviceAnalytics = async () => {
             try {
-                // Use the previously created userRole function to fetch the current user's role
-                const role = await userRole();
-                // Fetch both collections in parallel
+                const role = await getUserRole();
                 const [traineeSnapshot, tnpSnapshot] = await Promise.all([
                     getDocs(collection(db, "leads-trainee")),
                     getDocs(collection(db, "leads-tnp"))
                 ]);
-                // Get docs from both collections
                 let traineeDocs = traineeSnapshot.docs;
                 let tnpDocs = tnpSnapshot.docs;
-                // If the user is not an Admin, filter documents by createdBy field
                 if (role !== "Admin") {
                     traineeDocs = traineeDocs.filter(
                         (doc) => doc.data().createdBy === auth.currentUser.email
@@ -311,15 +283,12 @@ export default function CollegeDashboardPage() {
                         (doc) => doc.data().createdBy === auth.currentUser.email
                     );
                 }
-                // Combine both sets of documents
                 const allDocs = [...traineeDocs, ...tnpDocs];
                 let converted = 0,
                     wrongNotInterested = 0,
                     notCleared = 0;
-                // Process each document
                 allDocs.forEach((doc) => {
                     const data = doc.data();
-                    // Only trainee leads have a "converted" field
                     if (data.converted === true) {
                         converted++;
                     } else if (
@@ -331,7 +300,6 @@ export default function CollegeDashboardPage() {
                         notCleared++;
                     }
                 });
-                // Update the state with the computed analytics
                 setTraineeDeviceData({
                     chartOptions: {
                         labels: ["Converted", "Wrong/Not Interested", "In Progress"],
@@ -359,8 +327,7 @@ export default function CollegeDashboardPage() {
         fetchDeviceAnalytics();
     }, []);
 
-
-    // Fetch overall data on mount and when timeRange changes
+    // Fetch overall data when component mounts and when timeRange changes
     useEffect(() => {
         const fetchData = async () => {
             await countDocuments();
@@ -369,70 +336,28 @@ export default function CollegeDashboardPage() {
         fetchData();
     }, [countDocuments, fetchSalesReport]);
 
-    // Chart Configurations for Sales Report
+    // Chart configurations for Sales Report
     const collegeChartOptions = useMemo(
         () => ({
-            chart: {
-                type: "bar",
-                toolbar: {show: false}
-            },
-            plotOptions: {
-                bar: {
-                    columnWidth: "50%",
-                    borderRadius: 4
-                }
-            },
+            chart: {type: "bar", toolbar: {show: false}},
+            plotOptions: {bar: {columnWidth: "50%", borderRadius: 4}},
             colors: ["#00E396", "#FF9800"],
-            xaxis: {
-                categories: salesReportCategories
-            },
-            legend: {
-                position: "bottom"
-            },
-            dataLabels: {
-                enabled: false
-            },
-            tooltip: {
-                shared: false,
-                intersect: true
-            }
+            xaxis: {categories: salesReportCategories},
+            legend: {position: "bottom"},
+            dataLabels: {enabled: false},
+            tooltip: {shared: false, intersect: true}
         }),
         [salesReportCategories]
     );
-
-
     const collegeChartSeries = useMemo(() => salesReportSeries, [salesReportSeries]);
 
-
-    // Dashboard Cards
+    // Dashboard Cards & Performance Data
     const collegeDashboardCards = [
-        {
-            title: "Total Leads (TNP)",
-            value: tnpLeads,
-            trend: "up",
-            subtitle: "TNP leads received"
-        },
-        {
-            title: "Total Leads (Trainee)",
-            value: traineeLeads,
-            trend: "up",
-            subtitle: "Trainee leads received"
-        },
-        {
-            title: "My Leads (TNP)",
-            value: myTnpLeads,
-            trend: "up",
-            subtitle: "TNP leads received"
-        },
-        {
-            title: "MY Leads (Trainee)",
-            value: myTraineeLeads,
-            trend: "up",
-            subtitle: "Trainee leads received"
-        }
+        {title: "Total Leads (TNP)", value: tnpLeads, trend: "up", subtitle: "TNP leads received"},
+        {title: "Total Leads (Trainee)", value: traineeLeads, trend: "up", subtitle: "Trainee leads received"},
+        {title: "My Leads (TNP)", value: myTnpLeads, trend: "up", subtitle: "TNP leads received"},
+        {title: "MY Leads (Trainee)", value: myTraineeLeads, trend: "up", subtitle: "Trainee leads received"}
     ];
-
-    // Sample Performance Data
     const collegeData = {
         categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
         series: [
@@ -448,52 +373,37 @@ export default function CollegeDashboardPage() {
             <div className="section-body mt-4">
                 <div className="container-fluid">
                     <DataCard cards={collegeDashboardCards}/>
-
-                    {/* Optimized Filters Panel */}
                     <div className="card mb-3 shadow-sm">
                         <div className="card-body">
                             <div className="row g-3 align-items-center justify-content-between">
-                                {filterOptions.map((filter) => {
-                                    if (filter.type === "select") {
-                                        return (
-                                            <div className="col-auto" key={filter.key}>
-                                                {/*<label htmlFor={filter.key} className="form-label">*/}
-                                                {/*    {filter.label}*/}
-                                                {/*</label>*/}
-                                                <select
-                                                    id={filter.key}
-                                                    className="form-select"
-                                                    value={activeFilters[filter.key] || "All"}
-                                                    onChange={(e) =>
-                                                        updateFilter(filter.key, e.target.value)
-                                                    }
-                                                >
-                                                    {filter.options?.map((option) => (
-                                                        <option key={option} value={option}>
-                                                            {option === "All" ? "All Leads" : option}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })}
+                                {filterOptions.map((filter) =>
+                                    filter.type === "select" ? (
+                                        <div className="col-auto" key={filter.key}>
+                                            <select
+                                                id={filter.key}
+                                                className="form-select"
+                                                value={activeFilters[filter.key] || "All"}
+                                                onChange={(e) => updateFilter(filter.key, e.target.value)}
+                                            >
+                                                {filter.options?.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option === "All" ? "All Leads" : option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : null
+                                )}
                                 <div className="col-auto align-self-end">
-                                    <button
-                                        className="btn btn-outline-danger"
-                                        onClick={resetFilters}
-                                    >
+                                    <button className="btn btn-outline-danger" onClick={resetFilters}>
                                         Clear Filters
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                     <div className="tab-content">
                         <div className="tab-pane fade show active" id="admin-Dashboard" role="tabpanel">
-                            {/* Finance Component with dynamic financeData */}
                             <Finance financeData={financeData}/>
                             <div className="row clearfix">
                                 <LeadsReport
@@ -514,7 +424,6 @@ export default function CollegeDashboardPage() {
                             </div>
                             <div className="row clearfix row-deck my-3">
                                 <Performance title="College Performance" data={collegeData} height={400}/>
-                                {/* DeviceAnalytics now uses the traineeDeviceData for its pie chart */}
                                 <DeviceAnalytics
                                     title="Trainee Leads Conversion"
                                     chartOptions={traineeDeviceData.chartOptions}
