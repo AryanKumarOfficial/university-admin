@@ -21,17 +21,17 @@ export default function CollegeDashboardPage() {
     const [timeRange, setTimeRange] = useState("1D");
     const [loading, setLoading] = useState(true);
 
-    // Filter states
-    const [activeFilters, setActiveFilters] = useState({leadType: "TNP"});
-    const [selectedLeadType, setSelectedLeadType] = useState("TNP");
+    // Filter states - default now set to "All"
+    const [activeFilters, setActiveFilters] = useState({leadType: "All"});
+    const [selectedLeadType, setSelectedLeadType] = useState("All");
 
-    // Define filter options
+    // Define filter options with "All" added
     const filterOptions = [
         {
             key: "leadType",
             label: "Lead Type",
             type: "select",
-            options: ["TNP", "Trainee"]
+            options: ["All", "TNP", "Trainee"]
         }
         // Additional filters can be added here
     ];
@@ -44,9 +44,9 @@ export default function CollegeDashboardPage() {
         }
     };
 
-    // Reset filters to default values
+    // Reset filters to default values (now "All")
     const resetFilters = () => {
-        const initialFilters = {leadType: "TNP"};
+        const initialFilters = {leadType: "All"};
         setActiveFilters(initialFilters);
         setSelectedLeadType(initialFilters.leadType);
     };
@@ -180,19 +180,17 @@ export default function CollegeDashboardPage() {
         "Follow up required": "orange"
     };
 
-    async function calculatePercentages(collectionRef) {
-        const snapshot = await getDocs(collectionRef);
-        const totalCount = snapshot.size;
+    // Function to calculate percentages from an array of documents
+    const calculatePercentagesFromDocs = (docs) => {
+        const totalCount = docs.length;
         const countByStatus = {};
-
-        snapshot.forEach((doc) => {
+        docs.forEach((doc) => {
             const data = doc.data();
             const status = data.response;
             if (statuses.includes(status)) {
                 countByStatus[status] = (countByStatus[status] || 0) + 1;
             }
         });
-
         return statuses.map((status) => {
             const count = countByStatus[status] || 0;
             const percentage = totalCount ? (count / totalCount) * 100 : 0;
@@ -202,17 +200,59 @@ export default function CollegeDashboardPage() {
                 percentage: parseFloat(percentage.toFixed(2))
             };
         });
+    };
+    const userRole = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            const usersSnapshot = await getDocs(
+                query(collection(db, "users"), where("email", "==", user.email))
+            );
+            const userSnapshot = usersSnapshot.docs[0];
+            return userSnapshot.data().role;
+        }
+        return null;
     }
 
-    // Fetch finance data based on the selected lead type
+// Fetch finance data based on the selected lead type and user role
     useEffect(() => {
         const fetchFinanceData = async () => {
             try {
-                const collectionRef = collection(
-                    db,
-                    selectedLeadType === "TNP" ? "leads-tnp" : "leads-trainee"
-                );
-                const data = await calculatePercentages(collectionRef);
+                // Fetch the user's role once
+                const role = await userRole();
+                let docs = [];
+                if (selectedLeadType === "All") {
+                    // Fetch both collections
+                    const [tnpSnapshot, traineeSnapshot] = await Promise.all([
+                        getDocs(collection(db, "leads-tnp")),
+                        getDocs(collection(db, "leads-trainee"))
+                    ]);
+                    let tnpDocs = tnpSnapshot.docs;
+                    let traineeDocs = traineeSnapshot.docs;
+                    // If the user is not an Admin, filter documents by createdBy field
+                    if (role !== "Admin") {
+                        tnpDocs = tnpDocs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                        traineeDocs = traineeDocs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                    }
+                    docs = [...tnpDocs, ...traineeDocs];
+                } else {
+                    // Fetch one specific collection based on selectedLeadType
+                    const collectionRef = collection(
+                        db,
+                        selectedLeadType === "TNP" ? "leads-tnp" : "leads-trainee"
+                    );
+                    const snapshot = await getDocs(collectionRef);
+                    docs = snapshot.docs;
+                    if (role !== "Admin") {
+                        docs = docs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                    }
+                }
+                const data = calculatePercentagesFromDocs(docs);
                 setFinanceData(data);
             } catch (error) {
                 console.error("Error calculating finance data:", error);
@@ -220,6 +260,7 @@ export default function CollegeDashboardPage() {
         };
         fetchFinanceData();
     }, [selectedLeadType]);
+
 
     // New state for trainee leads device analytics
     const [traineeDeviceData, setTraineeDeviceData] = useState({
@@ -390,9 +431,9 @@ export default function CollegeDashboardPage() {
                                     if (filter.type === "select") {
                                         return (
                                             <div className="col-auto" key={filter.key}>
-                                                <label htmlFor={filter.key} className="form-label">
-                                                    {filter.label}
-                                                </label>
+                                                {/*<label htmlFor={filter.key} className="form-label">*/}
+                                                {/*    {filter.label}*/}
+                                                {/*</label>*/}
                                                 <select
                                                     id={filter.key}
                                                     className="form-select"
@@ -403,7 +444,7 @@ export default function CollegeDashboardPage() {
                                                 >
                                                     {filter.options?.map((option) => (
                                                         <option key={option} value={option}>
-                                                            {option}
+                                                            {option === "All" ? "All Leads" : option}
                                                         </option>
                                                     ))}
                                                 </select>

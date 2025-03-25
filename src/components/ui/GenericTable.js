@@ -1,5 +1,4 @@
 "use client";
-
 import React, {useMemo, useState} from "react";
 import ConfirmModal from "@/components/sections/leads/ConfirmModal";
 import AlertList from "@/components/sections/leads/AlertList";
@@ -62,9 +61,6 @@ export default function GenericTable({
                     return filtered.filter((item) => {
                         // Convert the stored date to a UTC date string (YYYY-MM-DD)
                         const itemDate = new Date(item[filter.key]).toISOString().slice(0, 10);
-                        // Debug logs: Uncomment these lines to check the values during development
-                        // console.log("Filter value:", filterValue);
-                        // console.log("Item date:", itemDate);
                         return itemDate === filterValue;
                     });
                 case "select":
@@ -150,7 +146,6 @@ export default function GenericTable({
                                         ))}
                                     </select>
                                 );
-
                             case "date":
                                 return (
                                     <input
@@ -163,7 +158,6 @@ export default function GenericTable({
                                         onChange={(e) => updateFilter(filter.key, e.target.value)}
                                     />
                                 );
-
                             case "text":
                                 return (
                                     <input
@@ -175,7 +169,6 @@ export default function GenericTable({
                                         onChange={(e) => updateFilter(filter.key, e.target.value)}
                                     />
                                 );
-
                             case "custom":
                                 return (
                                     <div key={filter.key}>
@@ -187,7 +180,6 @@ export default function GenericTable({
                                             : null}
                                     </div>
                                 );
-
                             default:
                                 return (
                                     <input
@@ -238,66 +230,72 @@ export default function GenericTable({
                 )}
             </div>
 
-            {/* Data Table */}
+            {/* Data Table with NewStudents Design */}
             <div className="card">
-                <div className="table-responsive">
-                    <table className="table table-hover table-vcenter text-nowrap table-striped mb-0">
-                        <thead>
-                        <tr>
-                            {tableColumns.map((col) => (
-                                <th key={col.key}>{col.header}</th>
-                            ))}
-                            {rowActions && rowActions.length > 0 && <th>Actions</th>}
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {paginatedItems.length > 0 ? (
-                            paginatedItems.map((item) => (
-                                <tr key={item.id}>
-                                    {tableColumns.map((col) => (
-                                        <td key={col.key}>
-                                            {col.render
-                                                ? col.render(item[col.key], item)
-                                                : item[col.key]}
-                                        </td>
-                                    ))}
-                                    {rowActions && rowActions.length > 0 && (
-                                        <td className="d-flex gap-2">
-                                            {rowActions.map((action) => (
-                                                <button
-                                                    key={action.key}
-                                                    className={`btn btn-sm ${
-                                                        action.buttonClass || "btn-outline-primary"
-                                                    }`}
-                                                    onClick={() => handleRowAction(action, item)}
-                                                >
-                                                    {action.icon && <i className={action.icon}></i>}{" "}
-                                                    {action.label}
-                                                </button>
-                                            ))}
-                                        </td>
-                                    )}
-                                </tr>
-                            ))
-                        ) : (
+                <div className="card-header">
+                    <h3 className="card-title">{title}</h3>
+                    <div className="card-options">
+                        <a href="#" className="card-options-collapse" data-toggle="card-collapse">
+                            <i className="fe fe-chevron-up"></i>
+                        </a>
+                        <a href="#" className="card-options-fullscreen" data-toggle="card-fullscreen">
+                            <i className="fe fe-maximize"></i>
+                        </a>
+                        <a href="#" className="card-options-remove" data-toggle="card-remove">
+                            <i className="fe fe-x"></i>
+                        </a>
+                    </div>
+                </div>
+                <div className="card-body">
+                    <div className="table-responsive">
+                        <table className="table table-striped mb-0 text-nowrap">
+                            <thead>
                             <tr>
-                                <td colSpan={tableColumns.length + 1} className="text-center">
-                                    No {title} found.{" "}
-                                    {/*<Link*/}
-                                    {/*    href={*/}
-                                    {/*        title.toLowerCase() === "data"*/}
-                                    {/*            ? `${normalizedPath}/add`*/}
-                                    {/*            : `/${title.toLowerCase()}/add`*/}
-                                    {/*    }*/}
-                                    {/*    className="fw-bold"*/}
-                                    {/*>*/}
-                                    {/*    Add one now!*/}
-                                    {/*</Link>*/}
-                                </td>
+                                {tableColumns.map((col) => (
+                                    <th key={col.key}>{col.header}</th>
+                                ))}
+                                {rowActions && rowActions.length > 0 && <th>Actions</th>}
                             </tr>
-                        )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {paginatedItems.length > 0 ? (
+                                paginatedItems.map((item) => (
+                                    <tr key={item.id}>
+                                        {tableColumns.map((col) => (
+                                            <td key={col.key}>
+                                                {col.render
+                                                    ? col.render(item[col.key], item)
+                                                    : item[col.key]}
+                                            </td>
+                                        ))}
+                                        {rowActions && rowActions.length > 0 && (
+                                            <td className="d-flex gap-2">
+                                                {rowActions.map((action) => (
+                                                    <button
+                                                        key={action.key}
+                                                        className={`btn btn-sm ${
+                                                            action.buttonClass || "btn-outline-primary"
+                                                        }`}
+                                                        onClick={() => handleRowAction(action, item)}
+                                                    >
+                                                        {action.icon && <i className={action.icon}></i>}{" "}
+                                                        {action.label}
+                                                    </button>
+                                                ))}
+                                            </td>
+                                        )}
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={tableColumns.length + 1} className="text-center">
+                                        No {title} found.
+                                    </td>
+                                </tr>
+                            )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
