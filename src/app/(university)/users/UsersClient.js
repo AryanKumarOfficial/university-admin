@@ -112,7 +112,7 @@ export default function UsersClient({initialUsers = []}) {
                     filterOptions={filterOptions}
                     rowActions={rowActions}
                     initialFilterValues={{status: "All", role: "All"}}
-                    pageSize={3}
+                    pageSize={15}
                     globalActions={globalActions}
                 />
             </div>
