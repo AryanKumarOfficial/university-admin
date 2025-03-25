@@ -1,6 +1,5 @@
 "use client";
-
-import {useEffect, useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import Link from "next/link";
 import {usePathname, useRouter} from "next/navigation";
 import {useAuthStore} from "@/stores/auth-store";
@@ -18,8 +17,8 @@ const sidebarLinks = {
         {path: "/training", icon: "fa fa-tachometer", label: "Dashboard"},
         {path: "/training/leads-tnp", icon: "fa fa-handshake", label: "Leads (TNP)"},
         {path: "/training/leads-trainee", icon: "fa fa-handshake", label: "Leads (Trainees)"},
-        {path: "/training/trainee", icon: "fa fa-user-plus", label: "Trainees"},
-    ],
+        {path: "/training/trainee", icon: "fa fa-user-plus", label: "Trainees"}
+    ]
 };
 
 function TopHeader({user}) {
@@ -34,35 +33,13 @@ function TopHeader({user}) {
                         <a href="#" className="nav-link icon menu_toggle">
                             <i className="fe fe-align-center"></i>
                         </a>
-                        {/*<a href="page-search.html" className="nav-link icon">*/}
-                        {/*    <i className="fe fe-search" data-bs-toggle="tooltip" data-bs-placement="right"*/}
-                        {/*       title="Search..."></i>*/}
-                        {/*</a>*/}
-                        {/*<a href="app-email.html" className="nav-link icon app_inbox">*/}
-                        {/*    <i className="fe fe-inbox" data-bs-toggle="tooltip" data-bs-placement="right"*/}
-                        {/*       title="Inbox"></i>*/}
-                        {/*</a>*/}
-                        {/*<a href="app-filemanager.html" className="nav-link icon app_file xs-hide">*/}
-                        {/*    <i className="fe fe-folder" data-bs-toggle="tooltip" data-bs-placement="right"*/}
-                        {/*       title="File Manager"></i>*/}
-                        {/*</a>*/}
-                        {/*<a href="app-social.html" className="nav-link icon xs-hide">*/}
-                        {/*    <i className="fe fe-share-2" data-bs-toggle="tooltip" data-bs-placement="right"*/}
-                        {/*       title="Social Media"></i>*/}
-                        {/*</a>*/}
-                        {/*<a href="javascript:void(0)" className="nav-link icon theme_btn">*/}
-                        {/*    <i className="fe fe-feather"></i>*/}
-                        {/*</a>*/}
-                        {/*<a href="javascript:void(0)" className="nav-link icon settingbar">*/}
-                        {/*    <i className="fe fe-settings"></i>*/}
-                        {/*</a>*/}
                     </div>
                 </div>
                 <div className="hright">
                     <Link href="#" className="nav-link icon right_tab">
                         <i className="fe fe-align-right"></i>
                     </Link>
-                    <Link href="/login" className="nav-link  right_tab">
+                    <Link href="/login" className="nav-link right_tab">
                         <i className="fe fe-power"></i>
                     </Link>
                 </div>
@@ -111,7 +88,6 @@ function SidebarNav({activeTab, onTabChange, currentPath, linksByTab}) {
     );
 }
 
-
 function getSidebarLinksForRole(role) {
     if (!role) return {};
 
@@ -156,7 +132,7 @@ function UserDropdown({user, dropdownItems}) {
                     user?.displayName
                         ? user.displayName.replace(/[\s,]+/g, "+")
                         : "Guest"
-                })`,
+                })`
             }}
         ></span>
                 {user?.displayName ?? "Guest"}
@@ -190,6 +166,7 @@ const Navbar = () => {
     const {logOut, user, role} = useAuthStore();
     const pathname = usePathname();
     const router = useRouter();
+
     const handleLogout = async () => {
         try {
             await logOut();
@@ -201,18 +178,28 @@ const Navbar = () => {
 
     const dropdownItems = [
         {label: "Dashboard", href: "/", type: "link"},
-        {label: "Logout", type: "button", action: handleLogout},
+        {label: "Logout", type: "button", action: handleLogout}
     ];
 
     const filteredLinks = useMemo(() => getSidebarLinksForRole(role), [role]);
 
+    // Effect to set active tab based on filteredLinks if activeTab is no longer available
     useEffect(() => {
         const tabs = Object.keys(filteredLinks);
         if (tabs.length && !tabs.includes(activeTab)) {
-            // Here we prefer "Training" if available, otherwise the first available tab.
+            // Prefer "Training" if available, otherwise use the first available tab.
             setActiveTab(tabs.includes("Training") ? "Training" : tabs[0]);
         }
     }, [filteredLinks, activeTab]);
+
+    // New effect: set activeTab based on the current route pathname
+    useEffect(() => {
+        if (pathname && pathname.toLowerCase().includes("training")) {
+            setActiveTab("Training");
+        } else {
+            setActiveTab("School");
+        }
+    }, [pathname]);
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
@@ -222,19 +209,30 @@ const Navbar = () => {
         }
     };
 
-
     return (
         <div id="main_content">
             <TopHeader user={user}/>
             <div id="left-sidebar" className="sidebar">
-                <h5 className="brand-name fs-6 w-100">Centralized Admin
-                    <Link href="#" className="menu_option float-right ms-3" style={{textDecoration: "none"}}>
-                        <i className="icon-grid font-16" data-toggle="tooltip" data-placement="left"
-                           title="Grid & List Toggle"></i>
+                <h5 className="brand-name fs-6 w-100">
+                    Centralized Admin
+                    <Link
+                        href="#"
+                        className="menu_option float-right ms-3"
+                        style={{textDecoration: "none"}}
+                    >
+                        <i
+                            className="icon-grid font-16"
+                            data-toggle="tooltip"
+                            data-placement="left"
+                            title="Grid & List Toggle"
+                        ></i>
                     </Link>
                 </h5>
-                <SidebarNav activeTab={activeTab} onTabChange={handleTabChange} currentPath={pathname}
-                            linksByTab={filteredLinks}
+                <SidebarNav
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                    currentPath={pathname}
+                    linksByTab={filteredLinks}
                 />
             </div>
             <div className="page">
@@ -245,12 +243,12 @@ const Navbar = () => {
                             <div className="right">
                                 <div className="notification d-flex">
                                     {!user ? (
-                                            <Link href="/login" className="nav-link icon">
-                                                <i className="fa fa-sign-in"></i>
-                                            </Link>
-                                        ) :
+                                        <Link href="/login" className="nav-link icon">
+                                            <i className="fa fa-sign-in"></i>
+                                        </Link>
+                                    ) : (
                                         <UserDropdown user={user} dropdownItems={dropdownItems}/>
-                                    }
+                                    )}
                                 </div>
                             </div>
                         </div>
