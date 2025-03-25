@@ -49,26 +49,21 @@ export default function DeviceAnalytics({
                                             footerData = defaultFooterData,
                                             height = 250,
                                         }) {
+    const isEmptyData = chartSeries.every((value) => value === 0);
+
     return (
         <div className="col-xl-6 col-lg-6 col-md-12 my-3">
             <div className="card">
                 <div className="card-header">
                     <h3 className="card-title">{title}</h3>
-                    {/*<div className="card-options">*/}
-                    {/*    <a href="#" className="card-options-collapse" data-toggle="card-collapse">*/}
-                    {/*        <i className="fe fe-chevron-up"></i>*/}
-                    {/*    </a>*/}
-                    {/*    <a href="#" className="card-options-fullscreen" data-toggle="card-fullscreen">*/}
-                    {/*        <i className="fe fe-maximize"></i>*/}
-                    {/*    </a>*/}
-                    {/*    <a href="#" className="card-options-remove" data-toggle="card-remove">*/}
-                    {/*        <i className="fe fe-x"></i>*/}
-                    {/*    </a>*/}
-                    {/*</div>*/}
                 </div>
 
                 <div className="card-body">
-                    <Chart options={chartOptions} series={chartSeries} type="donut" height={height}/>
+                    {isEmptyData ? (
+                        <div className="text-center py-5">Data not available</div>
+                    ) : (
+                        <Chart options={chartOptions} series={chartSeries} type="donut" height={height}/>
+                    )}
                 </div>
 
                 <div className="card-footer">
@@ -77,9 +72,6 @@ export default function DeviceAnalytics({
                             <div key={index} className="p-2 flex-fill">
                                 <span className="text-muted">{item.label}</span>
                                 <h5>{item.count}</h5>
-                                {/*<small className={item.changeType === "up" ? "text-success" : "text-danger"}>*/}
-                                {/*    <i className={`fa fa-angle-${item.changeType === "up" ? "up" : "down"}`}></i> {item.change}*/}
-                                {/*</small>*/}
                             </div>
                         ))}
                     </div>

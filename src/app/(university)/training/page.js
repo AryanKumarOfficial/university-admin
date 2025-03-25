@@ -265,7 +265,7 @@ export default function CollegeDashboardPage() {
     // New state for trainee leads device analytics
     const [traineeDeviceData, setTraineeDeviceData] = useState({
         chartOptions: {
-            labels: ["Converted", "Wrong/Not Interested", "Not Cleared"],
+            labels: ["Converted", "Wrong/Not Interested", "In Progress"],
             colors: ["#4CAF50", "#FF0000", "#03A9FA"],
             legend: {position: "bottom"},
             dataLabels: {enabled: false},
@@ -275,20 +275,42 @@ export default function CollegeDashboardPage() {
         footerData: [
             {label: "Converted", count: "0", changeType: "up", change: "0%"},
             {label: "Wrong/Not Interested", count: "0", changeType: "down", change: "0%"},
-            {label: "Not Cleared", count: "0", changeType: "up", change: "2%"}
+            {label: "In Progress", count: "0", changeType: "up", change: "2%"}
         ]
     });
 
     // Fetch trainee leads data for device analytics (pie chart)
     useEffect(() => {
-        const fetchTraineeDeviceAnalytics = async () => {
+        const fetchDeviceAnalytics = async () => {
             try {
-                const snapshot = await getDocs(collection(db, "leads-trainee"));
+                // Use the previously created userRole function to fetch the current user's role
+                const role = await userRole();
+                // Fetch both collections in parallel
+                const [traineeSnapshot, tnpSnapshot] = await Promise.all([
+                    getDocs(collection(db, "leads-trainee")),
+                    getDocs(collection(db, "leads-tnp"))
+                ]);
+                // Get docs from both collections
+                let traineeDocs = traineeSnapshot.docs;
+                let tnpDocs = tnpSnapshot.docs;
+                // If the user is not an Admin, filter documents by createdBy field
+                if (role !== "Admin") {
+                    traineeDocs = traineeDocs.filter(
+                        (doc) => doc.data().createdBy === auth.currentUser.email
+                    );
+                    tnpDocs = tnpDocs.filter(
+                        (doc) => doc.data().createdBy === auth.currentUser.email
+                    );
+                }
+                // Combine both sets of documents
+                const allDocs = [...traineeDocs, ...tnpDocs];
                 let converted = 0,
                     wrongNotInterested = 0,
                     notCleared = 0;
-                snapshot.forEach((doc) => {
+                // Process each document
+                allDocs.forEach((doc) => {
                     const data = doc.data();
+                    // Only trainee leads have a "converted" field
                     if (data.converted === true) {
                         converted++;
                     } else if (
@@ -300,9 +322,10 @@ export default function CollegeDashboardPage() {
                         notCleared++;
                     }
                 });
+                // Update the state with the computed analytics
                 setTraineeDeviceData({
                     chartOptions: {
-                        labels: ["Converted", "Wrong/Not Interested", "Not Cleared"],
+                        labels: ["Converted", "Wrong/Not Interested", "In Progress"],
                         colors: ["#4CAF50", "#FF0000", "#03A9FA"],
                         legend: {position: "bottom"},
                         dataLabels: {enabled: false},
@@ -317,15 +340,16 @@ export default function CollegeDashboardPage() {
                             changeType: "down",
                             change: "0%"
                         },
-                        {label: "Not Cleared", count: notCleared.toString(), changeType: "up", change: "0%"}
+                        {label: "In Progress", count: notCleared.toString(), changeType: "up", change: "0%"}
                     ]
                 });
             } catch (error) {
-                console.error("Error fetching trainee device analytics:", error);
+                console.error("Error fetching device analytics:", error);
             }
         };
-        fetchTraineeDeviceAnalytics();
+        fetchDeviceAnalytics();
     }, []);
+
 
     // Fetch overall data on mount and when timeRange changes
     useEffect(() => {
