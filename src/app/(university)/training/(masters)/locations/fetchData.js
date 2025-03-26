@@ -7,5 +7,6 @@ export async function getLocations() {
     snapshot.forEach((docSnap) => {
         locations.push({id: docSnap.id, ...docSnap.data()});
     });
+    console.log("locations", locations);
     return locations;
 }

@@ -1,5 +1,6 @@
 import Footer from "@/components/ui/Footer";
 import Navbar from "@/components/ui/Navbar";
+import {Toaster} from "react-hot-toast";
 
 
 export const metadata = {
@@ -11,6 +12,10 @@ export default function RootLayout({children}) {
     return (
         <>
             <Navbar/>
+            <Toaster
+                position="top-right"
+                reverseOrder={false}
+            />
             {children}
             <Footer/>
         </>

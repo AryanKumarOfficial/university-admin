@@ -13,23 +13,28 @@ export default async function DataClient({locations = []}) {
             header: "Name",
         },
         {
-            key: "updatedBy",
-            header: "Updated By",
+            key: "createdBy",
+            header: "Created By",
         },
         {
-            key: "updatedAt",
-            header: "Updated At",
+            key: "createdAt",
+            header: "Created At",
+            render: (value) => (new Date(value).toLocaleDateString("en-IN", {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+            }))
         }
     ]
     // Filter options
     const filterOptions = [
         {key: "name", label: "Search", type: "text"},
-        {key: "startDate", label: "Joined Date", type: "date"},
+        {key: "createdAt", label: "Joined Date", type: "date"},
     ];
     const rowActions = [
         {
             key: "delete",
-            label: "Delete",
+            label: "",
             icon: "fa fa-trash",
             buttonClass: "btn-outline-danger",
             requireConfirm: true,
@@ -57,7 +62,7 @@ export default async function DataClient({locations = []}) {
         },
         {
             key: "edit",
-            label: "Edit",
+            label: "",
             icon: "fa fa-edit",
             buttonClass: "btn-outline-primary",
             requireConfirm: false,

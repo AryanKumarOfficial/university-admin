@@ -7,7 +7,7 @@ import {db} from "@/lib/firebase/client";
  * Fetch all clients from Firestore.
  * In a real app, you might do server-side filtering/pagination.
  */
-export async function fetchAllLocations() {
+export async function fetchAllTeachers() {
     const snapshot = await getDocs(collection(db, "teachers"));
     const teachers = [];
     snapshot.forEach((docSnap) => {

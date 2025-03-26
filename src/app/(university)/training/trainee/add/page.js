@@ -6,7 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 
-import {db} from "@/lib/firebase/client";
+import {auth, db} from "@/lib/firebase/client";
 import {TraineeSchema} from "@/schema/TraineeSchema";
 
 // Updated form section with a single text field for college
@@ -75,9 +75,11 @@ export default function AddTrainee() {
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
+            const createdBy = auth.currentUser?.email || "unknown";
             const leadData = {
                 ...data,
                 createdAt: new Date().toISOString(),
+                createdBy
             };
             delete leadData.newComments;
 
