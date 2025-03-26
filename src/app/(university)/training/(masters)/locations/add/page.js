@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
@@ -19,42 +19,48 @@ export default function AddLocation() {
         formState: {errors},
     } = useForm({
         resolver: zodResolver(LocationSchema),
-        defaultValues: {
-            name: "",
-        },
+        defaultValues: {name: ""},
         mode: "onChange",
     });
     const [isSaving, setIsSaving] = useState(false);
-    // Helper for optional icons
+
     const onSubmit = async (data) => {
         setIsSaving(true);
-        try {
-            const createdBy = auth.currentUser?.email || "unknown";
-            const locationData = {
-                ...data,
-                createdAt: new Date().toISOString(),
-                createdBy,
-            };
-            await addDoc(collection(db, "location-master"), locationData);
-            toast.success("Location added successfully");
-            reset();
-            router.push("/training/locations");
-            console.log(locationData);
-        } catch (err) {
-            console.log("Error adding location", err);
-            toast.error("Error adding location");
-        } finally {
-            setIsSaving(false);
-        }
-    }
+        const createdBy = auth.currentUser?.email || "unknown";
+        const locationData = {
+            ...data,
+            createdAt: new Date().toISOString(),
+            createdBy,
+        };
+
+        const promise = addDoc(collection(db, "location-master"), locationData);
+
+        toast
+            .promise(promise, {
+                loading: "Adding location...",
+                success: "Location added successfully",
+                error: "Error adding location",
+            })
+            .then(() => {
+                reset();
+                router.push("/training/locations");
+            })
+            .catch((err) => {
+                console.error("Error adding location", err);
+            })
+            .finally(() => {
+                setIsSaving(false);
+            });
+    };
+
     return (
-        <div className={"page"}>
+        <div className="page">
             <Breadcrumb
                 breadcrumbs={[
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
                     {label: "Locations", href: "/training/locations"},
-                    {label: "Add", href: "/training/locations/add"}
+                    {label: "Add", href: "/training/locations/add"},
                 ]}
             />
             <div className="section-body mt-4">
@@ -62,15 +68,11 @@ export default function AddLocation() {
                     <div className="tab-content">
                         <div className="tab-pane active show fade" id="lead-add">
                             <form onSubmit={handleSubmit(onSubmit)}>
-                                {/* Basic Info Section now uses the updated single text field for college */}
                                 <BasicInfoSection
                                     register={register}
                                     errors={errors}
-                                    title={"Location"}
+                                    title="Location"
                                 />
-
-
-                                {/* Submit Button */}
                                 <div className="d-flex justify-content-end gap-2 mb-5">
                                     <button
                                         type="reset"
@@ -93,7 +95,6 @@ export default function AddLocation() {
                     </div>
                 </div>
             </div>
-
         </div>
-    )
+    );
 }
