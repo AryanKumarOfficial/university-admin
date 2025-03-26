@@ -17,7 +17,22 @@ const sidebarLinks = {
         {path: "/training", icon: "fa fa-tachometer", label: "Dashboard"},
         {path: "/training/leads-tnp", icon: "fa fa-handshake", label: "Leads (TNP)"},
         {path: "/training/leads-trainee", icon: "fa fa-handshake", label: "Leads (Trainees)"},
-        {path: "/training/trainee", icon: "fa fa-user-plus", label: "Trainees"}
+        {path: "/training/trainee", icon: "fa fa-user-plus", label: "Trainees"},
+        {
+            path: "/training/locations",
+            icon: "fa fa-map-marker-alt",
+            label: "Location Master"
+        },
+        {
+            path: "/training/collages",
+            icon: "fa fa-university",
+            label: "Collage Master"
+        },
+        {
+            path: "/training/courses",
+            icon: "fa fa-book-reader",
+            label: "Course Master"
+        }
     ]
 };
 
@@ -99,7 +114,9 @@ function getSidebarLinksForRole(role) {
             School: sidebarLinks.School.filter(link =>
                 ["Dashboard", "Leads", "Clients"].includes(link.label)
             ),
-            Training: [...sidebarLinks.Training]
+            Training: sidebarLinks.Training.filter(link =>
+                link.path !== "/training/locations"
+            )
         };
     } else {
         // For any other role, only show the Training tab.
