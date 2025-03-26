@@ -139,7 +139,7 @@ export default function AddTraineeLead() {
 
     return (
         <>
-            <div className="page">
+            <div className="page px-4 py-3">
                 {/* Alerts */}
                 {alerts.map((alert) => (
                     <Alert
@@ -201,7 +201,7 @@ export default function AddTraineeLead() {
                                             className="btn btn-danger"
                                             onClick={() => {
                                                 reset();
-                                                router.push("/leads");
+                                                router.push("/training/leads-trainee");
                                             }}
                                             disabled={isSaving}
                                         >

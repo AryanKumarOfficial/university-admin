@@ -69,7 +69,7 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
     };
 
     return (
-        <div className="page">
+        <div className="page px-5 py-3">
             {/* Alerts */}
             {alerts.map((alert) => (
                 <Alert
@@ -116,6 +116,11 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
 
                                 {/* Submit Button */}
                                 <div className="d-flex justify-content-end gap-2 mb-5">
+                                    <button type="button" className="btn btn-danger"
+                                            onClick={() => router.push("/training/trainee")}
+                                    >
+                                        Cancel Update
+                                    </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
                                         Update Trainee

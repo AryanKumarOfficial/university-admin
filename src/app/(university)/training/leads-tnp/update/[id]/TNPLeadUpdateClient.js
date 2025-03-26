@@ -110,7 +110,7 @@ export default function TNPLeadUpdateClient({lead}) {
 
     return (
         <>
-            <div className="page">
+            <div className="page px-3 py-3">
                 {alerts.map((alert) => (
                     <Alert
                         key={alert.id}

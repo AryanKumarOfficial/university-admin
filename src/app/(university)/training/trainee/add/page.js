@@ -149,7 +149,7 @@ export default function AddTrainee() {
                                             className="btn btn-danger"
                                             onClick={() => {
                                                 reset();
-                                                router.push("/leads");
+                                                router.push("/training/trainee");
                                             }}
                                             disabled={isSaving}
                                         >

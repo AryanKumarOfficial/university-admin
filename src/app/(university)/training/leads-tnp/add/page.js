@@ -109,7 +109,7 @@ export default function AddTNPLead() {
 
     return (
         <>
-            <div className="page">
+            <div className="page px-4 py-3">
                 {alerts.map((alert) => (
                     <Alert
                         key={alert.id}

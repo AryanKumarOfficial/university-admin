@@ -110,7 +110,7 @@ export default function TraineeLeadUpdateClient({lead}) {
     }, [lead, reset]);
 
     return (
-        <div className="page">
+        <div className="page px-3 py-3">
             {alerts.map((alert) => (
                 <Alert
                     key={alert.id}
@@ -146,7 +146,8 @@ export default function TraineeLeadUpdateClient({lead}) {
                             <form onSubmit={handleSubmit(onSubmit)}>
                                 {/* Basic Information Section updated for trainee leads */}
                                 <BasicInfoSection
-                                    register={register} errors={errors} title="Trainee" initialCollegeValue={lead.traineeCollegeName}/>
+                                    register={register} errors={errors} title="Trainee"
+                                    initialCollegeValue={lead.traineeCollegeName}/>
 
                                 {/* Comments Section remains unchanged */}
                                 <CommentsSection
