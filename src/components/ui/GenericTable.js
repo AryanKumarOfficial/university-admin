@@ -237,7 +237,7 @@ export default function GenericTable({
                 </div>
                 <div className="card-body">
                     <div className="table-responsive">
-                        <table className="table table-striped mb-0 text-nowrap">
+                        <table className="table table-striped table-hover mb-0 text-nowrap">
                             <thead>
                             <tr>
                                 {tableColumns.map((col) => (
@@ -248,33 +248,51 @@ export default function GenericTable({
                             </thead>
                             <tbody>
                             {paginatedItems.length > 0 ? (
-                                paginatedItems.map((item) => (
-                                    <tr key={item.id}>
-                                        {tableColumns.map((col) => (
-                                            <td key={col.key}>
-                                                {col.render
-                                                    ? col.render(item[col.key], item)
-                                                    : item[col.key]}
-                                            </td>
-                                        ))}
-                                        {rowActions && rowActions.length > 0 && (
-                                            <td className="d-flex gap-2">
-                                                {rowActions.map((action) => (
-                                                    <button
-                                                        key={action.key}
-                                                        className={`btn btn-sm ${
-                                                            action.buttonClass || "btn-outline-primary"
-                                                        }`}
-                                                        onClick={() => handleRowAction(action, item)}
-                                                    >
-                                                        {action.icon && <i className={action.icon}></i>}{" "}
-                                                        {action.label}
-                                                    </button>
-                                                ))}
-                                            </td>
-                                        )}
-                                    </tr>
-                                ))
+                                paginatedItems.map((item) => {
+                                    // Create sorted actions: convert first, then the rest.
+                                    const sortedActions = [
+                                        ...rowActions.filter((a) => a.key === "convert"),
+                                        ...rowActions.filter((a) => a.key !== "convert"),
+                                    ];
+                                    return (
+                                        <tr key={item.id} className={item.converted ? "table-success" : ""}>
+                                            {tableColumns.map((col) => (
+                                                <td key={col.key}>
+                                                    {col.render ? col.render(item[col.key], item) : item[col.key]}
+                                                </td>
+                                            ))}
+                                            {rowActions && rowActions.length > 0 && (
+                                                <td className="d-flex gap-2 justify-content-end">
+                                                    {sortedActions.map((action) => {
+                                                        // Skip the convert button if the item is already converted.
+                                                        if (action.key === "convert" && item.converted) return null;
+                                                        return (
+                                                            <button
+                                                                key={action.key}
+                                                                className={`btn btn-sm ${action.buttonClass || "btn-outline-light"}`}
+                                                                onClick={() => handleRowAction(action, item)}
+                                                            >
+                                                                {action.icon && (
+                                                                    React.isValidElement(action.icon) ? (
+                                                                        action.icon
+                                                                    ) : (
+                                                                        <>
+                                                                            <i className={action.icon}
+                                                                               style={{fontSize: "18px"}}></i>
+                                                                            {" "}
+                                                                            {action.label}
+                                                                        </>
+                                                                    )
+                                                                )}
+
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </td>
+                                            )}
+                                        </tr>
+                                    );
+                                })
                             ) : (
                                 <tr>
                                     <td colSpan={tableColumns.length + 1} className="text-center">
@@ -285,6 +303,7 @@ export default function GenericTable({
                             </tbody>
                         </table>
                     </div>
+
                 </div>
             </div>
 

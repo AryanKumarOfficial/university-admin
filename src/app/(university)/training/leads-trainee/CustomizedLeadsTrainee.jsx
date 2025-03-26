@@ -55,8 +55,8 @@ export default function CustomizedLeadsTrainee({initialUsers = []}) {
         {
             key: "delete",
             label: "Delete",
-            icon: <i className="fa fa-trash" style={{color: "red", fontSize: "18px"}}></i>,
-            buttonClass: "btn-outline-danger",
+            icon: <i className="fa fa-trash" style={{fontSize: "18px"}}></i>,
+            buttonClass: "btn-outline-danger ",
             requireConfirm: true,
             title: "Confirm Delete",
             confirmMessage: "Are you sure you want to delete this lead?",
@@ -92,7 +92,7 @@ export default function CustomizedLeadsTrainee({initialUsers = []}) {
         {
             key: "edit",
             label: "Edit",
-            icon: <i className="fa fa-edit" style={{color: "blue", fontSize: "18px"}}></i>,
+            icon: <i className="fa fa-edit" style={{fontSize: "18px"}}></i>,
             buttonClass: "btn-outline-primary",
             requireConfirm: false,
             onClick: (item) => {
@@ -104,8 +104,8 @@ export default function CustomizedLeadsTrainee({initialUsers = []}) {
         {
             key: "convert",
             label: "Convert",
-            icon: <i className="fa fa-exchange" style={{color: "green", fontSize: "18px"}}/>,
-            buttonClass: "btn-outline-info",
+            icon: <i className="fa fa-exchange" style={{fontSize: "18px"}}/>,
+            buttonClass: "btn-success",
             requireConfirm: false,
             onClick: (item) => {
                 if (item) {
@@ -184,7 +184,7 @@ export default function CustomizedLeadsTrainee({initialUsers = []}) {
                     ]}
                     rowActions={rowActions}
                     initialFilterValues={{status: "All"}}
-                    pageSize={3}
+                    pageSize={10}
                     globalActions={globalActions}
                 />
 
