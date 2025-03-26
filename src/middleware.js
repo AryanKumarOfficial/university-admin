@@ -29,7 +29,7 @@ export async function middleware(request) {
 
         const {payload: decoded} = await jwtVerify(token, secretKey, {
             algorithms: ["HS256"],
-        })
+        });
 
         if (!decoded) {
             throw new Error("Invalid token");
@@ -42,19 +42,31 @@ export async function middleware(request) {
         }
 
         // For Growth Managers:
-        // - They can access any /training route.
+        // - They can access any /training route EXCEPT /training/locations.
         // - For "school" routes (at root level), only allow specific paths.
         if (userRole === "Growth Manager") {
             const allowedSchoolPaths = ["/", "/leads", "/clients"];
             if (pathname.startsWith("/training")) {
+                if (pathname === "/training/locations") {
+                    const referer = request.headers.get("referer");
+                    let redirectUrl = new URL("/training", request.url);
+                    if (referer) {
+                        const refererUrl = new URL(referer);
+                        if (refererUrl.hostname === request.nextUrl.hostname) {
+                            redirectUrl = refererUrl;
+                        }
+                    }
+                    return NextResponse.redirect(redirectUrl);
+
+                }
                 return NextResponse.next();
             }
             if (allowedSchoolPaths.includes(pathname)) {
                 return NextResponse.next();
             }
-            // Otherwise, redirect to an unauthorized page.
             return NextResponse.redirect(new URL("/", request.url));
         }
+
         if (userRole === "Trainee" || userRole === "Intern") {
             if (pathname === "/training") {
                 return NextResponse.next();
@@ -68,10 +80,11 @@ export async function middleware(request) {
             if (allowedSchoolPaths.includes(pathname)) {
                 return NextResponse.next();
             }
-            // Otherwise, redirect to the /courses route.
+            // Otherwise, redirect to the /training route.
             return NextResponse.redirect(new URL("/training", request.url));
         }
-        // For other roles, you can add additional logic as needed.
+
+        // For other roles, allow access.
         return NextResponse.next();
     } catch (error) {
         console.error("Middleware error:", error);
