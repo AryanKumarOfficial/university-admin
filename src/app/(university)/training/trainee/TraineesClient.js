@@ -3,38 +3,41 @@
 import React from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
+import {useRouter} from "next/navigation";
 
 export default function TraineesClient({initialTrainees = []}) {
+    const router = useRouter();
+
     // Column definitions for trainee (update as needed)
     const columns = [
         {key: "id", header: "#"},
         {key: "name", header: "Name"},
         {key: "college", header: "Collage Name"},
-        // { key: "age", header: "Age" },
         {key: "phone", header: "Phone"},
         {key: "location", header: "location"},
-        // { key: "action", header: "Action" },
         {
-            key: "createdAt", header: "Joined Date", render: (item) => (
-                <div>{new Date(item).toLocaleDateString("en-In",{
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric"
-                })}</div>
-            )
+            key: "createdAt",
+            header: "Joined Date",
+            render: (item) => (
+                <div>
+                    {new Date(item).toLocaleDateString("en-In", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                    })}
+                </div>
+            ),
         },
         {
-            key: "transactionNumber", header: "Transaction Number", render: (item) => (
-                <div>{item}</div>
-            )
-        }
-        // { key: "updatedAt", header: "Updated At" },
+            key: "transactionNumber",
+            header: "Transaction Number",
+            render: (item) => <div>{item}</div>,
+        },
     ];
 
     // Filter options
     const filterOptions = [
         {key: "name", label: "Search", type: "text"},
-        // { key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"] },
         {key: "startDate", label: "Joined Date", type: "date"},
     ];
 
@@ -50,9 +53,21 @@ export default function TraineesClient({initialTrainees = []}) {
             confirmMessage: "Are you sure you want to delete this record?",
             onClick: async (item) => {
                 if (item) {
-                    console.log("Deleting record with id:", item.id);
-                } else {
-                    console.log("Global delete action triggered");
+                    try {
+                        const res = await fetch(`/api/training/trainee`, {
+                            method: "DELETE",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({id: item.id}),
+                        });
+                        if (res.status === 200) {
+                            console.log("Record deleted successfully.");
+                            router.refresh();
+                        } else {
+                            console.error("Error deleting record with id:", item.id, "Status:", res.status);
+                        }
+                    } catch (error) {
+                        console.error("Error deleting record:", error);
+                    }
                 }
             },
         },

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase/client";
+import React, {useEffect, useState} from "react";
+import {collection, getDocs} from "firebase/firestore";
+import {db} from "@/lib/firebase/client";
 
-export default function BasicInfoSection({ register, errors, title }) {
+export default function BasicInfoSection({register, errors, title}) {
     const [colleges, setColleges] = useState([]);
 
     // Fetch the available colleges from the "leads-tnp" collection
@@ -50,7 +50,7 @@ export default function BasicInfoSection({ register, errors, title }) {
                     {/* College Name */}
                     <div className="col-md-6 mb-3">
                         <label className="form-label">College Name</label>
-                        <select className="form-select" {...register("collage")}>
+                        <select className="form-select" {...register("college")}>
                             <option value="">Select a college</option>
                             {colleges.map((college) => (
                                 <option key={college} value={college}>
@@ -58,8 +58,8 @@ export default function BasicInfoSection({ register, errors, title }) {
                                 </option>
                             ))}
                         </select>
-                        {errors.collage && (
-                            <small className="text-danger">{errors.collage.message}</small>
+                        {errors.college && (
+                            <small className="text-danger">{errors.college.message}</small>
                         )}
                     </div>
                 </div>
@@ -86,6 +86,20 @@ export default function BasicInfoSection({ register, errors, title }) {
                         />
                         {errors.location && (
                             <small className="text-danger">{errors.location.message}</small>
+                        )}
+                    </div>
+                </div>
+                <div className="row">
+                    {/* Transaction Number */}
+                    <div className="col-md-6 mb-3">
+                        <label className="form-label">Transaction Number</label>
+                        <input
+                            className="form-control"
+                            type="text"
+                            {...register("transactionNumber")}
+                        />
+                        {errors.transactionNumber && (
+                            <small className="text-danger">{errors.transactionNumber.message}</small>
                         )}
                     </div>
                 </div>
