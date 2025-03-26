@@ -99,25 +99,33 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
             />
 
             {/* Update Form */}
-            <form onSubmit={handleSubmit(onSubmit)}>
-                {/* Basic Info Section */}
-                <BasicInfoSection
-                    register={register}
-                    errors={errors}
-                    title="Trainee"
-                    initialCollegeValue={initialData.college}
+            <div className="section-body mt-4">
+                <div className="container-fluid">
+                    <div className="tab-content">
+                        <div className="tab-pane active show fade" id="lead-add">
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                {/* Basic Info Section */}
+                                <BasicInfoSection
+                                    register={register}
+                                    errors={errors}
+                                    title="Trainee"
+                                    initialCollegeValue={initialData.college}
 
-                />
+                                />
 
 
-                {/* Submit Button */}
-                <div className="d-flex justify-content-end gap-2 mb-5">
-                    <button type="submit" className="btn btn-success" disabled={isSaving}>
-                        {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                        Update Trainee
-                    </button>
+                                {/* Submit Button */}
+                                <div className="d-flex justify-content-end gap-2 mb-5">
+                                    <button type="submit" className="btn btn-success" disabled={isSaving}>
+                                        {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
+                                        Update Trainee
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
-            </form>
+            </div>
         </div>
     );
 }
