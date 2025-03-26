@@ -4,10 +4,10 @@ import {db} from "@/lib/firebase/client";
 
 export async function POST(req) {
     try {
-        const {id} = await req.json();
-        if (!id) {
+        const {id, transactionNumber} = await req.json();
+        if (!id || !transactionNumber) {
             return NextResponse.json(
-                {success: false, error: "Invalid ID"},
+                {success: false, error: "Invalid Data"},
                 {status: 400}
             );
         }
@@ -33,7 +33,7 @@ export async function POST(req) {
             traineeCollegeName: college,
             location,
             contactNumber: phone,
-            createdAt
+            createdAt,
         } = leadSnap.data();
 
         // Add a new document to the "trainee" collection with the selected fields
@@ -43,6 +43,7 @@ export async function POST(req) {
             location,
             phone,
             createdAt,
+            transactionNumber
         });
 
         return NextResponse.json(

@@ -221,7 +221,7 @@ export default function GenericTable({
                                         className={`dropdown-item ${action.buttonClass || ""}`}
                                         onClick={() => action.onClick && action.onClick(null)}
                                     >
-                                        {action.label}
+                                        {action.label ? action.label : action.icon}
                                     </button>
                                 </li>
                             ))}

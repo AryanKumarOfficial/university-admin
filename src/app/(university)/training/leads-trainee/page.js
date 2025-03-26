@@ -2,7 +2,7 @@ export const revalidate = 0;
 export const dynamic = "force-dynamic"
 import React from "react";
 import {FetchAllLeadsTrainee} from "./fetchLeads";
-import LeadsTraineeClient from "./LeadsTraineeClient";
+import CustomizedLeadsTrainee from "./CustomizedLeadsTrainee";
 
 /**
  * Server component:
@@ -13,6 +13,6 @@ export default async function LeadsTNPPage() {
     const leads = await FetchAllLeadsTrainee();
 
     return (
-        <LeadsTraineeClient initialUsers={leads}/>
+        <CustomizedLeadsTrainee initialUsers={leads}/>
     );
 }
