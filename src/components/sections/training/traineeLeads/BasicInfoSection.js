@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
-export default function BasicInfoSection({register, errors, title}) {
+export default function BasicInfoSection({register, errors, title, initialCollegeValue = ""}) {
     const [colleges, setColleges] = useState([]);
 
     // Fetch the available colleges from the "leads-tnp" collection
@@ -53,7 +53,7 @@ export default function BasicInfoSection({register, errors, title}) {
                         <select className="form-select" {...register("traineeCollegeName")}>
                             <option value="">Select a college</option>
                             {colleges.map((college) => (
-                                <option key={college} value={college}>
+                                <option key={college} value={college} selected={college === initialCollegeValue}>
                                     {college}
                                 </option>
                             ))}

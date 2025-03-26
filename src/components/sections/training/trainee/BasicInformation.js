@@ -4,7 +4,7 @@ import React, {useEffect, useState} from "react";
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
-export default function BasicInfoSection({register, errors, title}) {
+export default function BasicInfoSection({register, errors, title, initialCollegeValue = ""}) {
     const [colleges, setColleges] = useState([]);
 
     // Fetch the available colleges from the "leads-tnp" collection
@@ -20,6 +20,9 @@ export default function BasicInfoSection({register, errors, title}) {
                     }
                 });
                 setColleges(Array.from(collegeSet));
+                collegeSet.forEach((college) => {
+                    console.log("College:", college);
+                })
             } catch (error) {
                 console.error("Error fetching colleges:", error);
             }
@@ -50,10 +53,14 @@ export default function BasicInfoSection({register, errors, title}) {
                     {/* College Name */}
                     <div className="col-md-6 mb-3">
                         <label className="form-label">College Name</label>
-                        <select className="form-select" {...register("college")}>
+                        <select
+                            className="form-select"
+                            {...register("college")}
+                            defaultValue={initialCollegeValue}
+                        >
                             <option value="">Select a college</option>
                             {colleges.map((college) => (
-                                <option key={college} value={college}>
+                                <option key={college} value={college} selected={college === initialCollegeValue}>
                                     {college}
                                 </option>
                             ))}

@@ -146,7 +146,7 @@ export default function TraineeLeadUpdateClient({lead}) {
                             <form onSubmit={handleSubmit(onSubmit)}>
                                 {/* Basic Information Section updated for trainee leads */}
                                 <BasicInfoSection
-                                    register={register} errors={errors} title="Trainee"/>
+                                    register={register} errors={errors} title="Trainee" initialCollegeValue={lead.traineeCollegeName}/>
 
                                 {/* Comments Section remains unchanged */}
                                 <CommentsSection

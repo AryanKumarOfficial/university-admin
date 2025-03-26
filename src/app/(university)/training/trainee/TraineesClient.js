@@ -80,6 +80,8 @@ export default function TraineesClient({initialTrainees = []}) {
             onClick: (item) => {
                 if (item) {
                     console.log("Editing record with id:", item.id);
+                    router.push(`/training/trainee/update/${item.id}`);
+
                 }
             },
         },
