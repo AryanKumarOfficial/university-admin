@@ -19,8 +19,10 @@ export default function BasicInfoSection({register, errors, title}) {
                         <input
                             className="form-control"
                             type="text"
+                            aria-autocomplete={"none"}
+                            autoCorrect={"off"}
                             {...register("name")}
-                            autoComplete={"address"}
+                            autoComplete={"new-password webauthn"}
                         />
                         {errors.name && (
                             <small className="text-danger">{errors.name.message}</small>

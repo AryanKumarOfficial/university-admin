@@ -10,7 +10,7 @@ import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
 import BasicInfoSection from "@/components/sections/training/masters/location/BasicInformation";
 
-export default function UpdateCollage({params}) {
+export default function UpdateCourse({params}) {
     const {id} = params;
     const router = useRouter();
     const {
@@ -24,7 +24,7 @@ export default function UpdateCollage({params}) {
         mode: "onChange",
     });
     const fetchLocation = async () => {
-        const docRef = await doc(db, "collage-master", id);
+        const docRef = await doc(db, "course-master", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
@@ -44,21 +44,21 @@ export default function UpdateCollage({params}) {
             ...data,
         };
 
-        const docRef = doc(db, "collage-master", id);
+        const docRef = doc(db, "course-master", id);
         const promise = updateDoc(docRef, locationData);
 
         toast
             .promise(promise, {
-                loading: "updating Collage...",
-                success: "Collage updated successfully",
-                error: "Error updating Collage",
+                loading: "updating Course...",
+                success: "Course updated successfully",
+                error: "Error updating Course",
             })
             .then(() => {
                 reset();
-                router.push("/training/collages");
+                router.push("/training/courses");
             })
             .catch((err) => {
-                console.error("Error updating Collage", err);
+                console.error("Error updating Course", err);
             })
             .finally(() => {
                 setIsSaving(false);
@@ -71,8 +71,8 @@ export default function UpdateCollage({params}) {
                 breadcrumbs={[
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
-                    {label: "Collage", href: "/training/collages"},
-                    {label: "Update", href: "/training/collages/update"},
+                    {label: "Courses", href: "/training/courses"},
+                    {label: "Update", href: "/training/courses/update"},
                 ]}
             />
             <div className="section-body mt-4">
@@ -83,7 +83,7 @@ export default function UpdateCollage({params}) {
                                 <BasicInfoSection
                                     register={register}
                                     errors={errors}
-                                    title="Collages"
+                                    title="Courses"
                                 />
                                 <div className="d-flex justify-content-end gap-2 mb-5">
                                     <button
@@ -91,7 +91,7 @@ export default function UpdateCollage({params}) {
                                         className="btn btn-danger"
                                         onClick={() => {
                                             reset();
-                                            router.push("/training/locations");
+                                            router.push("/training/courses");
                                         }}
                                         disabled={isSaving}
                                     >
@@ -99,7 +99,7 @@ export default function UpdateCollage({params}) {
                                     </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Update Collage
+                                        Update Course
                                     </button>
                                 </div>
                             </form>

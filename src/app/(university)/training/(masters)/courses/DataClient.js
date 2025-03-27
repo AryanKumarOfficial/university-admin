@@ -47,7 +47,7 @@ export default function DataClient({courses = []}) {
                 confirmMessage: "Are you sure you want to delete this Course?",
                 onClick: async (item) => {
                     if (item) {
-                        const deletePromise = fetch(`/api/training/location`, {
+                        const deletePromise = fetch(`/api/training/course`, {
                             method: "DELETE",
                             headers: {"Content-Type": "application/json"},
                             body: JSON.stringify({id: item.id}),
