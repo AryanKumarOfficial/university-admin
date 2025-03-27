@@ -94,7 +94,7 @@ export default function DataClient({courses = []}) {
     );
 
     return (
-        <div className="page">
+        <div className="page my-3 py-5">
             <Breadcrumb
                 breadcrumbs={[
                     {label: "Home", href: "/"},
