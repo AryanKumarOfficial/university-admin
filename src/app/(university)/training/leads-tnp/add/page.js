@@ -45,6 +45,9 @@ export default function AddTNPLead() {
 
             // Comments
             newComments: [],
+            courseName: "",
+            salesChannel: "",
+            linkedinUrl: "",
         },
         mode: "onChange",
     });
@@ -147,6 +150,7 @@ export default function AddTNPLead() {
                                     <BasicInformation
                                         register={register}
                                         errors={errors}
+                                        control={control}
                                         title="TNP"
                                     />
 
