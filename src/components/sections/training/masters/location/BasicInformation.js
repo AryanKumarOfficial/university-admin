@@ -15,7 +15,7 @@ export default function BasicInfoSection({register, errors, title}) {
                 <div className="row">
                     {/* Name */}
                     <div className="col-md-12 mb-3">
-                        <label htmlFor={"name"} className="form-label">Location Name</label>
+                        <label htmlFor={"name"} className="form-label">Name</label>
                         <input
                             className="form-control"
                             type="text"
