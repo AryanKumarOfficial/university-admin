@@ -10,7 +10,7 @@ import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
 import BasicInfoSection from "@/components/sections/training/masters/location/BasicInformation";
 
-export default function AddLocation() {
+export default function AddCourse() {
     const router = useRouter();
     const {
         register,
@@ -33,20 +33,20 @@ export default function AddLocation() {
             createdBy,
         };
 
-        const promise = addDoc(collection(db, "location-master"), locationData);
+        const promise = addDoc(collection(db, "course-master"), locationData);
 
         toast
             .promise(promise, {
-                loading: "Adding location...",
-                success: "Location added successfully",
-                error: "Error adding location",
+                loading: "Adding Course...",
+                success: "Course added successfully",
+                error: "Error adding Course",
             })
             .then(() => {
                 reset();
-                router.push("/training/locations");
+                router.push("/training/courses");
             })
             .catch((err) => {
-                console.error("Error adding location", err);
+                console.error("Error adding Course", err);
             })
             .finally(() => {
                 setIsSaving(false);
@@ -59,8 +59,8 @@ export default function AddLocation() {
                 breadcrumbs={[
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
-                    {label: "Locations", href: "/training/locations"},
-                    {label: "Add", href: "/training/locations/add"},
+                    {label: "Courses", href: "/training/courses"},
+                    {label: "Add", href: "/training/courses/add"},
                 ]}
             />
             <div className="section-body mt-4">
@@ -71,7 +71,7 @@ export default function AddLocation() {
                                 <BasicInfoSection
                                     register={register}
                                     errors={errors}
-                                    title="Location"
+                                    title="Course"
                                 />
                                 <div className="d-flex justify-content-end gap-2 mb-5">
                                     <button
@@ -79,7 +79,7 @@ export default function AddLocation() {
                                         className="btn btn-danger"
                                         onClick={() => {
                                             reset();
-                                            router.push("/training/locations");
+                                            router.push("/training/courses");
                                         }}
                                         disabled={isSaving}
                                     >
@@ -87,7 +87,7 @@ export default function AddLocation() {
                                     </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Add Location
+                                        Add Course
                                     </button>
                                 </div>
                             </form>
