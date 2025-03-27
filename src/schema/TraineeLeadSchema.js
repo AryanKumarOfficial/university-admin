@@ -24,4 +24,7 @@ export const TraineeLeadSchema = z.object({
     newComments: z
         .array(z.object({text: z.string()}))
         .optional(),
+    courseName: z.string().min(1, "Course name is required"),
+    salesChannel: z.string().min(1, "Sales channel is required"),
+    linkedinUrl: z.string().url("Invalid URL format").optional(),
 });

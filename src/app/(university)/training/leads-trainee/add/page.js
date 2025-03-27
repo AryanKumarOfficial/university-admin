@@ -180,8 +180,8 @@ export default function AddTraineeLead() {
                                     <BasicInfoSection
                                         register={register}
                                         errors={errors}
-                                        response={response}
                                         title={"Trainee"}
+                                        control={control}
                                     />
 
                                     {/* Comments (no old comments => empty array) */}

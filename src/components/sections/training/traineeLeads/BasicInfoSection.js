@@ -1,31 +1,86 @@
 "use client";
-
 import React, {useEffect, useState} from "react";
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
+import Select from "react-select";
+import {Controller} from "react-hook-form";
 
-export default function BasicInfoSection({register, errors, title, initialCollegeValue = ""}) {
-    const [colleges, setColleges] = useState([]);
+export default function BasicInfoSection({register, errors, title, control}) {
+    // Dropdown options state
+    const [collegeOptions, setCollegeOptions] = useState([]);
+    const [courseOptions, setCourseOptions] = useState([]);
+    const [locationOptions, setLocationOptions] = useState([]);
 
-    // Fetch the available colleges from the "leads-tnp" collection
+    // Static options for Sales Channel
+    const salesChannelOptions = [
+        {value: "1", label: "1"},
+        {value: "2", label: "2"},
+        {value: "3", label: "3"},
+        {value: "4", label: "4"},
+        {value: "5", label: "5"},
+    ];
+
+    // Fetch college options from "collage-master" collection
     useEffect(() => {
-        async function fetchColleges() {
+        async function fetchCollegeOptions() {
             try {
-                const querySnapshot = await getDocs(collection(db, "leads-tnp"));
-                const collegeSet = new Set();
+                const querySnapshot = await getDocs(collection(db, "collage-master"));
+                const options = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();
-                    if (data.collegeName) {
-                        collegeSet.add(data.collegeName);
+                    if (data.name) {
+                        options.push({value: data.name, label: data.name});
                     }
                 });
-                setColleges(Array.from(collegeSet));
+                setCollegeOptions(options);
             } catch (error) {
-                console.error("Error fetching colleges:", error);
+                console.error("Error fetching college options:", error);
             }
         }
 
-        fetchColleges();
+        fetchCollegeOptions();
+    }, []);
+
+    // Fetch course options from "course-master" collection
+    useEffect(() => {
+        async function fetchCourseOptions() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "course-master"));
+                const options = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.name) {
+                        options.push({value: data.name, label: data.name});
+                    }
+                });
+                setCourseOptions(options);
+            } catch (error) {
+                console.error("Error fetching course options:", error);
+            }
+        }
+
+        fetchCourseOptions();
+    }, []);
+
+    // Fetch location options from "location-master" collection
+    useEffect(() => {
+        async function fetchLocationOptions() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "location-master"));
+                const options = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.name) {
+                        options.push({value: data.name, label: data.name});
+                    }
+                });
+                setLocationOptions(options);
+            } catch (error) {
+                console.error("Error fetching location options:", error);
+            }
+        }
+
+        fetchLocationOptions();
     }, []);
 
     return (
@@ -38,11 +93,7 @@ export default function BasicInfoSection({register, errors, title, initialColleg
                     {/* Trainee Name */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Trainee Name</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            {...register("traineeName")}
-                        />
+                        <input className="form-control" type="text" {...register("traineeName")} />
                         {errors.traineeName && (
                             <small className="text-danger">{errors.traineeName.message}</small>
                         )}
@@ -50,14 +101,22 @@ export default function BasicInfoSection({register, errors, title, initialColleg
                     {/* Trainee College Name */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Trainee College Name</label>
-                        <select className="form-select" {...register("traineeCollegeName")}>
-                            <option value="">Select a college</option>
-                            {colleges.map((college) => (
-                                <option key={college} value={college} selected={college === initialCollegeValue}>
-                                    {college}
-                                </option>
-                            ))}
-                        </select>
+                        <Controller
+                            control={control}
+                            name="traineeCollegeName"
+                            render={({field}) => (
+                                <Select
+                                    {...field}
+                                    options={collegeOptions}
+                                    isSearchable
+                                    placeholder="Select a college"
+                                    onChange={(selected) => field.onChange(selected.value)}
+                                    value={
+                                        collegeOptions.find((option) => option.value === field.value) || null
+                                    }
+                                />
+                            )}
+                        />
                         {errors.traineeCollegeName && (
                             <small className="text-danger">{errors.traineeCollegeName.message}</small>
                         )}
@@ -65,27 +124,97 @@ export default function BasicInfoSection({register, errors, title, initialColleg
                     {/* Contact Number */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Contact Number</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            {...register("contactNumber")}
-                        />
+                        <input className="form-control" type="text" {...register("contactNumber")} />
                         {errors.contactNumber && (
                             <small className="text-danger">{errors.contactNumber.message}</small>
                         )}
                     </div>
                 </div>
+
                 <div className="row">
+                    {/* Course Name */}
+                    <div className="col-md-4 mb-3">
+                        <label className="form-label">Course Name</label>
+                        <Controller
+                            control={control}
+                            name="courseName"
+                            render={({field}) => (
+                                <Select
+                                    {...field}
+                                    options={courseOptions}
+                                    isSearchable
+                                    placeholder="Select a course"
+                                    onChange={(selected) => field.onChange(selected.value)}
+                                    value={
+                                        courseOptions.find((option) => option.value === field.value) || null
+                                    }
+                                />
+                            )}
+                        />
+                        {errors.courseName && (
+                            <small className="text-danger">{errors.courseName.message}</small>
+                        )}
+                    </div>
+                    {/* Sales Channel */}
+                    <div className="col-md-4 mb-3">
+                        <label className="form-label">Sales Channel</label>
+                        <Controller
+                            control={control}
+                            name="salesChannel"
+                            render={({field}) => (
+                                <Select
+                                    {...field}
+                                    options={salesChannelOptions}
+                                    isSearchable
+                                    placeholder="Select sales channel"
+                                    onChange={(selected) => field.onChange(selected.value)}
+                                    value={
+                                        salesChannelOptions.find((option) => option.value === field.value) || null
+                                    }
+                                />
+                            )}
+                        />
+                        {errors.salesChannel && (
+                            <small className="text-danger">{errors.salesChannel.message}</small>
+                        )}
+                    </div>
                     {/* Location */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Location</label>
-                        <input
-                            className="form-control"
-                            type="text"
-                            {...register("location")}
+                        <Controller
+                            control={control}
+                            name="location"
+                            render={({field}) => (
+                                <Select
+                                    {...field}
+                                    options={locationOptions}
+                                    isSearchable
+                                    placeholder="Select a location"
+                                    onChange={(selected) => field.onChange(selected.value)}
+                                    value={
+                                        locationOptions.find((option) => option.value === field.value) || null
+                                    }
+                                />
+                            )}
                         />
                         {errors.location && (
                             <small className="text-danger">{errors.location.message}</small>
+                        )}
+                    </div>
+                </div>
+
+                <div className="row">
+                    {/* LinkedIn/Other URL */}
+                    <div className="col-md-4 mb-3">
+                        <label className="form-label">LinkedIn/Other URL</label>
+                        <input
+                            className="form-control"
+                            type="text"
+                            placeholder="Enter LinkedIn or other URL"
+                            {...register("linkedinUrl")}
+                        />
+                        {errors.linkedinUrl && (
+                            <small className="text-danger">{errors.linkedinUrl.message}</small>
                         )}
                     </div>
                     {/* Response */}
@@ -108,25 +237,18 @@ export default function BasicInfoSection({register, errors, title, initialColleg
                     {/* Date */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Date</label>
-                        <input
-                            className="form-control"
-                            type="date"
-                            {...register("date")}
-                        />
+                        <input className="form-control" type="date" {...register("date")} />
                         {errors.date && (
                             <small className="text-danger">{errors.date.message}</small>
                         )}
                     </div>
                 </div>
+
                 <div className="row">
                     {/* Time */}
                     <div className="col-md-4 mb-3">
                         <label className="form-label">Time</label>
-                        <input
-                            className="form-control"
-                            type="time"
-                            {...register("time")}
-                        />
+                        <input className="form-control" type="time" {...register("time")} />
                         {errors.time && (
                             <small className="text-danger">{errors.time.message}</small>
                         )}
