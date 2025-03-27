@@ -1,16 +1,17 @@
 "use client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {LocationSchema} from "@/schema/Location";
-import {auth, db} from "@/lib/firebase/client";
-import {addDoc, collection} from "firebase/firestore";
+import {db} from "@/lib/firebase/client";
+import {doc, getDoc, updateDoc} from "firebase/firestore";
 import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
 import BasicInfoSection from "@/components/sections/training/masters/location/BasicInformation";
 
-export default function AddLocation() {
+export default function AddLocation({params}) {
+    const {id} = params;
     const router = useRouter();
     const {
         register,
@@ -22,31 +23,42 @@ export default function AddLocation() {
         defaultValues: {name: ""},
         mode: "onChange",
     });
+    const fetchLocation = async () => {
+        const docRef = await doc(db, "location-master", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            reset(data);
+        }
+    }
+    useEffect(() => {
+        (async () => {
+            await fetchLocation();
+        })()
+    }, []);
     const [isSaving, setIsSaving] = useState(false);
 
     const onSubmit = async (data) => {
         setIsSaving(true);
-        const createdBy = auth.currentUser?.email || "unknown";
         const locationData = {
             ...data,
-            createdAt: new Date().toISOString(),
-            createdBy,
         };
 
-        const promise = addDoc(collection(db, "location-master"), locationData);
+        const docRef = doc(db, "location-master", id);
+        const promise = updateDoc(docRef, locationData);
 
         toast
             .promise(promise, {
-                loading: "Adding location...",
-                success: "Location added successfully",
-                error: "Error adding location",
+                loading: "updating location...",
+                success: "Location updated successfully",
+                error: "Error updating location",
             })
             .then(() => {
                 reset();
                 router.push("/training/locations");
             })
             .catch((err) => {
-                console.error("Error adding location", err);
+                console.error("Error updating location", err);
             })
             .finally(() => {
                 setIsSaving(false);
@@ -60,7 +72,7 @@ export default function AddLocation() {
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
                     {label: "Locations", href: "/training/locations"},
-                    {label: "Add", href: "/training/locations/add"},
+                    {label: "Update", href: "/training/locations/update"},
                 ]}
             />
             <div className="section-body mt-4">
@@ -87,7 +99,7 @@ export default function AddLocation() {
                                     </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Add Location
+                                        Update Location
                                     </button>
                                 </div>
                             </form>
