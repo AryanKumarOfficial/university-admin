@@ -163,7 +163,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
                     filterOptions={filterOptions}
                     rowActions={rowActions}
                     initialFilterValues={{status: "All", role: "All"}}
-                    pageSize={3}
+                    pageSize={10}
                     globalActions={globalActions}
                 />
             </div>
