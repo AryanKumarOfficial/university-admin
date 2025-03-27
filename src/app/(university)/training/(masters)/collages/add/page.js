@@ -87,7 +87,7 @@ export default function AddCollage() {
                                     </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Add Location
+                                        Add Collage
                                     </button>
                                 </div>
                             </form>

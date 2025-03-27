@@ -33,6 +33,14 @@ export async function POST(req) {
             traineeCollegeName: college,
             location,
             contactNumber: phone,
+            comments,
+            createdBy,
+            date,
+            time,
+            response,
+            courseName,
+            linkedinUrl,
+            salesChannel,
             createdAt,
         } = leadSnap.data();
 
@@ -43,7 +51,15 @@ export async function POST(req) {
             location,
             phone,
             createdAt,
-            transactionNumber
+            transactionNumber,
+            comments,
+            createdBy,
+            date,
+            time,
+            response,
+            courseName,
+            linkedinUrl,
+            salesChannel,
         });
 
         return NextResponse.json(

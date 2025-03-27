@@ -1,16 +1,17 @@
 "use client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {LocationSchema} from "@/schema/Location";
-import {auth, db} from "@/lib/firebase/client";
-import {addDoc, collection} from "firebase/firestore";
+import {db} from "@/lib/firebase/client";
+import {doc, getDoc, updateDoc} from "firebase/firestore";
 import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
 import BasicInfoSection from "@/components/sections/training/masters/location/BasicInformation";
 
-export default function AddLocation() {
+export default function UpdateCollage({params}) {
+    const {id} = params;
     const router = useRouter();
     const {
         register,
@@ -22,31 +23,42 @@ export default function AddLocation() {
         defaultValues: {name: ""},
         mode: "onChange",
     });
+    const fetchLocation = async () => {
+        const docRef = await doc(db, "collage-master", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            reset(data);
+        }
+    }
+    useEffect(() => {
+        (async () => {
+            await fetchLocation();
+        })()
+    }, []);
     const [isSaving, setIsSaving] = useState(false);
 
     const onSubmit = async (data) => {
         setIsSaving(true);
-        const createdBy = auth.currentUser?.email || "unknown";
         const locationData = {
             ...data,
-            createdAt: new Date().toISOString(),
-            createdBy,
         };
 
-        const promise = addDoc(collection(db, "location-master"), locationData);
+        const docRef = doc(db, "collage-master", id);
+        const promise = updateDoc(docRef, locationData);
 
         toast
             .promise(promise, {
-                loading: "Adding Location...",
-                success: "Location added successfully",
-                error: "Error adding Location",
+                loading: "updating Collage...",
+                success: "Collage updated successfully",
+                error: "Error updating Collage",
             })
             .then(() => {
                 reset();
-                router.push("/training/locations");
+                router.push("/training/collages");
             })
             .catch((err) => {
-                console.error("Error adding Location", err);
+                console.error("Error updating Collage", err);
             })
             .finally(() => {
                 setIsSaving(false);
@@ -59,8 +71,8 @@ export default function AddLocation() {
                 breadcrumbs={[
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
-                    {label: "Locations", href: "/training/locations"},
-                    {label: "Add", href: "/training/locations/add"},
+                    {label: "Collages", href: "/training/collages"},
+                    {label: "Update", href: "/training/collages/update"},
                 ]}
             />
             <div className="section-body mt-4">
@@ -71,7 +83,7 @@ export default function AddLocation() {
                                 <BasicInfoSection
                                     register={register}
                                     errors={errors}
-                                    title="Location"
+                                    title="Courses"
                                 />
                                 <div className="d-flex justify-content-end gap-2 mb-5">
                                     <button
@@ -79,7 +91,7 @@ export default function AddLocation() {
                                         className="btn btn-danger"
                                         onClick={() => {
                                             reset();
-                                            router.push("/training/locations");
+                                            router.push("/training/courses");
                                         }}
                                         disabled={isSaving}
                                     >
@@ -87,7 +99,7 @@ export default function AddLocation() {
                                     </button>
                                     <button type="submit" className="btn btn-success" disabled={isSaving}>
                                         {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Add Location
+                                        Update Collage
                                     </button>
                                 </div>
                             </form>

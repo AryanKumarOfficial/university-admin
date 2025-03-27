@@ -1,13 +1,65 @@
 "use client";
-import React, {useMemo} from "react";
+import React, {useEffect, useMemo, useState} from "react";
+import {useRouter} from "next/navigation";
+import {toast} from "react-hot-toast";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
 import {formatTime} from "@/helpers/TimeFormat";
-import {useRouter} from "next/navigation";
-import {toast} from "react-hot-toast";
+
+// Firebase imports
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {auth, db} from "@/lib/firebase/client"; // Adjust the path as needed
 
 export default function TNPLeadsClient({initialUsers = []}) {
     const router = useRouter();
+    const [filteredLeads, setFilteredLeads] = useState(initialUsers);
+
+    // Fetch the current user's role using their email.
+    const getUserRole = async () => {
+        const user = auth.currentUser;
+        if (user?.email) {
+            const q = query(collection(db, "users"), where("email", "==", user.email));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                return snapshot.docs[0].data().role;
+            }
+        }
+        return null;
+    };
+
+    useEffect(() => {
+        let isMounted = true; // Prevents state updates on unmounted component
+
+        async function fetchUserRoleAndFilter() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    if (isMounted) setFilteredLeads(initialUsers);
+                    return;
+                }
+                const role = await getUserRole();
+                if (isMounted) {
+                    if (role !== "Admin") {
+                        const userLeads = initialUsers.filter(
+                            (lead) => lead.createdBy === user.email
+                        );
+                        setFilteredLeads(userLeads);
+                    } else {
+                        setFilteredLeads(initialUsers);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+                if (isMounted) setFilteredLeads(initialUsers);
+            }
+        }
+
+        fetchUserRoleAndFilter();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [initialUsers]);
 
     const columns = useMemo(
         () => [
@@ -43,26 +95,28 @@ export default function TNPLeadsClient({initialUsers = []}) {
             {
                 key: "date",
                 header: "Date",
-                render: (value) => (
-                    <span className="text-muted">
-            {value
-                ? new Date(value).toLocaleDateString("en-IN", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                })
-                : "Not Provided"}
-          </span>
-                ),
+                render: (value) =>
+                    value ? (
+                        <span className="text-muted">
+              {new Date(value).toLocaleDateString("en-IN", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+              })}
+            </span>
+                    ) : (
+                        "Not Provided"
+                    ),
             },
             {
                 key: "time",
                 header: "Time",
-                render: (value) => (
-                    <span className="text-muted">
-            {value ? formatTime(value) : "Not Provided"}
-          </span>
-                ),
+                render: (value) =>
+                    value ? (
+                        <span className="text-muted">{formatTime(value)}</span>
+                    ) : (
+                        "Not Provided"
+                    ),
             },
             {
                 key: "createdAt",
@@ -77,6 +131,20 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 " - " +
                 formatTime(value)}
           </span>
+                ),
+            },
+            {
+                key: "createdBy",
+                header: "Created By",
+                render: (value) => (
+                    <span className="text-muted">{value || "Not Provided"}</span>
+                ),
+            },
+            {
+                key: "status",
+                header: "Status",
+                render: (value) => (
+                    <span className="text-muted">{value || "Not Provided"}</span>
                 ),
             },
         ],
@@ -103,25 +171,23 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 confirmMessage: "Are you sure you want to delete this lead?",
                 onClick: async (item) => {
                     if (item) {
-                        const deletePromise = fetch(`/api/training/tnp-leads`, {
-                            method: "DELETE",
-                            headers: {"Content-Type": "application/json"},
-                            body: JSON.stringify({id: item.id}),
-                        }).then((res) => {
-                            if (res.status === 200) return res.json();
-                            else throw new Error(`Failed with status ${res.status}`);
-                        });
-
-                        toast
-                            .promise(deletePromise, {
-                                loading: "Deleting lead...",
-                                success: "Lead deleted successfully",
-                                error: "Error deleting lead",
-                            })
-                            .then(() => router.refresh())
-                            .catch((error) =>
-                                console.error("Error deleting lead:", error)
-                            );
+                        try {
+                            const response = await fetch(`/api/training/tnp-leads`, {
+                                method: "DELETE",
+                                headers: {"Content-Type": "application/json"},
+                                body: JSON.stringify({id: item.id}),
+                            });
+                            if (response.status === 200) {
+                                await response.json();
+                                toast.success("Lead deleted successfully");
+                                router.refresh();
+                            } else {
+                                throw new Error(`Failed with status ${response.status}`);
+                            }
+                        } catch (error) {
+                            console.error("Error deleting lead:", error);
+                            toast.error("Error deleting lead");
+                        }
                     }
                 },
             },
@@ -158,7 +224,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 />
                 <GenericTable
                     title="TNP Leads"
-                    tableData={initialUsers}
+                    tableData={filteredLeads}
                     tableColumns={columns}
                     filterOptions={filterOptions}
                     rowActions={rowActions}
