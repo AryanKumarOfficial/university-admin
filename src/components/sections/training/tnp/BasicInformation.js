@@ -100,7 +100,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={collegeOptions}
                                     isSearchable
                                     placeholder="Select a college"
-                                    onChange={(selected) => field.onChange(selected.name)}
+                                    onChange={(selected) => field.onChange(selected?.value)}
                                     value={collegeOptions.find((opt) => opt.value === field.value) || null}
                                 />
                             )}
@@ -121,7 +121,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={courseOptions}
                                     isSearchable
                                     placeholder="Select a course"
-                                    onChange={(selected) => field.onChange(selected.name)}
+                                    onChange={(selected) => field.onChange(selected?.value)}
                                     value={courseOptions.find((opt) => opt.value === field.value) || null}
                                 />
                             )}
@@ -142,7 +142,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={locationOptions}
                                     isSearchable
                                     placeholder="Select a location"
-                                    onChange={(selected) => field.onChange(selected.name)}
+                                    onChange={(selected) => field.onChange(selected?.value)}
                                     value={locationOptions.find((opt) => opt.value === field.value) || null}
                                 />
                             )}
@@ -163,7 +163,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={salesChannelOptions}
                                     isSearchable
                                     placeholder="Select sales channel"
-                                    onChange={(selected) => field.onChange(selected.name)}
+                                    onChange={(selected) => field.onChange(selected?.value)}
                                     value={salesChannelOptions.find((opt) => opt.value === field.value) || null}
                                 />
                             )}
@@ -180,7 +180,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                         <label className="form-label">LinkedIn/Other URL</label>
                         <input
                             className="form-control"
-                            type="text"
+                            type="url"
                             placeholder="Enter LinkedIn or other URL"
                             {...register("linkedinUrl")}
                         />
