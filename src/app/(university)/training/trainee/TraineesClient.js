@@ -4,17 +4,68 @@ import React from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
 import {useRouter} from "next/navigation";
+import {formatTime} from "@/helpers/TimeFormat";
+import {toast} from "react-hot-toast";
 
 export default function TraineesClient({initialTrainees = []}) {
     const router = useRouter();
 
-    // Column definitions for trainee (update as needed)
+    // Column definitions for trainee
     const columns = [
         {key: "id", header: "#"},
         {key: "name", header: "Name"},
-        {key: "college", header: "Collage Name"},
+        {key: "college", header: "College Name"},
+        {
+            key: "courseName",
+            header: "Course Name",
+        },
+        {
+            key: "linkedinUrl",
+            header: "LinkedIn",
+            render: (value) => (
+                <a href={value} target="_blank" rel="noopener noreferrer">
+                    {value}
+                </a>
+            ),
+        },
         {key: "phone", header: "Phone"},
-        {key: "location", header: "location"},
+        {key: "location", header: "Location"},
+        {
+            key: "date",
+            header: "Date",
+            render: (item) => (
+                <div>
+                    {new Date(item).toLocaleDateString("en-In", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                    })}
+                </div>
+            ),
+        },
+        {
+            key: "time",
+            header: "Time",
+            render: (item) => (
+                <span className="text-muted">
+          {item ? formatTime(item) : "Not Provided"}
+        </span>
+            ),
+        },
+        {
+            key: "response",
+            header: "Response",
+            render: (item) => (
+                <span className="text-muted">{item ? item : "Not Provided"}</span>
+            ),
+        },
+        {
+            key: "salesChannel",
+            header: "Sales Channel",
+            render: (item) => (
+                <span className="text-muted">{item ? item : "Not Provided"}</span>
+            ),
+        },
         {
             key: "createdAt",
             header: "Joined Date",
@@ -32,6 +83,10 @@ export default function TraineesClient({initialTrainees = []}) {
             key: "transactionNumber",
             header: "Transaction Number",
             render: (item) => <div>{item}</div>,
+        },
+        {
+            key: "createdBy",
+            header: "Created By",
         },
     ];
 
@@ -54,17 +109,19 @@ export default function TraineesClient({initialTrainees = []}) {
             onClick: async (item) => {
                 if (item) {
                     try {
-                        const res = await fetch(`/api/training/trainee`, {
-                            method: "DELETE",
-                            headers: {"Content-Type": "application/json"},
-                            body: JSON.stringify({id: item.id}),
-                        });
-                        if (res.status === 200) {
-                            console.log("Record deleted successfully.");
-                            router.refresh();
-                        } else {
-                            console.error("Error deleting record with id:", item.id, "Status:", res.status);
-                        }
+                        await toast.promise(
+                            fetch(`/api/training/trainee`, {
+                                method: "DELETE",
+                                headers: {"Content-Type": "application/json"},
+                                body: JSON.stringify({id: item.id}),
+                            }),
+                            {
+                                loading: "Deleting record...",
+                                success: "Record deleted successfully!",
+                                error: "Error deleting record.",
+                            }
+                        );
+                        router.refresh();
                     } catch (error) {
                         console.error("Error deleting record:", error);
                     }
@@ -79,9 +136,7 @@ export default function TraineesClient({initialTrainees = []}) {
             requireConfirm: false,
             onClick: (item) => {
                 if (item) {
-                    console.log("Editing record with id:", item.id);
                     router.push(`/training/trainee/update/${item.id}`);
-
                 }
             },
         },
@@ -99,7 +154,7 @@ export default function TraineesClient({initialTrainees = []}) {
             <div className="page vh-100">
                 <Breadcrumb breadcrumbs={[{label: "Trainees", href: "/trainee"}]}/>
                 <GenericTable
-                    title={"Trainees"}
+                    title="Trainees"
                     tableData={initialTrainees}
                     tableColumns={columns}
                     filterOptions={filterOptions}

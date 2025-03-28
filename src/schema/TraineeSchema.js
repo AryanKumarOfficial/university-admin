@@ -9,5 +9,25 @@ export const TraineeSchema = z.object({
         .max(15, "Contact number cannot exceed 15 digits")
         .regex(/^\+?[0-9]+$/, "Invalid phone number format"),
     location: z.string().min(1, "Location is required"),
+    courseName: z.string().min(1, "Course name is required"),
+    salesChannel: z.enum(["1", "2", "3", "4", "5"], {
+        errorMap: () => ({message: "Sales channel is required"}),
+    }),
+    linkedinUrl: z.string().url("Invalid URL format").optional(),
+    response: z.enum(
+        [
+            "Wrong number",
+            "Not Interested",
+            "Interested",
+            "Send details on WhatsApp",
+            "Mail sent",
+            "Call later",
+            "Meeting scheduled",
+            "Follow up required",
+        ],
+        {errorMap: () => ({message: "Response is required"})}
+    ),
+    date: z.string().min(1, "Date is required"),
+    time: z.string().min(1, "Time is required"),
     transactionNumber: z.string().min(1, "Transaction number is required"),
 });
