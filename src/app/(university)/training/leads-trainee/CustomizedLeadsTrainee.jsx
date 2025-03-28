@@ -134,7 +134,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 requireConfirm: false,
                 onClick: (item) => {
                     if (item) {
-                        router.push(`/training/leads-tnp/update/${item.id}`);
+                        router.push(`/training/leads-trainee/update/${item.id}`);
                     }
                 },
             },
@@ -199,10 +199,10 @@ export default function TNPLeadsClient({initialUsers = []}) {
         <div id="main_content">
             <div className="page vh-100">
                 <Breadcrumb
-                    breadcrumbs={[{label: "Leads (TNP)", href: "/training/leads-tnp"}]}
+                    breadcrumbs={[{label: "Leads (Trainee)", href: "/training/leads-trainee"}]}
                 />
                 <GenericTable
-                    title="TNP Leads"
+                    title="Trainee Leads"
                     tableData={initialUsers}
                     tableColumns={columns}
                     filterOptions={filterOptions}

@@ -147,7 +147,9 @@ export default function TraineeLeadUpdateClient({lead}) {
                                 {/* Basic Information Section updated for trainee leads */}
                                 <BasicInfoSection
                                     register={register} errors={errors} title="Trainee"
-                                    initialCollegeValue={lead.traineeCollegeName}/>
+                                    initialCollegeValue={lead.traineeCollegeName}
+                                    control={control}
+                                />
 
                                 {/* Comments Section remains unchanged */}
                                 <CommentsSection
