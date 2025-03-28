@@ -5,21 +5,19 @@ import {useFieldArray, useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useRouter} from "next/navigation";
 import {doc, updateDoc} from "firebase/firestore";
+import {toast} from "react-hot-toast";
 
 import {db} from "@/lib/firebase/client";
-// Use the trainee-specific schema (make sure it reflects the new fields)
+// Use the trainee-specific schema (ensure it reflects the new fields)
 import {TraineeLeadSchema} from "@/schema/TraineeLeadSchema";
 
 import BasicInfoSection from "@/components/sections/training/traineeLeads/BasicInfoSection";
 import CommentsSection from "@/components/sections/leads/CommentsSection";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import Alert from "react-bootstrap/Alert";
-import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function TraineeLeadUpdateClient({lead}) {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
-    const [alerts, setAlerts] = useState([]);
     const [existingComments, setExistingComments] = useState([]);
 
     const {
@@ -35,61 +33,13 @@ export default function TraineeLeadUpdateClient({lead}) {
             traineeCollegeName: "",
             contactNumber: "",
             location: "",
-            response: "Not Interested", // must match one of the enum values
+            response: "Not Interested",
             date: "",
             time: "",
             newComments: [],
         },
         mode: "onChange",
     });
-
-    const addAlert = (variant, message) => {
-        setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
-    };
-
-    const removeAlert = (id) => {
-        setAlerts((prev) => prev.filter((a) => a.id !== id));
-    };
-
-    const getIcon = (variant) => {
-        switch (variant) {
-            case "success":
-                return <i className="fa fa-check-circle me-1"/>;
-            case "danger":
-                return <i className="fa fa-exclamation-triangle me-1"/>;
-            case "info":
-                return <i className="fa fa-info-circle me-1"/>;
-            default:
-                return null;
-        }
-    };
-
-    const onSubmit = async (data) => {
-        if (!lead?.id) {
-            addAlert("danger", "No valid lead ID to update.");
-            return;
-        }
-        setIsSaving(true);
-        try {
-            // Merge new comments with the existing ones.
-            const newComments = Array.isArray(data.newComments) ? data.newComments : [];
-            data.comments = [...existingComments, ...newComments];
-            delete data.newComments; // Remove newComments before updating Firestore
-
-            // Update the trainee lead document in "leads-trainee" collection
-            const docRef = doc(db, "leads-trainee", lead.id);
-            await updateDoc(docRef, data);
-
-            addAlert("success", "Lead updated successfully!");
-            reset();
-            router.push("/training/leads-trainee");
-        } catch (error) {
-            console.error("Error updating lead:", error);
-            addAlert("danger", "Failed to update lead");
-        } finally {
-            setIsSaving(false);
-        }
-    };
 
     // Manage newComments field array
     const {
@@ -109,28 +59,36 @@ export default function TraineeLeadUpdateClient({lead}) {
         }
     }, [lead, reset]);
 
+    const onSubmit = async (data) => {
+        if (!lead?.id) {
+            toast.error("No valid lead ID to update.");
+            return;
+        }
+        setIsSaving(true);
+        try {
+            // Merge new comments with existing comments
+            const newComments = Array.isArray(data.newComments) ? data.newComments : [];
+            data.comments = [...existingComments, ...newComments];
+            delete data.newComments; // Remove newComments before updating
+
+            // Update the trainee lead document in "leads-trainee" collection
+            const docRef = doc(db, "leads-trainee", lead.id);
+            await toast.promise(updateDoc(docRef, data), {
+                loading: "Updating lead...",
+                success: "Lead updated successfully!",
+                error: "Failed to update lead.",
+            });
+            reset();
+            router.push("/training/leads-trainee");
+        } catch (error) {
+            console.error("Error updating lead:", error);
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return (
         <div className="page px-3 py-3">
-            {alerts.map((alert) => (
-                <Alert
-                    key={alert.id}
-                    variant={alert.variant}
-                    onClose={() => removeAlert(alert.id)}
-                    dismissible
-                    className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-                >
-                    {getIcon(alert.variant)}
-                    {alert.message}
-                </Alert>
-            ))}
-
-            {isSaving && (
-                <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
-                    <i className="fa fa-spinner fa-spin me-2"/>
-                    Saving lead...
-                </Alert>
-            )}
-
             <Breadcrumb
                 breadcrumbs={[
                     {label: "Home", href: "/"},
@@ -146,12 +104,14 @@ export default function TraineeLeadUpdateClient({lead}) {
                             <form onSubmit={handleSubmit(onSubmit)}>
                                 {/* Basic Information Section updated for trainee leads */}
                                 <BasicInfoSection
-                                    register={register} errors={errors} title="Trainee"
+                                    register={register}
+                                    errors={errors}
+                                    title="Trainee"
                                     initialCollegeValue={lead.traineeCollegeName}
                                     control={control}
                                 />
 
-                                {/* Comments Section remains unchanged */}
+                                {/* Comments Section */}
                                 <CommentsSection
                                     showExistingComments={true}
                                     existingComments={existingComments}

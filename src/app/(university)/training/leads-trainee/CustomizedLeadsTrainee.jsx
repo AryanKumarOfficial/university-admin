@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useMemo, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
 import {formatTime} from "@/helpers/TimeFormat";
@@ -8,10 +8,62 @@ import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
 import ConvertModal from "@/components/ui/ConvertModal";
 
+// Firebase imports
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {auth, db} from "@/lib/firebase/client"; // Adjust the path as needed
+
 export default function TNPLeadsClient({initialUsers = []}) {
     const router = useRouter();
+    const [filteredLeads, setFilteredLeads] = useState(initialUsers);
     const [showConvertModal, setShowConvertModal] = useState(false);
     const [selectedLead, setSelectedLead] = useState(null);
+
+    // Function to fetch the current user's role
+    const getUserRole = async () => {
+        const user = auth.currentUser;
+        if (user?.email) {
+            const q = query(collection(db, "users"), where("email", "==", user.email));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+                return snapshot.docs[0].data().role;
+            }
+        }
+        return null;
+    };
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function fetchUserRoleAndFilter() {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    if (isMounted) setFilteredLeads(initialUsers);
+                    return;
+                }
+                const role = await getUserRole();
+                if (isMounted) {
+                    if (role !== "Admin") {
+                        const userLeads = initialUsers.filter(
+                            (lead) => lead.createdBy === user.email
+                        );
+                        setFilteredLeads(userLeads);
+                    } else {
+                        setFilteredLeads(initialUsers);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching user role:", error);
+                if (isMounted) setFilteredLeads(initialUsers);
+            }
+        }
+
+        fetchUserRoleAndFilter();
+        return () => {
+            isMounted = false;
+        };
+    }, [initialUsers]);
+
     const columns = useMemo(
         () => [
             {key: "id", header: "#"},
@@ -64,7 +116,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 render: (value, rowData) =>
                     Array.isArray(rowData.comments) && rowData.comments.length > 0
                         ? rowData.comments[0].text
-                        : "",
+                        : "Not Provided",
             },
             {
                 key: "createdAt",
@@ -79,6 +131,15 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 " - " +
                 formatTime(value)}
           </span>
+                ),
+            },
+            {
+                key: "createdBy",
+                header: "Created By",
+                render: (value) => (
+                    <span className="text-muted">
+            {value ? value : "Not Provided"}
+            </span>
                 ),
             },
         ],
@@ -122,7 +183,9 @@ export default function TNPLeadsClient({initialUsers = []}) {
                                 error: "Error deleting lead",
                             })
                             .then(() => router.refresh())
-                            .catch((error) => console.error("Error deleting lead:", error));
+                            .catch((error) =>
+                                console.error("Error deleting lead:", error)
+                            );
                     }
                 },
             },
@@ -146,7 +209,6 @@ export default function TNPLeadsClient({initialUsers = []}) {
                 requireConfirm: false,
                 onClick: (item) => {
                     if (item) {
-                        // Place your modal logic here. For example, set the selected lead and open the modal.
                         setSelectedLead(item);
                         setShowConvertModal(true);
                     }
@@ -199,11 +261,13 @@ export default function TNPLeadsClient({initialUsers = []}) {
         <div id="main_content">
             <div className="page vh-100">
                 <Breadcrumb
-                    breadcrumbs={[{label: "Leads (Trainee)", href: "/training/leads-trainee"}]}
+                    breadcrumbs={[
+                        {label: "Leads (Trainee)", href: "/training/leads-trainee"},
+                    ]}
                 />
                 <GenericTable
                     title="Trainee Leads"
-                    tableData={initialUsers}
+                    tableData={filteredLeads}
                     tableColumns={columns}
                     filterOptions={filterOptions}
                     rowActions={rowActions}
@@ -211,7 +275,6 @@ export default function TNPLeadsClient({initialUsers = []}) {
                     pageSize={10}
                     globalActions={globalActions}
                 />
-                {/* Place ConvertModal here if needed */}
                 <ConvertModal
                     show={showConvertModal}
                     onHide={() => setShowConvertModal(false)}
