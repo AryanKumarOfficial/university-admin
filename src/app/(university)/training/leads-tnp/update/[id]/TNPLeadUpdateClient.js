@@ -127,7 +127,7 @@ export default function TNPLeadUpdateClient({lead}) {
                                 />
 
                                 {/* Decision Making / Single Contact Section */}
-                                <DecisionMakingSection register={register} errors={errors}/>
+                                <DecisionMakingSection register={register} errors={errors} control={control}/>
 
                                 {/* Comments Section */}
                                 <CommentsSection
