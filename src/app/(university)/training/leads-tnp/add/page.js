@@ -25,29 +25,25 @@ export default function AddTNPLead() {
     const {
         register,
         handleSubmit,
-        watch,
         formState: {errors},
         reset,
         control
     } = useForm({
         resolver: zodResolver(TNPLeadSchema),
         defaultValues: {
-            // Basic Info (per the new schema)
+            // Basic Info
             collegeName: "",
             location: "",
             response: "Not Interested", // must match one of the enum values
             date: "",
             time: "",
-
-            // Single Contact
-            contactPerson: "",
-            contactName: "",
-
+            // Multiple Contacts as a field array
+            contacts: [{contactName: "", contactNumber: ""}],
             // Comments
             newComments: [],
             courseName: "",
             salesChannel: "",
-            linkedinUrl: "",
+            linkedinUrl: ""
         },
         mode: "onChange",
     });
@@ -73,7 +69,6 @@ export default function AddTNPLead() {
         }
     };
 
-
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
@@ -81,8 +76,8 @@ export default function AddTNPLead() {
             const leadData = {
                 ...data,
                 comments: data.newComments, // store new comments in 'comments'
-                createdAt: new Date(Date.now()).toISOString(),
-                createdBy
+                createdAt: new Date().toISOString(),
+                createdBy,
             };
             delete leadData.newComments;
 
@@ -99,7 +94,7 @@ export default function AddTNPLead() {
         }
     };
 
-    // Reintroduce useFieldArray for newComments
+    // Field array for new comments remains unchanged.
     const {
         fields: newCommentFields,
         prepend: prependNewComment,
@@ -154,8 +149,12 @@ export default function AddTNPLead() {
                                         title="TNP"
                                     />
 
-                                    {/* Single Contact */}
-                                    <DecisionMakingSection register={register} errors={errors}/>
+                                    {/* Multiple Contacts */}
+                                    <DecisionMakingSection
+                                        register={register}
+                                        errors={errors}
+                                        control={control}
+                                    />
 
                                     {/* Comments */}
                                     <CommentsSection

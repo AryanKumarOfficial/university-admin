@@ -18,13 +18,17 @@ export const TNPLeadSchema = z.object({
     date: z.string().optional(),
     time: z.string().optional(),
 
-    // Single Contact
-    contactName: z.string().min(1, "Contact name is required"),
-    contactNumber: z
-        .string()
-        .min(10, "Contact number must be at least 10 digits")
-        .max(15, "Contact number cannot exceed 15 digits")
-        .regex(/^\+?[0-9]+$/, "Invalid phone number format"),
+    // Multiple Contacts
+    contacts: z.array(
+        z.object({
+            contactName: z.string().min(1, "Contact name is required"),
+            contactNumber: z
+                .string()
+                .min(10, "Contact number must be at least 10 digits")
+                .max(15, "Contact number cannot exceed 15 digits")
+                .regex(/^\+?[0-9]+$/, "Invalid phone number format"),
+        })
+    ).min(1, "At least one contact is required"),
 
     // Comments
     newComments: z

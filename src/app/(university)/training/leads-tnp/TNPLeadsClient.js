@@ -79,8 +79,28 @@ export default function TNPLeadsClient({initialUsers = []}) {
                         "Not Provided"
                     ),
             },
-            {key: "contactName", header: "Contact Person"},
-            {key: "contactNumber", header: "Contact Number"},
+            {
+                key: "contactName",
+                header: "Contact Person",
+                render: (value, item) => {
+                    // Check if a contacts array exists and is not empty
+                    if (item.contacts && Array.isArray(item.contacts) && item.contacts.length > 0) {
+                        return item.contacts[0].contactName;
+                    }
+                    return value; // fallback to top-level contactName field
+                },
+            },
+            {
+                key: "contactNumber",
+                header: "Contact Number",
+                render: (value, item) => {
+                    // Check if a contacts array exists and is not empty
+                    if (item.contacts && Array.isArray(item.contacts) && item.contacts.length > 0) {
+                        return item.contacts[0].contactNumber;
+                    }
+                    return value; // fallback to top-level contactNumber field
+                },
+            },
             {key: "location", header: "Location"},
             {key: "response", header: "Response"},
             {
@@ -219,9 +239,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
     return (
         <div id="main_content">
             <div className="page vh-100">
-                <Breadcrumb
-                    breadcrumbs={[{label: "Leads TNP", href: "/training/leads-tnp"}]}
-                />
+                <Breadcrumb breadcrumbs={[{label: "Leads TNP", href: "/training/leads-tnp"}]}/>
                 <GenericTable
                     title="TNP Leads"
                     tableData={filteredLeads}
