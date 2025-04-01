@@ -10,7 +10,7 @@ import useDebounce from "@/hooks/useDebounce";
 export default function GenericTable({
                                          tableData = [],
                                          tableColumns = [],
-                                         filterOptions = [], // e.g. [{ key: "status", label: "Status", type: "select", options: ["All", "Active", "Inactive"] }]
+                                         filterOptions = [], // Each filter option can include an optional "accessor" function
                                          rowActions = [],
                                          initialFilterValues = {},
                                          pageSize = 5,
@@ -79,28 +79,31 @@ export default function GenericTable({
         return dataCopy;
     }, [tableData, sortColumn, sortDirection]);
 
-    // Filtering function: Applies different logic based on filter type.
+    // Filtering function: Uses an optional accessor if provided in filterOptions.
     const filterData = (data, filters) => {
         return filterOptions.reduce((filtered, filter) => {
             const filterValue = filters[filter.key];
             if (!filterValue || filterValue === "All") return filtered;
 
-            // Apply filtering logic based on filter type.
+            // If an accessor is provided, use it; otherwise use the direct property.
+            const accessor = filter.accessor ? filter.accessor : (item) => item[filter.key];
+
             switch (filter.type) {
                 case "text":
-                    return filtered.filter((item) =>
-                        String(item[filter.key] || "")
-                            .toLowerCase()
-                            .includes(filterValue.toLowerCase())
-                    );
+                    return filtered.filter((item) => {
+                        const itemVal = String(accessor(item) || "").toLowerCase();
+                        return itemVal.includes(filterValue.toLowerCase());
+                    });
                 case "date":
                     return filtered.filter((item) => {
-                        const itemDate = new Date(item[filter.key]).toISOString().slice(0, 10);
+                        const itemVal = accessor(item);
+                        if (!itemVal) return false;
+                        const itemDate = new Date(itemVal).toISOString().slice(0, 10);
                         return itemDate === filterValue;
                     });
                 case "select":
                 default:
-                    return filtered.filter((item) => item[filter.key] === filterValue);
+                    return filtered.filter((item) => accessor(item) === filterValue);
             }
         }, data);
     };
