@@ -50,6 +50,7 @@ export default function DataClient({locations = []}) {
                         const deletePromise = fetch(`/api/training/location`, {
                             method: "DELETE",
                             headers: {"Content-Type": "application/json"},
+                            cache: "no-cache",
                             body: JSON.stringify({id: item.id}),
                         }).then((res) => {
                             if (res.status === 200) return res.json();

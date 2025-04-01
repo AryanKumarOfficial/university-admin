@@ -3,7 +3,7 @@ import {getLocations} from "@/app/(university)/training/(masters)/locations/fetc
 
 export default async function LocationMasterPage() {
     const locations = await getLocations();
-    console.log("locations page`", locations);
+    // console.log("locations page`", locations);
 
     return (
         <DataClient locations={locations}/>

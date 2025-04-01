@@ -1,7 +1,6 @@
 "use client";
 import React, {useMemo, useState} from "react";
 import ConfirmModal from "@/components/sections/leads/ConfirmModal";
-import AlertList from "@/components/sections/leads/AlertList";
 import Pagination from "@/components/sections/leads/Pagination";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Link from "next/link";
@@ -34,6 +33,10 @@ export default function GenericTable({
     const [pendingAction, setPendingAction] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
 
+    // Sorting state – default sort by createdAt descending.
+    const [sortColumn, setSortColumn] = useState("createdAt");
+    const [sortDirection, setSortDirection] = useState("desc"); // "asc" or "desc"
+
     // Notification handlers
     const addNotification = (variant, message) => {
         setNotifications((prev) => [...prev, {id: Date.now(), variant, message}]);
@@ -43,13 +46,46 @@ export default function GenericTable({
         setNotifications((prev) => prev.filter((note) => note.id !== id));
     };
 
-    // Filtering function: Applies different logic based on filter type
+    // Handle sorting when column header is clicked
+    const handleSort = (colKey) => {
+        if (sortColumn === colKey) {
+            // Toggle direction if the same column is clicked.
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+        } else {
+            setSortColumn(colKey);
+            setSortDirection("asc");
+        }
+        setCurrentPage(1);
+    };
+
+    // Sorting the data based on sortColumn and sortDirection.
+    const sortedData = useMemo(() => {
+        const dataCopy = [...tableData];
+        const key = sortColumn || "createdAt";
+        dataCopy.sort((a, b) => {
+            let aVal = a[key];
+            let bVal = b[key];
+
+            // If values are date strings, convert them to Date objects.
+            if (key === "createdAt" || key === "updatedAt") {
+                aVal = new Date(aVal);
+                bVal = new Date(bVal);
+            }
+
+            if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+            if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+            return 0;
+        });
+        return dataCopy;
+    }, [tableData, sortColumn, sortDirection]);
+
+    // Filtering function: Applies different logic based on filter type.
     const filterData = (data, filters) => {
         return filterOptions.reduce((filtered, filter) => {
             const filterValue = filters[filter.key];
             if (!filterValue || filterValue === "All") return filtered;
 
-            // Apply filtering logic based on filter type
+            // Apply filtering logic based on filter type.
             switch (filter.type) {
                 case "text":
                     return filtered.filter((item) =>
@@ -59,7 +95,6 @@ export default function GenericTable({
                     );
                 case "date":
                     return filtered.filter((item) => {
-                        // Convert the stored date to a UTC date string (YYYY-MM-DD)
                         const itemDate = new Date(item[filter.key]).toISOString().slice(0, 10);
                         return itemDate === filterValue;
                     });
@@ -70,31 +105,31 @@ export default function GenericTable({
         }, data);
     };
 
-    // Apply filtering – for text filters we use debounced values, while other filters update immediately.
+    // Apply filtering on sorted data.
     const filteredItems = useMemo(() => {
-        return filterData([...tableData], debouncedFilters);
-    }, [tableData, debouncedFilters, filterOptions]);
+        return filterData(sortedData, debouncedFilters);
+    }, [sortedData, debouncedFilters, filterOptions]);
 
-    // Calculate pagination
+    // Calculate pagination.
     const totalPages = Math.ceil(filteredItems.length / pageSize);
     const paginatedItems = useMemo(() => {
         const start = (currentPage - 1) * pageSize;
         return filteredItems.slice(start, start + pageSize);
     }, [filteredItems, currentPage, pageSize]);
 
-    // Update filter values
+    // Update filter values.
     const updateFilter = (key, value) => {
         setActiveFilters((prev) => ({...prev, [key]: value}));
         setCurrentPage(1);
     };
 
-    // Reset all filters to their initial values
+    // Reset all filters to their initial values.
     const resetFilters = () => {
         setActiveFilters(initialFilterValues);
         setCurrentPage(1);
     };
 
-    // Handle row actions, showing confirmation if necessary
+    // Handle row actions, showing confirmation if necessary.
     const handleRowAction = (action, item) => {
         if (action.requireConfirm) {
             setSelectedItem(item);
@@ -105,7 +140,7 @@ export default function GenericTable({
         }
     };
 
-    // Confirmation modal handler
+    // Confirmation modal handler.
     const confirmHandler = async () => {
         setShowConfirmation(false);
         if (pendingAction?.onClick && selectedItem) {
@@ -123,7 +158,7 @@ export default function GenericTable({
     return (
         <div className="section-body p-3">
             {/* Notifications */}
-            <AlertList alerts={notifications} removeAlert={removeNotification}/>
+            {/* <AlertList alerts={notifications} removeAlert={removeNotification} /> */}
 
             {/* Filter Bar & Global Actions */}
             <div className="d-flex justify-content-between align-items-center mb-3 w-100">
@@ -230,7 +265,7 @@ export default function GenericTable({
                 )}
             </div>
 
-            {/* Data Table with NewStudents Design */}
+            {/* Data Table */}
             <div className="card">
                 <div className="card-header">
                     <h3 className="card-title">{title}</h3>
@@ -241,7 +276,16 @@ export default function GenericTable({
                             <thead>
                             <tr>
                                 {tableColumns.map((col) => (
-                                    <th key={col.key}>{col.header}</th>
+                                    <th
+                                        key={col.key}
+                                        onClick={() => handleSort(col.key)}
+                                        style={{cursor: "pointer"}}
+                                    >
+                                        {col.header}{" "}
+                                        {sortColumn === col.key && (
+                                            <span>{sortDirection === "asc" ? "↑" : "↓"}</span>
+                                        )}
+                                    </th>
                                 ))}
                                 {rowActions && rowActions.length > 0 && <th>Actions</th>}
                             </tr>
@@ -264,7 +308,6 @@ export default function GenericTable({
                                             {rowActions && rowActions.length > 0 && (
                                                 <td className="d-flex gap-2 justify-content-end">
                                                     {sortedActions.map((action) => {
-                                                        // Skip the convert button if the item is already converted.
                                                         if (action.key === "convert" && item.converted) return null;
                                                         return (
                                                             <button
@@ -272,19 +315,16 @@ export default function GenericTable({
                                                                 className={`btn btn-sm ${action.buttonClass || "btn-outline-light"}`}
                                                                 onClick={() => handleRowAction(action, item)}
                                                             >
-                                                                {action.icon && (
-                                                                    React.isValidElement(action.icon) ? (
+                                                                {action.icon &&
+                                                                    (React.isValidElement(action.icon) ? (
                                                                         action.icon
                                                                     ) : (
                                                                         <>
                                                                             <i className={action.icon}
-                                                                               style={{fontSize: "18px"}}></i>
-                                                                            {" "}
+                                                                               style={{fontSize: "18px"}}></i>{" "}
                                                                             {action.label}
                                                                         </>
-                                                                    )
-                                                                )}
-
+                                                                    ))}
                                                             </button>
                                                         );
                                                     })}
@@ -303,7 +343,6 @@ export default function GenericTable({
                             </tbody>
                         </table>
                     </div>
-
                 </div>
             </div>
 
