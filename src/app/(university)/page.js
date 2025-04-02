@@ -249,9 +249,10 @@ export default function SchoolDashboardPage() {
     }, [selectedLeadType]);
 
     // Trainee Device Analytics State & Fetching – now considering both leads and clients
+    // Modified conversion: a document is "Converted" when its response is "Completed"
     const [traineeDeviceData, setTraineeDeviceData] = useState({
         chartOptions: {
-            labels: ["Converted", "Wrong/Not Interested", "In Progress"],
+            labels: ["Completed", "Wrong/Not Interested", "In Progress"],
             colors: ["#4CAF50", "#FF0000", "#03A9FA"],
             legend: {position: "bottom"},
             dataLabels: {enabled: false},
@@ -259,7 +260,7 @@ export default function SchoolDashboardPage() {
         },
         chartSeries: [0, 0, 0],
         footerData: [
-            {label: "Converted", count: "0", changeType: "up", change: "0%"},
+            {label: "Completed", count: "0", changeType: "up", change: "0%"},
             {label: "Wrong/Not Interested", count: "0", changeType: "down", change: "0%"},
             {label: "In Progress", count: "0", changeType: "up", change: "2%"}
         ]
@@ -289,7 +290,8 @@ export default function SchoolDashboardPage() {
                     notCleared = 0;
                 allDocs.forEach((doc) => {
                     const data = doc.data();
-                    if (data.converted === true) {
+                    // Modified: count as converted if response is exactly "Completed"
+                    if (data.response === "Completed") {
                         converted++;
                     } else if (
                         data.response === "Wrong number" ||
@@ -302,7 +304,7 @@ export default function SchoolDashboardPage() {
                 });
                 setTraineeDeviceData({
                     chartOptions: {
-                        labels: ["Converted", "Wrong/Not Interested", "In Progress"],
+                        labels: ["Completed", "Wrong/Not Interested", "In Progress"],
                         colors: ["#4CAF50", "#FF0000", "#03A9FA"],
                         legend: {position: "bottom"},
                         dataLabels: {enabled: false},
@@ -310,7 +312,7 @@ export default function SchoolDashboardPage() {
                     },
                     chartSeries: [converted, wrongNotInterested, notCleared],
                     footerData: [
-                        {label: "Converted", count: converted.toString(), changeType: "up", change: "0%"},
+                        {label: "Completed", count: converted.toString(), changeType: "up", change: "0%"},
                         {
                             label: "Wrong/Not Interested",
                             count: wrongNotInterested.toString(),
@@ -368,7 +370,7 @@ export default function SchoolDashboardPage() {
     };
 
     return (
-        <div className="page">
+        <div className="page mb-5 mt-2 pb-5">
             <Breadcrumb/>
             <div className="section-body mt-4">
                 <div className="container-fluid">
