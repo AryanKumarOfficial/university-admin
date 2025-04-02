@@ -19,6 +19,7 @@ import TechSystemSection from "@/components/sections/clients/TechSystemSection";
 import DecisionMakingSection from "@/components/sections/clients/DecisionMakingSection";
 import MiscSection from "@/components/sections/clients/MiscSection";
 import CommentsSection from "@/components/sections/clients/CommentsSection";
+import toast from "react-hot-toast";
 
 /**
  * UpdateClientForm
@@ -175,14 +176,20 @@ export default function UpdateClientForm({oldData}) {
 
             // Update Firestore
             const docRef = doc(db, "clients", oldData.id);
-            await updateDoc(docRef, data);
+            const updatePromise = updateDoc(docRef, data);
+            await toast.promise(updatePromise, {
+                loading: "Updating client...",
+                success: "Client updated successfully!",
+                error: "Failed to update client",
+            })
 
-            addAlert("success", "Client updated successfully!");
+            // addAlert("success", "Client updated successfully!");
             reset(); // Clear the form
             router.push("/clients");
         } catch (error) {
             console.error("Error updating client:", error);
-            addAlert("danger", "Failed to update client");
+            // addAlert("danger", "Failed to update client");
+            toast.error("Failed to update client");
         } finally {
             setIsSaving(false);
         }
@@ -194,28 +201,28 @@ export default function UpdateClientForm({oldData}) {
     }
 
     return (
-        <div className="page">
+        <div className="page py-5">
             {/* Alerts */}
-            {alerts.map((alert) => (
-                <Alert
-                    key={alert.id}
-                    variant={alert.variant}
-                    onClose={() => removeAlert(alert.id)}
-                    dismissible
-                    className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-                >
-                    {getIcon(alert.variant)}
-                    {alert.message}
-                </Alert>
-            ))}
+            {/*{alerts.map((alert) => (*/}
+            {/*    <Alert*/}
+            {/*        key={alert.id}*/}
+            {/*        variant={alert.variant}*/}
+            {/*        onClose={() => removeAlert(alert.id)}*/}
+            {/*        dismissible*/}
+            {/*        className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}*/}
+            {/*    >*/}
+            {/*        {getIcon(alert.variant)}*/}
+            {/*        {alert.message}*/}
+            {/*    </Alert>*/}
+            {/*))}*/}
 
             {/* Show saving banner if isSaving */}
-            {isSaving && (
-                <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
-                    <i className="fa fa-spinner fa-spin me-2"/>
-                    Updating client...
-                </Alert>
-            )}
+            {/*{isSaving && (*/}
+            {/*    <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">*/}
+            {/*        <i className="fa fa-spinner fa-spin me-2"/>*/}
+            {/*        Updating client...*/}
+            {/*    </Alert>*/}
+            {/*)}*/}
 
             {/* Example: If you have a breadcrumb, place it here */}
 

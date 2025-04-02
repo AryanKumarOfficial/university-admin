@@ -1,15 +1,12 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useCallback, useMemo, useState} from "react";
 import {useFieldArray, useForm, useWatch} from "react-hook-form";
-// If you have a Zod schema for validation:
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 
-import {db} from "@/lib/firebase/client";
-// Suppose you have a Zod schema named ClientSchema that matches the fields
-// import { ClientSchema } from "@/schema/client";
+import {auth, db} from "@/lib/firebase/client";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Alert from "react-bootstrap/Alert";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -23,23 +20,17 @@ import DecisionMakingSection from "@/components/sections/clients/DecisionMakingS
 import MiscSection from "@/components/sections/clients/MiscSection";
 import CommentsSection from "@/components/sections/clients/CommentsSection";
 import {ClientSchema} from "@/schema/client";
+import toast from "react-hot-toast";
 
-export default function AddClientForm() {
+function AddClientForm() {
     const router = useRouter();
-
-    // Track saving state
     const [isSaving, setIsSaving] = useState(false);
-
-    // Alerts for success/error
     const [alerts, setAlerts] = useState([]);
 
-    // If you have a Zod schema, pass it to zodResolver(ClientSchema).
-    // Otherwise, remove the resolver or use your own validation.
     const {
         register,
         handleSubmit,
         control,
-        watch,
         formState: {errors},
         reset,
     } = useForm({
@@ -77,9 +68,7 @@ export default function AddClientForm() {
             digitalLiteracy: "basic",
 
             // Decision-Making
-            contacts: [
-                {name: "", designation: "", email: "", phone: ""},
-            ],
+            contacts: [{name: "", designation: "", email: "", phone: ""}],
             purchaseDecisionBy: "principal",
 
             // Misc
@@ -97,12 +86,9 @@ export default function AddClientForm() {
         mode: "onChange",
     });
 
-    const boardOfAffiliation = useWatch({
-        control,
-        name: "boardOfAffiliation",
-    })
+    const boardOfAffiliation = useWatch({control, name: "boardOfAffiliation"});
 
-    // Field arrays for contacts and competitorSchools and newComments
+    // Field arrays
     const {
         fields: contactFields,
         append: appendContact,
@@ -122,19 +108,16 @@ export default function AddClientForm() {
         remove: removeNewComment,
     } = useFieldArray({control, name: "newComments"});
 
-    // For showing/hiding certain fields
-    // etc. (if needed)
-
-    // Alerts
-    const addAlert = (variant, message) => {
+    // Memoize alert functions to reduce re-renders
+    const addAlert = useCallback((variant, message) => {
         setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
-    };
+    }, []);
 
-    const removeAlert = (id) => {
+    const removeAlert = useCallback((id) => {
         setAlerts((prev) => prev.filter((a) => a.id !== id));
-    };
+    }, []);
 
-    const getIcon = (variant) => {
+    const getIcon = useCallback((variant) => {
         switch (variant) {
             case "success":
                 return <i className="fa fa-check-circle me-1"/>;
@@ -145,136 +128,144 @@ export default function AddClientForm() {
             default:
                 return null;
         }
-    };
+    }, []);
 
-    // On submit, merge newComments into comments, etc.
-    const onSubmit = async (data) => {
-        setIsSaving(true);
-        try {
-            // Combine newComments into a final comments array if you want them under "comments"
-            const clientData = {
-                ...data,
-                comments: data.newComments, // brand-new client => no old comments
-                createdAt: new Date().toISOString(),
-            };
-            delete clientData.newComments;
+    const onSubmit = useCallback(
+        async (data) => {
+            setIsSaving(true);
+            try {
+                const createdBy = auth?.currentUser?.email || "Unknown";
+                const clientData = {
+                    ...data,
+                    comments: data.newComments, // New client: no old comments
+                    createdAt: new Date().toISOString(),
+                    createdBy,
+                };
+                delete clientData.newComments;
 
-            // Add to Firestore "clients" collection
-            await addDoc(collection(db, "clients"), clientData);
+                const promiseAdd = addDoc(collection(db, "clients"), clientData);
+                await toast.promise(promiseAdd, {
+                    success: `Client added successfully!`,
+                    error: `Failed to add client`,
+                    loading: `Adding client...`,
+                })
 
-            addAlert("success", "Client added successfully!");
-            reset(); // Clear the form
-            router.push("/clients");
-        } catch (error) {
-            console.error("Error adding client:", error);
-            addAlert("danger", "Failed to add client");
-        } finally {
-            setIsSaving(false);
-        }
-    };
+                // addAlert("success", "Client added successfully!");
+                reset();
+                router.push("/clients");
+            } catch (error) {
+                console.error("Error adding client:", error);
+                toast.error("Failed to add client");
+                // addAlert("danger", "Failed to add client");
+            } finally {
+                setIsSaving(false);
+            }
+        },
+        [reset, router]
+    );
+
+    // Memoize the alerts rendering
+    const alertComponents = useMemo(
+        () =>
+            alerts.map((alert) => (
+                <Alert
+                    key={alert.id}
+                    variant={alert.variant}
+                    onClose={() => removeAlert(alert.id)}
+                    dismissible
+                    className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
+                >
+                    {getIcon(alert.variant)}
+                    {alert.message}
+                </Alert>
+            )),
+        [alerts, getIcon, removeAlert]
+    );
 
     return (
-        <>
-            <div className="page">
-                {/* Alerts */}
-                {alerts.map((alert) => (
-                    <Alert
-                        key={alert.id}
-                        variant={alert.variant}
-                        onClose={() => removeAlert(alert.id)}
-                        dismissible
-                        className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-                    >
-                        {getIcon(alert.variant)}
-                        {alert.message}
-                    </Alert>
-                ))}
+        <div className="page py-5">
+            {/*{alertComponents}*/}
 
-                {isSaving && (
-                    <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
-                        <i className="fa fa-spinner fa-spin me-2"/>
-                        Saving client...
-                    </Alert>
-                )}
+            {isSaving && (
+                <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
+                    <i className="fa fa-spinner fa-spin me-2"/>
+                    Saving client...
+                </Alert>
+            )}
 
-                {/* Breadcrumb */}
-                <Breadcrumb
-                    breadcrumbs={[
-                        {label: "Home", href: "/"},
-                        {label: "Clients", href: "/clients"},
-                        {label: "Add New Client", href: "/clients/add"},
-                    ]}
-                />
+            <Breadcrumb
+                breadcrumbs={[
+                    {label: "Home", href: "/"},
+                    {label: "Clients", href: "/clients"},
+                    {label: "Add New Client", href: "/clients/add"},
+                ]}
+            />
 
-                <div className="section-body mt-4">
-                    <div className="container-fluid">
-                        <div className="tab-content">
-                            <div className="tab-pane active show fade" id="client-add">
-                                <form onSubmit={handleSubmit(onSubmit)}>
-                                    {/* Basic School Info */}
-                                    <BasicSchoolInfoSection register={register} errors={errors}
-                                                            boardOfAffiliation={boardOfAffiliation}/>
+            <div className="section-body mt-4">
+                <div className="container-fluid">
+                    <div className="tab-content">
+                        <div className="tab-pane active show fade" id="client-add">
+                            <form onSubmit={handleSubmit(onSubmit)}>
+                                <BasicSchoolInfoSection
+                                    register={register}
+                                    errors={errors}
+                                    boardOfAffiliation={boardOfAffiliation}
+                                />
 
-                                    {/* Enrollment & Infrastructure */}
-                                    <EnrollmentSection register={register} errors={errors}/>
+                                <EnrollmentSection register={register} errors={errors}/>
 
-                                    {/* Financial Info */}
-                                    <FinancialSection register={register} errors={errors}/>
+                                <FinancialSection register={register} errors={errors}/>
 
-                                    {/* Tech System */}
-                                    <TechSystemSection register={register} errors={errors}/>
+                                <TechSystemSection register={register} errors={errors}/>
 
-                                    {/* Decision-Making */}
-                                    <DecisionMakingSection
-                                        contactFields={contactFields}
-                                        appendContact={appendContact}
-                                        removeContact={removeContact}
-                                        register={register}
-                                        errors={errors}
-                                    />
+                                <DecisionMakingSection
+                                    contactFields={contactFields}
+                                    appendContact={appendContact}
+                                    removeContact={removeContact}
+                                    register={register}
+                                    errors={errors}
+                                />
 
-                                    {/* Misc */}
-                                    <MiscSection
-                                        competitorFields={competitorFields}
-                                        appendCompetitor={appendCompetitor}
-                                        removeCompetitor={removeCompetitor}
-                                        register={register}
-                                        errors={errors}
-                                    />
+                                <MiscSection
+                                    competitorFields={competitorFields}
+                                    appendCompetitor={appendCompetitor}
+                                    removeCompetitor={removeCompetitor}
+                                    register={register}
+                                    errors={errors}
+                                />
 
-                                    {/* Comments */}
-                                    <CommentsSection
-                                        existingComments={[]} // brand-new => no old comments
-                                        newCommentFields={newCommentFields}
-                                        prependNewComment={prependNewComment}
-                                        appendNewComment={appendNewComment}
-                                        removeNewComment={removeNewComment}
-                                    />
+                                <CommentsSection
+                                    existingComments={[]} // New client: no old comments
+                                    newCommentFields={newCommentFields}
+                                    prependNewComment={prependNewComment}
+                                    appendNewComment={appendNewComment}
+                                    removeNewComment={removeNewComment}
+                                />
 
-                                    {/* Submit */}
-                                    <div className="d-flex justify-content-end gap-2 mb-5">
-                                        <button
-                                            type="reset"
-                                            className="btn btn-secondary"
-                                            onClick={() => {
-                                                reset()
-                                                router.push("/clients")
-                                            }}
-                                            disabled={isSaving}
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button type="submit" className="btn btn-success" disabled={isSaving}>
-                                            {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                            Add Client
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                                <div className="d-flex justify-content-end gap-2 mb-5">
+                                    <button
+                                        type="reset"
+                                        className="btn btn-secondary"
+                                        onClick={() => {
+                                            reset();
+                                            router.push("/clients");
+                                        }}
+                                        disabled={isSaving}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="btn btn-success" disabled={isSaving}>
+                                        {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
+                                        Add Client
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
+
+export default React.memo(AddClientForm);
