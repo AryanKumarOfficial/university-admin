@@ -302,7 +302,8 @@ export default function GenericTable({
                                         ...rowActions.filter((a) => a.key !== "convert"),
                                     ];
                                     return (
-                                        <tr key={item.id} className={item.converted ? "table-success" : ""}>
+                                        <tr key={item.id}
+                                            className={item.converted || item.response === "Completed" ? "table-success" : ""}>
                                             {tableColumns.map((col) => (
                                                 <td key={col.key}>
                                                     {col.render ? col.render(item[col.key], item) : item[col.key]}
@@ -312,6 +313,9 @@ export default function GenericTable({
                                                 <td className="d-flex gap-2 justify-content-end">
                                                     {sortedActions.map((action) => {
                                                         if (action.key === "convert" && item.converted) return null;
+                                                        if (action.key=== "complete" && item.response === "Completed") return null;
+                                                        if (action.key === "edit" && item.converted) return null;
+                                                        if (action.key==="edit"&& item.response === "Completed") return null;
                                                         return (
                                                             <button
                                                                 key={action.key}

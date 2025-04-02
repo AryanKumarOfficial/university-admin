@@ -23,7 +23,7 @@ export async function deleteLead(formData) {
 export async function markLeadAsComplete(formData) {
     try {
         const leadId = formData.get("leadId");
-        const docRef = doc(db, "leads", leadId);
+        const docRef =await doc(db, "leads", leadId);
         await updateDoc(docRef, {
             response: "Completed",
             updatedAt: new Date().toISOString(),

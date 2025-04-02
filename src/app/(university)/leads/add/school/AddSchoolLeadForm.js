@@ -6,7 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 
-import {db} from "@/lib/firebase/client";
+import {auth, db} from "@/lib/firebase/client";
 import {LeadSchema} from "@/schema/lead";
 
 // Modular form sections (same ones used in update)
@@ -82,6 +82,7 @@ export default function AddSchoolLeadForm() {
     } = useFieldArray({
         control,
         name: "newComments",
+        createdBy: auth.currentUser.email,
     });
 
     // 3) Watch for "response"
@@ -114,12 +115,14 @@ export default function AddSchoolLeadForm() {
     const onSubmit = async (data) => {
         setIsSaving(true); // Start saving
         try {
+            const createdBy = auth.currentUser?.email || "unknown";
             // Combine new comments into a single 'comments' field
             const leadData = {
                 ...data,
                 comments: data.newComments, // brand-new lead => no old comments
                 createdAt: new Date(Date.now()).toISOString(), // add timestamp
                 leadType: "School",
+                createdBy
             };
             delete leadData.newComments;
 
