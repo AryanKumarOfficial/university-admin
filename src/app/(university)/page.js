@@ -1,430 +1,441 @@
 "use client";
-import React, {useState} from 'react'
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import DataCard from "@/components/sections/Dashboard/DataCard";
-import UniversityReport from "@/components/sections/Dashboard/LeadsReport";
+import LeadsReport from "@/components/sections/Dashboard/LeadsReport";
 import Performance from "@/components/sections/Dashboard/Performance";
 import Finance from "@/components/sections/Dashboard/Finance";
-import ExamToppers from "@/components/sections/Dashboard/Toppers";
 import DeviceAnalytics from "@/components/sections/Dashboard/DeviceAnalytics";
-import NewStudents from "@/components/sections/Dashboard/NewStudents";
+import {collection, getDocs, query, where} from "firebase/firestore";
+import {auth, db} from "@/lib/firebase/client";
 
-export default function Page() {
-
-    const cards = [
-        {
-            title: "Total Leads",
-            value: 1200,
-            // unit: "students",
-            percentChange: 5,
-            trend: "up", // "up" or "down"
-            progress: "70%",
-            subtitle: "Overall enrollment",
-        },
-        {
-            title: "Total Clients",
-            value: 150,
-            // unit: "students",
-            percentChange: 8,
-            trend: "up",
-            progress: "40%",
-            subtitle: "Admissions this month",
-        },
-        {
-            title: "Average Attendance",
-            value: "92%",
-            unit: "", // Percentage already included in the value
-            percentChange: 2,
-            trend: "up",
-            progress: "92%",
-            subtitle: "Attendance rate for the week",
-        },
-        {
-            title: "Exams Passed",
-            value: 1100,
-            unit: "exams",
-            percentChange: -3,
-            trend: "down",
-            progress: "85%",
-            subtitle: "Exam success rate",
-        },
-    ];
-
-
+export default function SchoolDashboardPage() {
+    // Updated Dashboard States:
+    const [leadsCount, setLeadsCount] = useState(0);
+    const [clientsCount, setClientsCount] = useState(0);
+    const [myLeadsCount, setMyLeadsCount] = useState(0);
+    const [myClientsCount, setMyClientsCount] = useState(0);
+    const [financeData, setFinanceData] = useState([]);
+    const [salesReportCategories, setSalesReportCategories] = useState([]);
+    const [salesReportSeries, setSalesReportSeries] = useState([]);
     const [timeRange, setTimeRange] = useState("1D");
-    const handleTimeRangeChange = (range) => {
-        setTimeRange(range);
-        // Optionally update chartOptions or chartSeries based on the new range.
-    };
+    const [loading, setLoading] = useState(true);
 
-    // Smooth lines, rounded columns, dual Y-axes
-    const schoolChartOptions = {
-        chart: {
-            type: "line",
-            toolbar: {show: false},
-        },
-        stroke: {
-            curve: "smooth",      // Make the lines curved
-            width: [3, 0, 3],     // Admissions & Attendance lines = 3, Fees (column) = 0
-        },
-        plotOptions: {
-            bar: {
-                columnWidth: "30%", // Narrower columns for a modern look
-                borderRadius: 4,    // Rounded corners on columns
-            },
-        },
-        colors: ["#008FFB", "#FEB019", "#00E396"], // Adjust as desired
-        xaxis: {
-            categories: [
-                "Sep 01",
-                "Sep 02",
-                "Sep 03",
-                "Sep 04",
-                "Sep 05",
-                "Sep 06",
-                "Sep 07",
-            ],
-        },
-        // Two Y-axes: one for Admissions & Attendance, another for Fees
-        yaxis: [
-            {
-                labels: {
-                    formatter: (val) => val.toFixed(0),
-                },
-                title: {
-                    text: "Admissions / Attendance",
-                },
-            },
-            {
-                opposite: true,
-                labels: {
-                    formatter: (val) => val.toFixed(0),
-                },
-                title: {
-                    text: "Fees (USD)",
-                },
-            },
-        ],
-        legend: {
-            position: "bottom",
-        },
-        dataLabels: {
-            enabled: false, // Hide point labels for a cleaner look
-        },
-        markers: {
-            size: [5, 0, 5], // Show markers for line series; none for column
-        },
-        tooltip: {
-            shared: true,     // Display all series values on hover
-            intersect: false,
-        },
-    };
-
-    const schoolChartSeries = [
+    // Filter States – Updated options to use "Leads" and "Clients"
+    const [activeFilters, setActiveFilters] = useState({leadType: "All"});
+    const [selectedLeadType, setSelectedLeadType] = useState("All");
+    const filterOptions = [
         {
-            name: "Admissions",
-            type: "line",
-            data: [120, 130, 115, 140, 150, 160, 170],
-            yAxisIndex: 0, // Use the first Y-axis for admissions
-        },
-        {
-            name: "Fees Collected",
-            type: "column",
-            data: [5000, 5200, 5100, 5300, 5400, 5500, 5600],
-            yAxisIndex: 1, // Use the second Y-axis for fees
-        },
-        // {
-        //     name: "Attendance",
-        //     type: "line",
-        //     data: [95, 96, 94, 97, 98, 95, 96],
-        //     yAxisIndex: 0, // Use the first Y-axis for attendance
-        // },
+            key: "leadType",
+            label: "Lead Type",
+            type: "select",
+            options: ["All", "Leads", "Clients"]
+        }
     ];
 
-    // performance
-    const customData = {
-        categories: ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-        series: [
-            {name: "Math", data: [80, 85, 88, 90, 95, 92]},
-            {name: "Science", data: [70, 75, 78, 72, 68, 75]},
-            {name: "Arts", data: [60, 55, 58, 65, 62, 70]},
-        ],
+    const updateFilter = (key, value) => {
+        setActiveFilters((prev) => ({...prev, [key]: value}));
+        if (key === "leadType") setSelectedLeadType(value);
     };
 
-    // finance
-    const financeData = [
-        {label: "Fees", color: "indigo", percentage: 45},
-        {label: "Donation", color: "yellow", percentage: 28},
-        {label: "Income", color: "green", percentage: 72},
-        {label: "Expense", color: "pink", percentage: 34},
-        {label: "Profit", color: "blue", percentage: 58},
-        {label: "Loss", color: "red", percentage: 15},
-        {label: "Scholarships", color: "purple", percentage: 38},
-        {label: "Grants", color: "orange", percentage: 49},
-    ];
+    const resetFilters = () => {
+        const initialFilters = {leadType: "All"};
+        setActiveFilters(initialFilters);
+        setSelectedLeadType(initialFilters.leadType);
+    };
 
-    // toppers
-    const schoolToppers = [
-        {
-            no: 101,
-            avatar: "/assets/images/xs/avatar1.jpg",
-            name: "Alisha Brown",
-            subtitle: "Class 10",
-            marks: 498,
-            percentage: "99.60",
-        },
-        {
-            no: 203,
-            avatar: "/assets/images/xs/avatar2.jpg",
-            name: "Brandon Clarke",
-            subtitle: "Class 10",
-            marks: 485,
-            percentage: "97.00",
-        },
-        {
-            no: 310,
-            avatar: "/assets/images/xs/avatar3.jpg",
-            name: "Daisy Miller",
-            subtitle: "Class 12",
-            marks: 480,
-            percentage: "96.00",
-        },
-        {
-            no: 422,
-            avatar: "/assets/images/xs/avatar4.jpg",
-            name: "Robert Hall",
-            subtitle: "Class 12",
-            marks: 475,
-            percentage: "95.00",
-        },
-        {
-            no: 559,
-            avatar: "/assets/images/xs/avatar5.jpg",
-            name: "Sarah King",
-            subtitle: "Class 10",
-            marks: 470,
-            percentage: "94.00",
-        },
-        {
-            no: 617,
-            avatar: "/assets/images/xs/avatar6.jpg",
-            name: "Michael Wright",
-            subtitle: "Class 12",
-            marks: 468,
-            percentage: "93.60",
-        },
-        {
-            no: 728,
-            avatar: "/assets/images/xs/avatar7.jpg",
-            name: "Emily Young",
-            subtitle: "Class 12",
-            marks: 465,
-            percentage: "93.00",
-        },
-        {
-            no: 833,
-            avatar: "/assets/images/xs/avatar8.jpg",
-            name: "David Lee",
-            subtitle: "Class 10",
-            marks: 462,
-            percentage: "92.40",
-        },
-        {
-            no: 941,
-            avatar: "/assets/images/xs/avatar9.jpg",
-            name: "Grace Davis",
-            subtitle: "Class 10",
-            marks: 460,
-            percentage: "92.00",
-        },
-        {
-            no: 1002,
-            avatar: "/assets/images/xs/avatar10.jpg",
-            name: "Kevin Walker",
-            subtitle: "Class 12",
-            marks: 458,
-            percentage: "91.60",
-        },
-    ];
+    // Utility: Fetch current user role
+    const getUserRole = async () => {
+        const user = auth.currentUser;
+        if (user) {
+            const usersSnapshot = await getDocs(
+                query(collection(db, "users"), where("email", "==", user.email))
+            );
+            const userSnapshot = usersSnapshot.docs[0];
+            return userSnapshot.data().role;
+        }
+        return null;
+    };
 
-    // device analytics
-    const schoolDeviceData = {
-        // ApexCharts config
+    // Count documents for overall leads and clients
+    const countDocuments = useCallback(async () => {
+        try {
+            const [clientsSnapshot, leadsSnapshot] = await Promise.all([
+                getDocs(collection(db, "clients")),
+                getDocs(collection(db, "leads"))
+            ]);
+            setClientsCount(clientsSnapshot.size);
+            setLeadsCount(leadsSnapshot.size);
+            setMyLeadsCount(
+                leadsSnapshot.docs.filter(
+                    (doc) => doc.data().createdBy === auth.currentUser.email
+                ).length
+            );
+            setMyClientsCount(
+                clientsSnapshot.docs.filter(
+                    (doc) => doc.data().createdBy === auth.currentUser.email
+                ).length
+            );
+        } catch (error) {
+            console.error("Error counting documents:", error);
+        }
+    }, []);
+
+    // Fetch Sales Report Data with dual series (Leads & Clients)
+    const fetchSalesReport = useCallback(async () => {
+        try {
+            setLoading(true);
+            const now = new Date();
+            let startDate, endDate;
+            if (timeRange === "1D") {
+                startDate = new Date(now);
+                startDate.setHours(0, 0, 0, 0);
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 1);
+            } else {
+                switch (timeRange) {
+                    case "1W":
+                        startDate = new Date(now);
+                        startDate.setDate(now.getDate() - 7);
+                        break;
+                    case "1M":
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 1);
+                        break;
+                    case "3M":
+                        startDate = new Date(now);
+                        startDate.setMonth(now.getMonth() - 3);
+                        break;
+                    case "1Y":
+                        startDate = new Date(now);
+                        startDate.setFullYear(now.getFullYear() - 1);
+                        break;
+                    default:
+                        startDate = now;
+                }
+                endDate = now;
+            }
+
+            const [clientsSnapshot, leadsSnapshot] = await Promise.all([
+                getDocs(collection(db, "clients")),
+                getDocs(collection(db, "leads"))
+            ]);
+
+            const filterDocsByDate = (snapshot) =>
+                snapshot.docs.filter((doc) => {
+                    let createdAt = doc.data().createdAt;
+                    if (!createdAt) return false;
+                    if (typeof createdAt === "string") createdAt = new Date(createdAt);
+                    return createdAt >= startDate && createdAt < endDate;
+                });
+
+            const filteredClients = filterDocsByDate(clientsSnapshot);
+            const filteredLeads = filterDocsByDate(leadsSnapshot);
+
+            // Fetch Growth Managers and count leads per manager
+            const usersSnapshot = await getDocs(
+                query(collection(db, "users"), where("role", "==", "Growth Manager"))
+            );
+            const managers = usersSnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            const leadsCounts = managers.map((manager) =>
+                filteredLeads.filter((doc) => doc.data().createdBy === manager.email)
+                    .length
+            );
+            const clientsCounts = managers.map((manager) =>
+                filteredClients.filter((doc) => doc.data().createdBy === manager.email)
+                    .length
+            );
+
+            setSalesReportCategories(managers.map((m) => m.name || m.email));
+            setSalesReportSeries([
+                {name: "Leads", type: "bar", data: leadsCounts},
+                {name: "Clients", type: "bar", data: clientsCounts}
+            ]);
+        } catch (error) {
+            console.error("Error fetching sales report:", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [timeRange]);
+
+    // Finance Data Calculation remains the same.
+    const statuses = [
+        "Wrong number",
+        "Not Interested",
+        "Interested",
+        "Send details on WhatsApp",
+        "Mail sent",
+        "Call later",
+        "Meeting scheduled",
+        "Follow up required"
+    ];
+    const colorMapping = {
+        "Wrong number": "red",
+        "Not Interested": "gray",
+        "Interested": "green",
+        "Send details on WhatsApp": "teal",
+        "Mail sent": "blue",
+        "Call later": "yellow",
+        "Meeting scheduled": "darkgreen",
+        "Follow up required": "orange"
+    };
+
+    const calculatePercentagesFromDocs = (docs) => {
+        const totalCount = docs.length;
+        const countByStatus = {};
+        docs.forEach((doc) => {
+            const data = doc.data();
+            const status = data.response;
+            if (statuses.includes(status)) {
+                countByStatus[status] = (countByStatus[status] || 0) + 1;
+            }
+        });
+        return statuses.map((status) => {
+            const count = countByStatus[status] || 0;
+            const percentage = totalCount ? (count / totalCount) * 100 : 0;
+            return {
+                label: status,
+                color: colorMapping[status],
+                percentage: parseFloat(percentage.toFixed(2))
+            };
+        });
+    };
+
+    // Fetch Finance Data based on selected lead type and user role
+    useEffect(() => {
+        const fetchFinanceData = async () => {
+            try {
+                const role = await getUserRole();
+                let docs = [];
+                if (selectedLeadType === "All") {
+                    const [leadsSnapshot, clientsSnapshot] = await Promise.all([
+                        getDocs(collection(db, "leads")),
+                        getDocs(collection(db, "clients"))
+                    ]);
+                    let leadsDocs = leadsSnapshot.docs;
+                    let clientsDocs = clientsSnapshot.docs;
+                    if (role !== "Admin") {
+                        leadsDocs = leadsDocs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                        clientsDocs = clientsDocs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                    }
+                    docs = [...leadsDocs, ...clientsDocs];
+                } else {
+                    const collectionRef = collection(
+                        db,
+                        selectedLeadType === "Leads" ? "leads" : "clients"
+                    );
+                    const snapshot = await getDocs(collectionRef);
+                    docs = snapshot.docs;
+                    if (role !== "Admin") {
+                        docs = docs.filter(
+                            (doc) => doc.data().createdBy === auth.currentUser.email
+                        );
+                    }
+                }
+                setFinanceData(calculatePercentagesFromDocs(docs));
+            } catch (error) {
+                console.error("Error calculating finance data:", error);
+            }
+        };
+        fetchFinanceData();
+    }, [selectedLeadType]);
+
+    // Trainee Device Analytics State & Fetching – now considering both leads and clients
+    const [traineeDeviceData, setTraineeDeviceData] = useState({
         chartOptions: {
-            labels: ["Tablet", "Mobile", "Desktop"],
-            colors: ["#2196F3", "#9C27B0", "#00BCD4"],
-            legend: {
-                position: "bottom",
-            },
-            dataLabels: {
-                enabled: false,
-            },
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: "65%", // Adjust donut thickness
-                    },
-                },
-            },
+            labels: ["Converted", "Wrong/Not Interested", "In Progress"],
+            colors: ["#4CAF50", "#FF0000", "#03A9FA"],
+            legend: {position: "bottom"},
+            dataLabels: {enabled: false},
+            plotOptions: {pie: {donut: {size: "60%"}}}
         },
-
-        // Numeric data for each device
-        chartSeries: [50, 40, 10],
-
-        // Footer stats
+        chartSeries: [0, 0, 0],
         footerData: [
-            {
-                label: "Desktop",
-                count: "1.05K",
-                changeType: "up", // "up" or "down"
-                change: "1.10%",
-            },
-            {
-                label: "Mobile",
-                count: "2.90K",
-                changeType: "down",
-                change: "1.75%",
-            },
-            {
-                label: "Tablet",
-                count: "4.50K",
-                changeType: "up",
-                change: "1.20%",
-            },
-        ],
-    };
+            {label: "Converted", count: "0", changeType: "up", change: "0%"},
+            {label: "Wrong/Not Interested", count: "0", changeType: "down", change: "0%"},
+            {label: "In Progress", count: "0", changeType: "up", change: "2%"}
+        ]
+    });
 
-    // new students
+    useEffect(() => {
+        const fetchDeviceAnalytics = async () => {
+            try {
+                const role = await getUserRole();
+                const [leadsSnapshot, clientsSnapshot] = await Promise.all([
+                    getDocs(collection(db, "leads")),
+                    getDocs(collection(db, "clients"))
+                ]);
+                let leadsDocs = leadsSnapshot.docs;
+                let clientsDocs = clientsSnapshot.docs;
+                if (role !== "Admin") {
+                    leadsDocs = leadsDocs.filter(
+                        (doc) => doc.data().createdBy === auth.currentUser.email
+                    );
+                    clientsDocs = clientsDocs.filter(
+                        (doc) => doc.data().createdBy === auth.currentUser.email
+                    );
+                }
+                const allDocs = [...leadsDocs, ...clientsDocs];
+                let converted = 0,
+                    wrongNotInterested = 0,
+                    notCleared = 0;
+                allDocs.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.converted === true) {
+                        converted++;
+                    } else if (
+                        data.response === "Wrong number" ||
+                        data.response === "Not Interested"
+                    ) {
+                        wrongNotInterested++;
+                    } else {
+                        notCleared++;
+                    }
+                });
+                setTraineeDeviceData({
+                    chartOptions: {
+                        labels: ["Converted", "Wrong/Not Interested", "In Progress"],
+                        colors: ["#4CAF50", "#FF0000", "#03A9FA"],
+                        legend: {position: "bottom"},
+                        dataLabels: {enabled: false},
+                        plotOptions: {pie: {donut: {size: "60%"}}}
+                    },
+                    chartSeries: [converted, wrongNotInterested, notCleared],
+                    footerData: [
+                        {label: "Converted", count: converted.toString(), changeType: "up", change: "0%"},
+                        {
+                            label: "Wrong/Not Interested",
+                            count: wrongNotInterested.toString(),
+                            changeType: "down",
+                            change: "0%"
+                        },
+                        {label: "In Progress", count: notCleared.toString(), changeType: "up", change: "0%"}
+                    ]
+                });
+            } catch (error) {
+                console.error("Error fetching device analytics:", error);
+            }
+        };
+        fetchDeviceAnalytics();
+    }, []);
 
-    const schoolStudents = [
-        {
-            no: 101,
-            name: "Alice Johnson",
-            professor: "Ms. Brown",
-            dateOfAdmit: "12/03/2025",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Class 10",
-        },
-        {
-            no: 102,
-            name: "Bob Anderson",
-            professor: "Mr. Clarke",
-            dateOfAdmit: "15/03/2025",
-            feesStatus: "unpaid",
-            feesClass: "warning",
-            branch: "Class 12",
-        },
-        {
-            no: 103,
-            name: "Charlie Wright",
-            professor: "Dr. Smith",
-            dateOfAdmit: "20/04/2024",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Arts",
-        },
-        {
-            no: 104,
-            name: "Diana Lee",
-            professor: "Mrs. Johnson",
-            dateOfAdmit: "18/06/2023",
-            feesStatus: "unpaid",
-            feesClass: "danger",
-            branch: "Science",
-        },
-        {
-            no: 105,
-            name: "Edward Green",
-            professor: "Ms. Davis",
-            dateOfAdmit: "25/05/2025",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Class 10",
-        },
-        {
-            no: 106,
-            name: "Fiona Miller",
-            professor: "Mr. Parker",
-            dateOfAdmit: "10/02/2024",
-            feesStatus: "unpaid",
-            feesClass: "warning",
-            branch: "Commerce",
-        },
-        {
-            no: 107,
-            name: "George Brown",
-            professor: "Ms. Lee",
-            dateOfAdmit: "05/07/2023",
-            feesStatus: "paid",
-            feesClass: "success",
-            branch: "Class 12",
-        },
-        {
-            no: 108,
-            name: "Hannah Carter",
-            professor: "Dr. Green",
-            dateOfAdmit: "01/09/2023",
-            feesStatus: "unpaid",
-            feesClass: "danger",
-            branch: "Science",
-        },
+    // Fetch overall data when component mounts and when timeRange changes
+    useEffect(() => {
+        const fetchData = async () => {
+            await countDocuments();
+            await fetchSalesReport();
+        };
+        fetchData();
+    }, [countDocuments, fetchSalesReport]);
+
+    // Chart configurations for Sales Report
+    const collegeChartOptions = useMemo(
+        () => ({
+            chart: {type: "bar", toolbar: {show: false}},
+            plotOptions: {bar: {columnWidth: "50%", borderRadius: 4}},
+            colors: ["#00E396", "#FF9800"],
+            xaxis: {categories: salesReportCategories},
+            legend: {position: "bottom"},
+            dataLabels: {enabled: false},
+            tooltip: {shared: false, intersect: true}
+        }),
+        [salesReportCategories]
+    );
+    const collegeChartSeries = useMemo(() => salesReportSeries, [salesReportSeries]);
+
+    // Updated Dashboard Cards & Performance Data
+    const collegeDashboardCards = [
+        {title: "Total Leads", value: leadsCount, trend: "up", subtitle: "Leads received"},
+        {title: "Total Clients", value: clientsCount, trend: "up", subtitle: "Clients received"},
+        {title: "My Leads", value: myLeadsCount, trend: "up", subtitle: "Leads received"},
+        {title: "My Clients", value: myClientsCount, trend: "up", subtitle: "Clients received"}
     ];
-
+    const collegeData = {
+        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        series: [
+            {name: "Admissions", data: [80, 90, 70, 60, 95, 100]},
+            {name: "Research Grants", data: [60, 70, 85, 90, 75, 80]},
+            {name: "Alumni Donations", data: [40, 50, 45, 60, 65, 70]}
+        ]
+    };
 
     return (
-        <div className={"page"}>
+        <div className="page">
             <Breadcrumb/>
             <div className="section-body mt-4">
                 <div className="container-fluid">
-                    <DataCard cards={cards}/>
-                    <div className={"tab-content"}>
-                        <div className="tab-pane fade show active" id="admin-Dashboard" role={"tabpanel"}>
+                    <DataCard cards={collegeDashboardCards}/>
+                    <div className="card mb-3 shadow-sm">
+                        <div className="card-body">
+                            <div className="row g-3 align-items-center justify-content-between">
+                                {filterOptions.map((filter) =>
+                                    filter.type === "select" ? (
+                                        <div className="col-auto" key={filter.key}>
+                                            <select
+                                                id={filter.key}
+                                                className="form-select"
+                                                value={activeFilters[filter.key] || "All"}
+                                                onChange={(e) => updateFilter(filter.key, e.target.value)}
+                                            >
+                                                {filter.options?.map((option) => (
+                                                    <option key={option} value={option}>
+                                                        {option === "All" ? "All Leads" : option}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : null
+                                )}
+                                <div className="col-auto align-self-end">
+                                    <button className="btn btn-outline-danger" onClick={resetFilters}>
+                                        Clear Filters
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="tab-content">
+                        <div className="tab-pane fade show active" id="admin-Dashboard" role="tabpanel">
+                            <Finance financeData={financeData}/>
                             <div className="row clearfix">
-                                <UniversityReport
-                                    title={"Sales"}
-                                    selectedTimeRange={timeRange}
-                                    onTimeRangeChange={handleTimeRangeChange}
-                                    chartOptions={schoolChartOptions}
-                                    chartSeries={schoolChartSeries}
+                                <LeadsReport
+                                    title="Leads"
+                                    chartOptions={collegeChartOptions}
+                                    chartSeries={collegeChartSeries}
                                     timeRangeOptions={[
                                         {label: "1D", value: "1D"},
                                         {label: "1W", value: "1W"},
                                         {label: "1M", value: "1M"},
                                         {label: "3M", value: "3M"},
-                                        {label: "1Y", value: "1Y"},
+                                        {label: "1Y", value: "1Y"}
                                     ]}
-                                />
-                                <Performance
-                                    title={"Student Performance"}
-                                    data={customData}
-                                    height={400}
+                                    selectedTimeRange={timeRange}
+                                    onTimeRangeChange={setTimeRange}
+                                    loading={loading}
                                 />
                             </div>
-                            <Finance
-                                financeData={financeData}
-                            />
                             <div className="row clearfix row-deck my-3">
-                                <ExamToppers
-                                    title={"Board Toppers"}
-                                    toppers={schoolToppers}
-                                />
+                                <Performance title="College Performance" data={collegeData} height={400}/>
                                 <DeviceAnalytics
-                                    title={"School Device Usage"}
-                                    chartOptions={schoolDeviceData.chartOptions}
-                                    chartSeries={schoolDeviceData.chartSeries}
-                                    footerData={schoolDeviceData.footerData}
+                                    title="Client Conversion"
+                                    chartOptions={traineeDeviceData.chartOptions}
+                                    chartSeries={traineeDeviceData.chartSeries}
+                                    footerData={traineeDeviceData.footerData}
                                     height={250}
                                 />
                             </div>
-                            <NewStudents
-                                title={"New School Admissions"}
-                                students={schoolStudents}
-                            />
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
