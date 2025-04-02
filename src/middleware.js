@@ -57,11 +57,13 @@ export async function middleware(request) {
                         }
                     }
                     return NextResponse.redirect(redirectUrl);
-
                 }
                 return NextResponse.next();
             }
-            if (allowedSchoolPaths.includes(pathname)) {
+            // Allow if pathname exactly matches or is a child of an allowed path.
+            if (allowedSchoolPaths.some(
+                (allowed) => pathname === allowed || pathname.startsWith(`${allowed}/`)
+            )) {
                 return NextResponse.next();
             }
             return NextResponse.redirect(new URL("/", request.url));
