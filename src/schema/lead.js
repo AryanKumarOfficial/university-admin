@@ -29,7 +29,7 @@ export const LeadSchema = z.object({
     hasWebsite: z.enum(["yes", "no"], {
         errorMap: () => ({message: "Select Yes or No"}),
     }),
-    response: z.enum(["Call later", "Not interested"], {
+    response: z.enum(["Call Later", "Not Interested"], {
         errorMap: () => ({message: "Select Call later or Not interested"}),
     }),
     followUpDate: z.string().optional(),

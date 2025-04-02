@@ -18,7 +18,9 @@ export default function GenericTable({
                                          title = "Data",
                                      }) {
     const pathname = usePathname();
-    const normalizedPath = pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+    const normalizedPath = pathname.endsWith("/")
+        ? pathname.slice(0, -1)
+        : pathname;
 
     // Notification state
     const [notifications, setNotifications] = useState([]);
@@ -86,7 +88,9 @@ export default function GenericTable({
             if (!filterValue || filterValue === "All") return filtered;
 
             // If an accessor is provided, use it; otherwise use the direct property.
-            const accessor = filter.accessor ? filter.accessor : (item) => item[filter.key];
+            const accessor = filter.accessor
+                ? filter.accessor
+                : (item) => item[filter.key];
 
             switch (filter.type) {
                 case "text":
@@ -142,6 +146,14 @@ export default function GenericTable({
             action.onClick(item);
         }
     };
+
+    // Compute the confirmation modal message.
+    const modalMessage = useMemo(() => {
+        if (typeof pendingAction?.confirmMessage === "function" && selectedItem) {
+            return pendingAction.confirmMessage(selectedItem);
+        }
+        return pendingAction?.confirmMessage || "Are you sure?";
+    }, [pendingAction, selectedItem]);
 
     // Confirmation modal handler.
     const confirmHandler = async () => {
@@ -231,7 +243,7 @@ export default function GenericTable({
                                 );
                         }
                     })}
-                    <button className="btn btn-danger w-100" onClick={resetFilters}>
+                    <button type="button" className="btn btn-danger w-100" onClick={resetFilters}>
                         Clear Filters
                     </button>
                 </div>
@@ -258,6 +270,7 @@ export default function GenericTable({
                                     <button
                                         className={`dropdown-item ${action.buttonClass || ""}`}
                                         onClick={() => action.onClick && action.onClick(null)}
+                                        type="button"
                                     >
                                         {action.label ? action.label : action.icon}
                                     </button>
@@ -302,25 +315,39 @@ export default function GenericTable({
                                         ...rowActions.filter((a) => a.key !== "convert"),
                                     ];
                                     return (
-                                        <tr key={item.id}
-                                            className={item.converted || item.response === "Completed" ? "table-success" : ""}>
+                                        <tr
+                                            key={item.id}
+                                            className={
+                                                item.converted || item.response === "Completed"
+                                                    ? "table-success"
+                                                    : ""
+                                            }
+                                        >
                                             {tableColumns.map((col) => (
                                                 <td key={col.key}>
-                                                    {col.render ? col.render(item[col.key], item) : item[col.key]}
+                                                    {col.render
+                                                        ? col.render(item[col.key], item)
+                                                        : item[col.key]}
                                                 </td>
                                             ))}
                                             {rowActions && rowActions.length > 0 && (
                                                 <td className="d-flex gap-2 justify-content-end">
                                                     {sortedActions.map((action) => {
-                                                        if (action.key === "convert" && item.converted) return null;
-                                                        if (action.key=== "complete" && item.response === "Completed") return null;
-                                                        if (action.key === "edit" && item.converted) return null;
-                                                        if (action.key==="edit"&& item.response === "Completed") return null;
+                                                        if (
+                                                            (action.key === "convert" && item.converted) ||
+                                                            (action.key === "complete" && item.response === "Completed") ||
+                                                            (action.key === "edit" &&
+                                                                (item.converted || item.response === "Completed"))
+                                                        )
+                                                            return null;
                                                         return (
                                                             <button
                                                                 key={action.key}
-                                                                className={`btn btn-sm ${action.buttonClass || "btn-outline-light"}`}
+                                                                className={`btn btn-sm ${
+                                                                    action.buttonClass || "btn-outline-light"
+                                                                }`}
                                                                 onClick={() => handleRowAction(action, item)}
+                                                                type="button"
                                                             >
                                                                 {action.icon &&
                                                                     (React.isValidElement(action.icon) ? (
@@ -370,7 +397,7 @@ export default function GenericTable({
                 show={showConfirmation}
                 onHide={() => setShowConfirmation(false)}
                 title={pendingAction?.title || "Confirm Action"}
-                message={pendingAction?.confirmMessage || "Are you sure?"}
+                message={modalMessage}
                 onConfirm={confirmHandler}
             />
         </div>

@@ -104,7 +104,7 @@ export default function LeadsClient({initialLeads}) {
                     const emailParts = value?.split("@") ?? "";
                     return emailParts.length > 1 ? emailParts[0] : value;
                 },
-            }
+            },
         ],
         [renderDateTime, renderFirstComment]
     );

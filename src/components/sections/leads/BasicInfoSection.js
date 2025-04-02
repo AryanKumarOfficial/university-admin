@@ -106,11 +106,11 @@ export default function BasicInfoSection({register, errors, title}) {
                             className="form-select"
                             {...register("response")}
                         >
-                            <option value="Not interested">Not interested</option>
-                            <option value="Call later">Call later</option>
+                            <option value="Not Interested">Not Interested</option>
+                            <option value="Call Later">Call later</option>
                         </select>
-                        {errors.area && (
-                            <small className="text-danger">{errors.area.message}</small>
+                        {errors.response && (
+                            <small className="text-danger">{errors.response.message}</small>
                         )}
                     </div>
                 </div>
