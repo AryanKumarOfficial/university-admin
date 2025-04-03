@@ -164,24 +164,25 @@ export default function SchoolDashboardPage() {
 
     // Finance Data Calculation remains the same.
     const statuses = [
-        "Wrong number",
+        // "Wrong number",
         "Not Interested",
-        "Interested",
-        "Send details on WhatsApp",
-        "Mail sent",
+        // "Interested",
+        // "Send details on WhatsApp",
+        // "Mail sent",
         "Call later",
-        "Meeting scheduled",
-        "Follow up required"
+        // "Meeting scheduled",
+        // "Follow up required"
+        "Completed"
     ];
     const colorMapping = {
-        "Wrong number": "red",
+        // "Wrong number": "red",
         "Not Interested": "gray",
-        "Interested": "green",
-        "Send details on WhatsApp": "teal",
-        "Mail sent": "blue",
+        "Completed": "green",
+        // "Send details on WhatsApp": "teal",
+        // "Mail sent": "blue",
         "Call later": "yellow",
-        "Meeting scheduled": "darkgreen",
-        "Follow up required": "orange"
+        // "Meeting scheduled": "darkgreen",
+        // "Follow up required": "orange"
     };
 
     const calculatePercentagesFromDocs = (docs) => {
@@ -389,7 +390,7 @@ export default function SchoolDashboardPage() {
                                             >
                                                 {filter.options?.map((option) => (
                                                     <option key={option} value={option}>
-                                                        {option === "All" ? "All Leads" : option}
+                                                        {option === "All" ? "All" : option}
                                                     </option>
                                                 ))}
                                             </select>
