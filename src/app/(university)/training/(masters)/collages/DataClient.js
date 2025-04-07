@@ -12,6 +12,13 @@ export default function DataClient({collages = []}) {
         () => [
             {key: "id", header: "ID"},
             {key: "name", header: "Name"},
+            {
+                key: "location",
+                header: "Location",
+                render: (value) => {
+                    return value ? value : "N/A";
+                },
+            },
             {key: "createdBy", header: "Created By"},
             {
                 key: "createdAt",
@@ -44,7 +51,7 @@ export default function DataClient({collages = []}) {
                 buttonClass: "btn-outline-danger",
                 requireConfirm: true,
                 title: "Confirm Delete",
-                confirmMessage: "Are you sure you want to delete this Collage?",
+                confirmMessage: "Are you sure you want to delete this College?",
                 onClick: async (item) => {
                     if (item) {
                         const deletePromise = fetch(`/api/training/collage`, {
@@ -58,12 +65,12 @@ export default function DataClient({collages = []}) {
 
                         toast
                             .promise(deletePromise, {
-                                loading: "Deleting Collage...",
-                                success: "Collage deleted successfully.",
-                                error: "Failed to delete Collage.",
+                                loading: "Deleting College...",
+                                success: "College deleted successfully.",
+                                error: "Failed to delete College.",
                             })
                             .then(() => router.refresh())
-                            .catch((error) => console.error("Error Collage record:", error));
+                            .catch((error) => console.error("Error College record:", error));
                     }
                 },
             },
@@ -88,7 +95,7 @@ export default function DataClient({collages = []}) {
         () => ({
             type: "link",
             href: "/training/collages/add",
-            label: "Add a Collage",
+            label: "Add a College",
         }),
         []
     );
@@ -99,13 +106,13 @@ export default function DataClient({collages = []}) {
                 breadcrumbs={[
                     {label: "Home", href: "/"},
                     {label: "Training", href: "/training"},
-                    {label: "Collage Master", href: "/university/training/Collages"},
+                    {label: "College Master", href: "/university/training/Colleges"},
                 ]}
             />
             <div className="section-body">
                 <div className="container-fluid">
                     <GenericTable
-                        title="Collages"
+                        title="Colleges"
                         pageSize={10}
                         initialFilterValues={{status: "All"}}
                         rowActions={rowActions}

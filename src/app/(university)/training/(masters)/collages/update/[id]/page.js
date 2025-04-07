@@ -24,7 +24,7 @@ export default function UpdateCollage({params}) {
         mode: "onChange",
     });
     const fetchLocation = async () => {
-        const docRef = await doc(db, "collage-master", id);
+        const docRef = await doc(db, "college-master", id);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
             const data = docSnap.data();
@@ -44,7 +44,7 @@ export default function UpdateCollage({params}) {
             ...data,
         };
 
-        const docRef = doc(db, "collage-master", id);
+        const docRef = doc(db, "college-master", id);
         const promise = updateDoc(docRef, locationData);
 
         toast

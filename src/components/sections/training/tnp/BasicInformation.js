@@ -20,11 +20,11 @@ export default function BasicInfoSection({register, errors, title, control}) {
         {value: "Option 5", label: "Option 5"},
     ];
 
-    // Fetch college options from "collage-master" collection
+    // Fetch college options from "college-master" collection
     useEffect(() => {
         async function fetchCollegeOptions() {
             try {
-                const querySnapshot = await getDocs(collection(db, "collage-master"));
+                const querySnapshot = await getDocs(collection(db, "college-master"));
                 const options = [];
                 querySnapshot.forEach((doc) => {
                     const data = doc.data();

@@ -10,7 +10,7 @@ export async function DELETE(request) {
         }
 
         // Reference the location document in the "locations" collection.
-        const docRef = doc(db, "collage-master", id);
+        const docRef = doc(db, "college-master", id);
         await deleteDoc(docRef);
 
         return NextResponse.json({message: "Collage deleted successfully."}, {status: 200});

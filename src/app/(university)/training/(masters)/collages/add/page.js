@@ -7,7 +7,7 @@ import {auth, db} from "@/lib/firebase/client";
 import {addDoc, collection} from "firebase/firestore";
 import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
-import BasicInfoSection from "@/components/sections/training/masters/collage/BasicInformation";
+import BasicInfoSection from "@/components/sections/training/masters/college/BasicInformation";
 import {CollageSchema} from "@/schema/Collage";
 
 export default function AddCollage() {
@@ -37,7 +37,7 @@ export default function AddCollage() {
             createdBy,
         };
 
-        const promise = addDoc(collection(db, "collage-master"), locationData);
+        const promise = addDoc(collection(db, "college-master"), locationData);
 
         toast
             .promise(promise, {
