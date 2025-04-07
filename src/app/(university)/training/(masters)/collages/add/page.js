@@ -3,12 +3,12 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import React, {useState} from "react";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {LocationSchema} from "@/schema/Location";
 import {auth, db} from "@/lib/firebase/client";
 import {addDoc, collection} from "firebase/firestore";
 import {useRouter} from "next/navigation";
 import {toast} from "react-hot-toast";
-import BasicInfoSection from "@/components/sections/training/masters/location/BasicInformation";
+import BasicInfoSection from "@/components/sections/training/masters/collage/BasicInformation";
+import {CollageSchema} from "@/schema/Collage";
 
 export default function AddCollage() {
     const router = useRouter();
@@ -16,10 +16,14 @@ export default function AddCollage() {
         register,
         handleSubmit,
         reset,
+        control,
         formState: {errors},
     } = useForm({
-        resolver: zodResolver(LocationSchema),
-        defaultValues: {name: ""},
+        resolver: zodResolver(CollageSchema),
+        defaultValues: {
+            name: "",
+
+        },
         mode: "onChange",
     });
     const [isSaving, setIsSaving] = useState(false);
@@ -71,6 +75,7 @@ export default function AddCollage() {
                                 <BasicInfoSection
                                     register={register}
                                     errors={errors}
+                                    control={control}
                                     title="Collage"
                                 />
                                 <div className="d-flex justify-content-end gap-2 mb-5">
