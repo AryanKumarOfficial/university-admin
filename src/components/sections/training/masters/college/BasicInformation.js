@@ -68,16 +68,16 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                         {...field}
                                         id={"location"}
                                         options={colleges}
-                                        placeholder="Select a location"
                                         isClearable
-                                        onChange={(selectedOption) => field.onChange(selectedOption)}
-                                        value={field.value}
+                                        placeholder="Select a location"
+                                        onChange={(selectedOption) => field.onChange(selectedOption?.label)}
+                                        value={colleges.find((option) => option.label === field.value) || null}
                                     />
                                 )}
                             />
                         )}
-                        {errors.college && (
-                            <small className="text-danger">{errors.college.message}</small>
+                        {errors.location && (
+                            <small className="text-danger">{errors.location.message}</small>
                         )}
                     </div>
                 </div>

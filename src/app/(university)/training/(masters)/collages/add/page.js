@@ -22,7 +22,7 @@ export default function AddCollage() {
         resolver: zodResolver(CollageSchema),
         defaultValues: {
             name: "",
-
+            location: "",
         },
         mode: "onChange",
     });
@@ -36,8 +36,7 @@ export default function AddCollage() {
             createdAt: new Date().toISOString(),
             createdBy,
         };
-
-        const promise = addDoc(collection(db, "college-master"), locationData);
+        const promise = addDoc(collection(db, "collage-master"), locationData);
 
         toast
             .promise(promise, {
