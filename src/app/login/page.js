@@ -36,14 +36,15 @@ export default function Page() {
                                 <i className="fa fa-graduation-cap brand-logo"></i>
                             </Link>
                             <div className="card-title mt-3">Login to your account</div>
-                            <button type="button" className="btn btn-google">
-                                <i className="fa fa-google mr-2"></i> Login with Google
-                            </button>
-                            <h6 className="mt-3 mb-3">Or</h6>
+                            {/*<button type="button" className="btn btn-google">*/}
+                            {/*    <i className="fa fa-google mr-2"></i> Login with Google*/}
+                            {/*</button>*/}
+                            {/*<h6 className="mt-3 mb-3">Or</h6>*/}
                         </div>
 
-                        <form id="loginForm" onSubmit={handleSubmit}>
-                            <div className="form-group">
+                        <form id="loginForm" onSubmit={handleSubmit}
+                              className={"flex justify-content-center align-items-center flex-column"}>
+                            <div className="form-group my-4">
                                 <input
                                     type="email"
                                     className="form-control"
@@ -55,17 +56,17 @@ export default function Page() {
                                     required
                                 />
                             </div>
-                            <div className="form-group">
+                            <div className="form-group my-4">
                                 <label className="form-label">
-                                    <Link href="/forgot-password" className="small"
-                                          style={{
-                                              float: "right",
-                                              textDecoration: "none",
-                                              margin: "5px 0",
-                                          }}
-                                    >
-                                        I forgot password
-                                    </Link>
+                                    {/*<Link href="/forgot-password" className="small"*/}
+                                    {/*      style={{*/}
+                                    {/*          float: "right",*/}
+                                    {/*          textDecoration: "none",*/}
+                                    {/*          margin: "5px 0",*/}
+                                    {/*      }}*/}
+                                    {/*>*/}
+                                    {/*    I forgot password*/}
+                                    {/*</Link>*/}
                                 </label>
                                 <input
                                     type="password"
@@ -84,12 +85,12 @@ export default function Page() {
                                     {loading ? <i className="fa fa-spinner fa-spin"/> : "Login"}
                                 </button>
                                 {error && <p className="text-danger mt-2">{error}</p>}
-                                <div className="text-muted mt-4">
-                                    Don't have an account?{" "}
-                                    <Link href="/register" style={{
-                                        textDecoration: "none",
-                                    }}>Sign up</Link>
-                                </div>
+                                {/*<div className="text-muted mt-4">*/}
+                                {/*    Don't have an account?{" "}*/}
+                                {/*    <Link href="/register" style={{*/}
+                                {/*        textDecoration: "none",*/}
+                                {/*    }}>Sign up</Link>*/}
+                                {/*</div>*/}
                             </div>
                         </form>
                     </div>
