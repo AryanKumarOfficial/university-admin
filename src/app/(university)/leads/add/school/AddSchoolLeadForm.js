@@ -29,7 +29,7 @@ export default function AddSchoolLeadForm() {
         state: "",
         city: "",
         area: "",
-        response: "Not interested",
+        response: "Not Interested",
         numStudents: "",
         annualFees: "",
         hasWebsite: "no",

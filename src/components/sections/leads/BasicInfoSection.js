@@ -1,6 +1,23 @@
 import React from "react";
 
 export default function BasicInfoSection({register, errors, title}) {
+    const responseOptions = [
+        "Yet to Call",
+        "Wrong Number",
+        "Did Not pick up",
+        "Call later",
+        "Not Interested",
+        "Sent details on whatsapp",
+        "Mail sent",
+        "PPT Scheduled",
+        "Follow up after PPT",
+        "After PPT",
+        "7 Day Demo",
+        "Follow up after 7D demo",
+        "After 7D Demo",
+        "Converted"
+    ];
+
     return (
         <div className="card mb-3">
             <div className="card-header">
@@ -106,8 +123,11 @@ export default function BasicInfoSection({register, errors, title}) {
                             className="form-select"
                             {...register("response")}
                         >
-                            <option value="Not Interested">Not Interested</option>
-                            <option value="Call Later">Call later</option>
+                            {responseOptions.map((option, index) => (
+                                <option key={index} value={option}>
+                                    {option}
+                                </option>
+                            ))}
                         </select>
                         {errors.response && (
                             <small className="text-danger">{errors.response.message}</small>
