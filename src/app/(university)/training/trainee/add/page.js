@@ -23,6 +23,7 @@ export default function AddTrainee() {
         handleSubmit,
         control,
         formState: {errors},
+        setValue,
         reset,
     } = useForm({
         resolver: zodResolver(TraineeSchema),
@@ -38,6 +39,9 @@ export default function AddTrainee() {
     const onSubmit = async (data) => {
         setIsSaving(true);
         const createdBy = auth.currentUser?.email || "unknown";
+        if (data.salesChannel === "Other") {
+            data.salesChannel = data.otherSalesChannel;
+        }
         const traineeData = {
             ...data,
             createdAt: new Date().toISOString(),
@@ -81,6 +85,7 @@ export default function AddTrainee() {
                                     errors={errors}
                                     title="Trainee"
                                     control={control}
+                                    setValue={setValue}
                                 />
 
                                 <div className="d-flex justify-content-end gap-2 mb-5">

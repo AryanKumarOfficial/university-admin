@@ -1,93 +1,62 @@
-"use client";
-
 import React, {useEffect, useState} from "react";
+import {Controller, useWatch} from "react-hook-form";
+import Select from "react-select";
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
-import Select from "react-select";
-import {Controller} from "react-hook-form";
+
 
 export default function BasicInfoSection({
                                              register,
                                              errors,
-                                             title,
                                              control,
+                                             setValue,
+                                             title,
                                          }) {
     // Dropdown options state
     const [collegeOptions, setCollegeOptions] = useState([]);
     const [courseOptions, setCourseOptions] = useState([]);
     const [locationOptions, setLocationOptions] = useState([]);
 
-    // Static options for Sales Channel
+    // Static options for Sales Channel, including "Other"
     const salesChannelOptions = [
-        {value: "1", label: "1"},
-        {value: "2", label: "2"},
-        {value: "3", label: "3"},
-        {value: "4", label: "4"},
-        {value: "5", label: "5"}
+        {value: "Google Search", label: "Google Search"},
+        {value: "LinkedIn", label: "LinkedIn"},
+        {value: "Instagram", label: "Instagram"},
+        {value: "Facebook", label: "Facebook"},
+        {value: "Other", label: "Other"},
     ];
+    const staticValues = salesChannelOptions.map((o) => o.value);
 
-    // Fetch college options from "college-master" collection
+    // Fetch master data
     useEffect(() => {
-        async function fetchCollegeOptions() {
+        const load = async (col, setter) => {
             try {
-                const querySnapshot = await getDocs(collection(db, "college-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.name) {
-                        options.push({value: data.name, label: data.name});
-                    }
+                const snap = await getDocs(collection(db, col));
+                const opts = [];
+                snap.forEach((doc) => {
+                    const d = doc.data()
+                    if (d.name) opts.push({value: d.name, label: d.name});
                 });
-                setCollegeOptions(options);
-            } catch (error) {
-                console.error("Error fetching college options:", error);
+                setter(opts);
+            } catch (e) {
+                console.error(`Failed to load ${col}`, e);
             }
-        }
-
-        fetchCollegeOptions();
+        };
+        load("collage-master", setCollegeOptions);
+        load("course-master", setCourseOptions);
+        load("location-master", setLocationOptions);
     }, []);
 
-    // Fetch course options from "course-master" collection
+    // Watch the raw salesChannel
+    const watchedChannel = useWatch({control, name: "salesChannel"});
+
+    // Migrate any non-static value into "Other" on reset or change
     useEffect(() => {
-        async function fetchCourseOptions() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "course-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.name) {
-                        options.push({value: data.name, label: data.name});
-                    }
-                });
-                setCourseOptions(options);
-            } catch (error) {
-                console.error("Error fetching course options:", error);
-            }
+        if (watchedChannel && !staticValues.includes(watchedChannel)) {
+            setValue("otherSalesChannel", watchedChannel);
+            setValue("salesChannel", "Other");
         }
-
-        fetchCourseOptions();
-    }, []);
-
-    // Fetch location options from "location-master" collection
-    useEffect(() => {
-        async function fetchLocationOptions() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "location-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (data.name) {
-                        options.push({value: data.name, label: data.name});
-                    }
-                });
-                setLocationOptions(options);
-            } catch (error) {
-                console.error("Error fetching location options:", error);
-            }
-        }
-
-        fetchLocationOptions();
-    }, []);
+    }, [watchedChannel, setValue, staticValues]);
 
     return (
         <div className="card mb-3">
@@ -95,14 +64,12 @@ export default function BasicInfoSection({
                 <h3 className="card-title">Basic {title} Information</h3>
             </div>
             <div className="card-body">
-                {/* Row 1: Name and College Name */}
+                {/* Row 1: Name and College */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Name</label>
-                        <input className="form-control" type="text" {...register("name")} />
-                        {errors.name && (
-                            <small className="text-danger">{errors.name.message}</small>
-                        )}
+                        <input className="form-control" {...register("name")} />
+                        {errors.name && <small className="text-danger">{errors.name.message}</small>}
                     </div>
                     <div className="col-md-6 mb-3">
                         <label className="form-label">College Name</label>
@@ -115,28 +82,21 @@ export default function BasicInfoSection({
                                     options={collegeOptions}
                                     isSearchable
                                     placeholder="Select a college"
-                                    onChange={(selected) => field.onChange(selected.value)}
-                                    value={
-                                        collegeOptions.find(
-                                            (option) => option.value === field.value
-                                        ) || null
-                                    }
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={collegeOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
-                        {errors.college && (
-                            <small className="text-danger">{errors.college.message}</small>
-                        )}
+                        {errors.college && <small className="text-danger">{errors.college.message}</small>}
                     </div>
                 </div>
-                {/* Row 2: Phone and Course Name */}
+
+                {/* Row 2: Phone and Course */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Phone</label>
-                        <input className="form-control" type="text" {...register("phone")} />
-                        {errors.phone && (
-                            <small className="text-danger">{errors.phone.message}</small>
-                        )}
+                        <input className="form-control" {...register("phone")} />
+                        {errors.phone && <small className="text-danger">{errors.phone.message}</small>}
                     </div>
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Course Name</label>
@@ -149,20 +109,15 @@ export default function BasicInfoSection({
                                     options={courseOptions}
                                     isSearchable
                                     placeholder="Select a course"
-                                    onChange={(selected) => field.onChange(selected.value)}
-                                    value={
-                                        courseOptions.find(
-                                            (option) => option.value === field.value
-                                        ) || null
-                                    }
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={courseOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
-                        {errors.courseName && (
-                            <small className="text-danger">{errors.courseName.message}</small>
-                        )}
+                        {errors.courseName && <small className="text-danger">{errors.courseName.message}</small>}
                     </div>
                 </div>
+
                 {/* Row 3: Sales Channel and Location */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
@@ -176,19 +131,13 @@ export default function BasicInfoSection({
                                     options={salesChannelOptions}
                                     isSearchable
                                     placeholder="Select sales channel"
-                                    onChange={(selected) => field.onChange(selected.value)}
-                                    value={
-                                        salesChannelOptions.find(
-                                            (option) => option.value === field.value
-                                        ) || null
-                                    }
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={salesChannelOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
                         {errors.salesChannel && (
-                            <small className="text-danger">
-                                {errors.salesChannel.message}
-                            </small>
+                            <small className="text-danger">{errors.salesChannel.message}</small>
                         )}
                     </div>
                     <div className="col-md-6 mb-3">
@@ -202,87 +151,85 @@ export default function BasicInfoSection({
                                     options={locationOptions}
                                     isSearchable
                                     placeholder="Select a location"
-                                    onChange={(selected) => field.onChange(selected.value)}
-                                    value={
-                                        locationOptions.find(
-                                            (option) => option.value === field.value
-                                        ) || null
-                                    }
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={locationOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
-                        {errors.location && (
-                            <small className="text-danger">{errors.location.message}</small>
-                        )}
+                        {errors.location && <small className="text-danger">{errors.location.message}</small>}
                     </div>
                 </div>
-                {/* Row 4: LinkedIn/Other URL and Response */}
+
+                {/* Other Sales Channel */}
+                {watchedChannel === "Other" && (
+                    <div className="row">
+                        <div className="col-md-12 mb-3">
+                            <label className="form-label">Specify Other Sales Channel</label>
+                            <input
+                                className="form-control"
+                                placeholder="Enter sales channel"
+                                {...register("otherSalesChannel")}
+                            />
+                            {errors.otherSalesChannel && (
+                                <small className="text-danger">{errors.otherSalesChannel.message}</small>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Row 4: URL and Response */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">LinkedIn/Other URL</label>
                         <input
                             className="form-control"
-                            type="text"
-                            placeholder="Enter LinkedIn or other URL"
                             {...register("linkedinUrl")}
                         />
                         {errors.linkedinUrl && (
-                            <small className="text-danger">
-                                {errors.linkedinUrl.message}
-                            </small>
+                            <small className="text-danger">{errors.linkedinUrl.message}</small>
                         )}
                     </div>
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Response</label>
                         <select className="form-select" {...register("response")}>
+                            <option  value="">Select response</option>
                             <option value="Wrong number">Wrong number</option>
                             <option value="Not Interested">Not Interested</option>
                             <option value="Interested">Interested</option>
-                            <option value="Send details on WhatsApp">
-                                Send details on WhatsApp
-                            </option>
+                            <option value="Send details on WhatsApp">Send details on WhatsApp</option>
                             <option value="Mail sent">Mail sent</option>
                             <option value="Call later">Call later</option>
                             <option value="Meeting scheduled">Meeting scheduled</option>
                             <option value="Follow up required">Follow up required</option>
                         </select>
-                        {errors.response && (
-                            <small className="text-danger">
-                                {errors.response.message}
-                            </small>
-                        )}
+                        {errors.response && <small className="text-danger">{errors.response.message}</small>}
                     </div>
                 </div>
+
                 {/* Row 5: Date and Time */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Date</label>
                         <input className="form-control" type="date" {...register("date")} />
-                        {errors.date && (
-                            <small className="text-danger">{errors.date.message}</small>
-                        )}
+                        {errors.date && <small className="text-danger">{errors.date.message}</small>}
                     </div>
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Time</label>
                         <input className="form-control" type="time" {...register("time")} />
-                        {errors.time && (
-                            <small className="text-danger">{errors.time.message}</small>
-                        )}
+                        {errors.time && <small className="text-danger">{errors.time.message}</small>}
                     </div>
                 </div>
+
                 {/* Row 6: Transaction Number */}
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Transaction Number</label>
                         <input
                             className="form-control"
-                            type="text"
                             {...register("transactionNumber")}
                         />
                         {errors.transactionNumber && (
-                            <small className="text-danger">
-                                {errors.transactionNumber.message}
-                            </small>
+                            <small className="text-danger">{errors.transactionNumber.message}</small>
                         )}
                     </div>
                 </div>

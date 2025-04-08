@@ -10,9 +10,8 @@ export const TraineeSchema = z.object({
         .regex(/^\+?[0-9]+$/, "Invalid phone number format"),
     location: z.string().min(1, "Location is required"),
     courseName: z.string().min(1, "Course name is required"),
-    salesChannel: z.enum(["1", "2", "3", "4", "5"], {
-        errorMap: () => ({message: "Sales channel is required"}),
-    }),
+    salesChannel: z.string().min(1, "Sales channel is required"),
+    otherSalesChannel: z.string().optional(),
     linkedinUrl: z.string().url("Invalid URL format").optional(),
     response: z.enum(
         [
@@ -30,4 +29,12 @@ export const TraineeSchema = z.object({
     date: z.string().min(1, "Date is required"),
     time: z.string().min(1, "Time is required"),
     transactionNumber: z.string().min(1, "Transaction number is required"),
+}).superRefine((data, ctx) => {
+    if (data.salesChannel === "Other" && !data.otherSalesChannel) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please specify the other sales channel",
+            path: ["otherSalesChannel"],
+        });
+    }
 });

@@ -21,6 +21,7 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
         control,
         formState: {errors},
         reset,
+        setValue,
     } = useForm({
         resolver: zodResolver(TraineeSchema),
         defaultValues: {
@@ -40,6 +41,9 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
+            if (data.salesChannel === "Other") {
+                data.salesChannel = data.otherSalesChannel;
+            }
             const docRef = doc(db, "trainee", initialData.id);
             await toast.promise(updateDoc(docRef, data), {
                 loading: "Updating trainee...",
@@ -73,6 +77,7 @@ export default function UpdateTraineeLeadClient({initialData = []}) {
                                     errors={errors}
                                     title="Trainee"
                                     control={control}
+                                    setValue={setValue}
                                 />
                                 <div className="d-flex justify-content-end gap-2 mb-5">
                                     <button
