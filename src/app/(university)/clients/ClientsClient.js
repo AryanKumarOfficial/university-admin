@@ -153,33 +153,6 @@ export default function ClientsClient({initialClients}) {
                 },
             },
             {
-                key: "complete",
-                label: "Mark as Complete",
-                icon: "fa fa-check",
-                buttonClass: "btn-outline-success",
-                requireConfirm: true,
-                title: "Mark as Complete",
-                confirmMessage: (item) =>
-                    `Are you sure you want to mark "${item.schoolName}" as completed?`,
-                onClick: async (item) => {
-                    const formData = new FormData();
-                    formData.set("clientId", item.id);
-                    await toast.promise(
-                        markClientAsComplete(formData),
-                        {
-                            loading: `Marking "${item.schoolName}" as completed...`,
-                            success: `Client "${item.schoolName}" marked as completed.`,
-                            error: "Failed to mark as completed",
-                        }
-                    );
-                    setClients((prev) =>
-                        prev.map((cl) =>
-                            cl.id === item.id ? {...cl, response: "Completed"} : cl
-                        )
-                    );
-                },
-            },
-            {
                 key: "edit",
                 label: "Edit",
                 icon: "fa fa-edit",
