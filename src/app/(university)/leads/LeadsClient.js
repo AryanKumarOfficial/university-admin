@@ -2,7 +2,7 @@
 import React, {useCallback, useMemo, useState} from "react";
 import {useRouter} from "next/navigation";
 import GenericTable from "@/components/ui/GenericTable";
-import {deleteLead, markLeadAsComplete} from "./actions";
+import {deleteLead} from "./actions";
 import {formatTime} from "@/helpers/TimeFormat";
 import {toast} from "react-hot-toast";
 
@@ -145,19 +145,27 @@ export default function LeadsClient({initialLeads}) {
                 },
             },
             {
-                key: "complete",
-                label: "Mark as Complete",
-                icon: "fa fa-check",
+                key: "convert",
+                label: "Convert",
+                icon: <i className="fa fa-exchange" style={{fontSize: "18px"}}/>,
                 buttonClass: "btn-outline-success",
                 requireConfirm: true,
-                title: "Mark as Complete",
+                title: "Convert to the Client",
                 confirmMessage: (item) =>
-                    `Are you sure you want to mark "${item.schoolName}" as completed?`,
+                    `Are you sure you want to convert "${item.schoolName}" to the client?`,
                 onClick: async (item) => {
-                    const formData = new FormData();
-                    formData.set("leadId", item.id);
-                    await markLeadAsComplete(formData);
-                    toast.success(`Lead "${item.schoolName}" marked as completed.`);
+                    const updatePromise = fetch("/api/lead/convert", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(item)
+                    })
+                    await toast.promise(updatePromise, {
+                        loading: `Converting "${item.schoolName}" to the client...`,
+                        success: `Lead "${item.schoolName}" converted!`,
+                        error: `Error converting "${item.schoolName}"`,
+                    });
                     setLeads((prev) =>
                         prev.map((ld) =>
                             ld.id === item.id ? {...ld, response: "Completed"} : ld

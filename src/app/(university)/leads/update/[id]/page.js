@@ -143,7 +143,7 @@ export default function LeadUpdateForm({params}) {
                     <div className="tab-content">
                         <div className="tab-pane active show fade" id="lead-update">
                             <form onSubmit={handleSubmit(onSubmit)}>
-                                <BasicInfoSection register={register} errors={errors} response={response}/>
+                                <BasicInfoSection register={register} errors={errors} response={response} />
                                 {response === "Call later" && <FollowUpSection register={register} errors={errors}/>}
                                 <DecisionMakingSection
                                     contactFields={contactFields}
