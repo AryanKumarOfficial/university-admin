@@ -1,3 +1,4 @@
+// app/(your‑path)/training/leads‑trainee/add/page.tsx
 "use client";
 
 import React, {useState} from "react";
@@ -7,10 +8,9 @@ import {useRouter} from "next/navigation";
 import {addDoc, collection} from "firebase/firestore";
 import {toast} from "react-hot-toast";
 
-import {auth, db} from "@/lib/firebase/client"; // Import auth along with db
+import {auth, db} from "@/lib/firebase/client";
 import {TraineeLeadSchema} from "@/schema/TraineeLeadSchema";
 
-// Modular form sections (same ones used in update)
 import BasicInfoSection from "@/components/sections/training/traineeLeads/BasicInfoSection";
 import CommentsSection from "@/components/sections/leads/CommentsSection";
 import Breadcrumb from "@/components/ui/Breadcrumb";
@@ -19,67 +19,64 @@ export default function AddTraineeLead() {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
 
-    // React Hook Form Setup
     const {
         register,
         handleSubmit,
         control,
+        setValue,
         formState: {errors},
         reset,
     } = useForm({
         resolver: zodResolver(TraineeLeadSchema),
         defaultValues: {
-            // Basic Info
-            schoolName: "",
-            state: "",
-            city: "",
-            area: "",
+            // Basic
+            traineeName: "",
+            traineeCollegeName: "",
+            contactNumber: "",
+            courseName: "",
+            salesChannel: "",        // ← must have
+            otherSalesChannel: "",   // ← must have
+            location: "",
+            linkedinUrl: "",
             response: "Not Interested",
-            numStudents: "",
-            annualFees: "",
-            hasWebsite: "no",
-            followUpDate: "",
-            followUpTime: "",
-            // At least one contact
+            date: "",
+            time: "",
+            // Contacts & comments
             contacts: [{name: "", designation: "", email: "", phone: ""}],
-            // New comments for a brand-new lead
             newComments: [],
         },
         mode: "onChange",
     });
 
-    const {
-        fields: newCommentFields,
-        prepend: prependNewComment,
-        append: appendNewComment,
-        remove: removeNewComment,
-    } = useFieldArray({
+    const {fields: newCommentFields, prepend, append, remove} = useFieldArray({
         control,
         name: "newComments",
     });
 
-    // On Submit: Create a new lead in Firestore with the current user's email added as createdBy
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
-            const createdBy = auth.currentUser?.email || "unknown";
+            // Always coalesce
+            // if they chose "Other", swap in the custom value
+            if (data.salesChannel === "Other") {
+                data.salesChannel = data.otherSalesChannel;
+            }
 
-            // Combine new comments into a single 'comments' field and add additional fields
-            const leadData = {
+            const payload = {
                 ...data,
                 comments: data.newComments,
                 createdAt: new Date().toISOString(),
                 leadType: "training",
                 converted: false,
-                createdBy,
+                createdBy: auth.currentUser?.email ?? "unknown",
             };
-            delete leadData.newComments;
+            delete (payload).newComments;
+            delete (payload).otherSalesChannel;
 
-            // Save to Firestore in the "leads-trainee" collection with toast notifications
             await toast.promise(
-                addDoc(collection(db, "leads-trainee"), leadData),
+                addDoc(collection(db, "leads-trainee"), payload),
                 {
-                    loading: "Adding lead...",
+                    loading: "Adding lead…",
                     success: "Lead added successfully!",
                     error: "Failed to add lead.",
                 }
@@ -87,8 +84,9 @@ export default function AddTraineeLead() {
 
             reset();
             router.push("/training/leads-trainee");
-        } catch (error) {
-            console.error("Error adding lead:", error);
+        } catch (e) {
+            console.error("Error adding lead:", e);
+            toast.error("Error adding lead");
         } finally {
             setIsSaving(false);
         }
@@ -96,7 +94,6 @@ export default function AddTraineeLead() {
 
     return (
         <div className="page px-4 py-3">
-            {/* Breadcrumb */}
             <Breadcrumb
                 breadcrumbs={[
                     {label: "Home", href: "/"},
@@ -107,48 +104,42 @@ export default function AddTraineeLead() {
 
             <div className="section-body mt-4">
                 <div className="container-fluid">
-                    <div className="tab-content">
-                        <div className="tab-pane active show fade" id="lead-add">
-                            <form onSubmit={handleSubmit(onSubmit)}>
-                                {/* Basic Info Section */}
-                                <BasicInfoSection
-                                    register={register}
-                                    errors={errors}
-                                    title="Trainee"
-                                    control={control}
-                                />
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <BasicInfoSection
+                            register={register}
+                            errors={errors}
+                            control={control}
+                            setValue={setValue}
+                            title="Trainee"
+                        />
 
-                                {/* Comments Section */}
-                                <CommentsSection
-                                    showExistingComments={false}
-                                    existingComments={[]} // New lead => no old comments
-                                    newCommentFields={newCommentFields}
-                                    prependNewComment={prependNewComment}
-                                    appendNewComment={appendNewComment}
-                                    removeNewComment={removeNewComment}
-                                />
+                        <CommentsSection
+                            showExistingComments={false}
+                            existingComments={[]}
+                            newCommentFields={newCommentFields}
+                            prependNewComment={prepend}
+                            appendNewComment={append}
+                            removeNewComment={remove}
+                        />
 
-                                {/* Submit and Clear Buttons */}
-                                <div className="d-flex justify-content-end gap-2 mb-5">
-                                    <button
-                                        type="reset"
-                                        className="btn btn-danger"
-                                        onClick={() => {
-                                            reset();
-                                            router.push("/training/leads-trainee");
-                                        }}
-                                        disabled={isSaving}
-                                    >
-                                        Clear Form
-                                    </button>
-                                    <button type="submit" className="btn btn-success" disabled={isSaving}>
-                                        {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                        Add Lead
-                                    </button>
-                                </div>
-                            </form>
+                        <div className="d-flex justify-content-end gap-2 mb-5">
+                            <button
+                                type="reset"
+                                className="btn btn-danger"
+                                onClick={() => {
+                                    reset();
+                                    router.push("/training/leads-trainee");
+                                }}
+                                disabled={isSaving}
+                            >
+                                Clear Form
+                            </button>
+                            <button type="submit" className="btn btn-success" disabled={isSaving}>
+                                {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
+                                Add Lead
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
