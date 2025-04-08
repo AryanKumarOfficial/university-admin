@@ -1,84 +1,61 @@
 "use client";
 import React, {useEffect, useState} from "react";
-import {Controller} from "react-hook-form";
+import {Controller, useWatch} from "react-hook-form";
 import Select from "react-select";
 import {collection, getDocs} from "firebase/firestore";
 import {db} from "@/lib/firebase/client";
 
-export default function BasicInfoSection({register, errors, title, control}) {
-    // State for options fetched from Firebase
+export default function BasicInformation({
+                                             register,
+                                             errors,
+                                             control,
+                                             setValue,
+                                             title,
+                                         }) {
     const [collegeOptions, setCollegeOptions] = useState([]);
     const [courseOptions, setCourseOptions] = useState([]);
     const [locationOptions, setLocationOptions] = useState([]);
 
-    // Static options for Sales Channel (1 to 5)
-    const salesChannelOptions = [
-        {value: "Option 1", label: "Option 1"},
-        {value: "Option 2", label: "Option 2"},
-        {value: "Option 3", label: "Option 3"},
-        {value: "Option 4", label: "Option 4"},
-        {value: "Option 5", label: "Option 5"},
+    const staticChannels = [
+        {value: "Google Search", label: "Google Search"},
+        {value: "LinkedIn", label: "LinkedIn"},
+        {value: "Instagram", label: "Instagram"},
+        {value: "Facebook", label: "Facebook"},
+        {value: "Other", label: "Other"},
     ];
+    const channelValues = staticChannels.map((c) => c.value);
 
-    // Fetch college options from "college-master" collection
+    // Load master data for college, course and location
     useEffect(() => {
-        async function fetchCollegeOptions() {
+        const load = async (col, setter) => {
             try {
-                const querySnapshot = await getDocs(collection(db, "college-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    // Assuming each document has a "name" field
-                    options.push({value: data.name, label: data.name});
+                const snap = await getDocs(collection(db, col));
+                const opts = [];
+                snap.forEach((doc) => {
+                    const {name} = doc.data();
+                    opts.push({value: name, label: name});
                 });
-                setCollegeOptions(options);
-            } catch (error) {
-                console.error("Error fetching college options:", error);
+                setter(opts);
+            } catch (e) {
+                console.error("Failed to load", col, e);
             }
-        }
-
-        fetchCollegeOptions();
+        };
+        load("collage-master", setCollegeOptions);
+        load("course-master", setCourseOptions);
+        load("location-master", setLocationOptions);
     }, []);
 
-    // Fetch course options from "course-master" collection
+    // Watch the salesChannel field
+    const watchedChannel = useWatch({control, name: "salesChannel"});
+
+    // When the watched value changes, if it doesn't match any static channel,
+    // automatically update the form so that the select shows "Other" and the custom value is stored.
     useEffect(() => {
-        async function fetchCourseOptions() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "course-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    // Assuming each document has a "name" field
-                    options.push({value: data.name, label: data.name});
-                });
-                setCourseOptions(options);
-            } catch (error) {
-                console.error("Error fetching course options:", error);
-            }
+        if (watchedChannel && !channelValues.includes(watchedChannel)) {
+            setValue("otherSalesChannel", watchedChannel);
+            setValue("salesChannel", "Other");
         }
-
-        fetchCourseOptions();
-    }, []);
-
-    // Fetch location options from "location-master" collection
-    useEffect(() => {
-        async function fetchLocationOptions() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "location-master"));
-                const options = [];
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    // Assuming each document has a "name" field
-                    options.push({value: data.name, label: data.name});
-                });
-                setLocationOptions(options);
-            } catch (error) {
-                console.error("Error fetching location options:", error);
-            }
-        }
-
-        fetchLocationOptions();
-    }, []);
+    }, [watchedChannel, channelValues, setValue]);
 
     return (
         <div className="card mb-3">
@@ -86,9 +63,8 @@ export default function BasicInfoSection({register, errors, title, control}) {
                 <h3 className="card-title">Basic {title} Information</h3>
             </div>
             <div className="card-body">
-                {/* First row: Dropdowns for College Name, Course Name, Location, Sales Channel */}
                 <div className="row">
-                    {/* College Name */}
+                    {/* College */}
                     <div className="col-md-3 mb-3">
                         <label className="form-label">College Name</label>
                         <Controller
@@ -100,8 +76,8 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={collegeOptions}
                                     isSearchable
                                     placeholder="Select a college"
-                                    onChange={(selected) => field.onChange(selected?.value)}
-                                    value={collegeOptions.find((opt) => opt.value === field.value) || null}
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={collegeOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
@@ -109,7 +85,8 @@ export default function BasicInfoSection({register, errors, title, control}) {
                             <small className="text-danger">{errors.collegeName.message}</small>
                         )}
                     </div>
-                    {/* Course Name */}
+
+                    {/* Course */}
                     <div className="col-md-3 mb-3">
                         <label className="form-label">Course Name</label>
                         <Controller
@@ -121,8 +98,8 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={courseOptions}
                                     isSearchable
                                     placeholder="Select a course"
-                                    onChange={(selected) => field.onChange(selected?.value)}
-                                    value={courseOptions.find((opt) => opt.value === field.value) || null}
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={courseOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
@@ -130,6 +107,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                             <small className="text-danger">{errors.courseName.message}</small>
                         )}
                     </div>
+
                     {/* Location */}
                     <div className="col-md-3 mb-3">
                         <label className="form-label">Location</label>
@@ -142,8 +120,8 @@ export default function BasicInfoSection({register, errors, title, control}) {
                                     options={locationOptions}
                                     isSearchable
                                     placeholder="Select a location"
-                                    onChange={(selected) => field.onChange(selected?.value)}
-                                    value={locationOptions.find((opt) => opt.value === field.value) || null}
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={locationOptions.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
@@ -151,6 +129,7 @@ export default function BasicInfoSection({register, errors, title, control}) {
                             <small className="text-danger">{errors.location.message}</small>
                         )}
                     </div>
+
                     {/* Sales Channel */}
                     <div className="col-md-3 mb-3">
                         <label className="form-label">Sales Channel</label>
@@ -160,11 +139,11 @@ export default function BasicInfoSection({register, errors, title, control}) {
                             render={({field}) => (
                                 <Select
                                     {...field}
-                                    options={salesChannelOptions}
+                                    options={staticChannels}
                                     isSearchable
                                     placeholder="Select sales channel"
-                                    onChange={(selected) => field.onChange(selected?.value)}
-                                    value={salesChannelOptions.find((opt) => opt.value === field.value) || null}
+                                    onChange={(opt) => field.onChange(opt?.value)}
+                                    value={staticChannels.find((o) => o.value === field.value) ?? null}
                                 />
                             )}
                         />
@@ -173,29 +152,47 @@ export default function BasicInfoSection({register, errors, title, control}) {
                         )}
                     </div>
                 </div>
-                {/* Second row: LinkedIn/Other URL and Response */}
+
+                {/* Show custom input only if "Other" is selected */}
+                {watchedChannel === "Other" && (
+                    <div className="row">
+                        <div className="col-md-12 mb-3">
+                            <label className="form-label">Specify Other Sales Channel</label>
+                            <input
+                                {...register("otherSalesChannel")}
+                                className="form-control"
+                                placeholder="Enter sales channel"
+                            />
+                            {errors.otherSalesChannel && (
+                                <small className="text-danger">{errors.otherSalesChannel.message}</small>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Other fields */}
                 <div className="row">
-                    {/* LinkedIn/Other URL */}
                     <div className="col-md-6 mb-3">
                         <label className="form-label">LinkedIn/Other URL</label>
                         <input
+                            {...register("linkedinUrl")}
                             className="form-control"
                             type="url"
                             placeholder="Enter LinkedIn or other URL"
-                            {...register("linkedinUrl")}
                         />
                         {errors.linkedinUrl && (
                             <small className="text-danger">{errors.linkedinUrl.message}</small>
                         )}
                     </div>
-                    {/* Response */}
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Response</label>
-                        <select className="form-select" {...register("response")}>
+                        <select {...register("response")} className="form-select">
                             <option value="Wrong number">Wrong number</option>
                             <option value="Not Interested">Not Interested</option>
                             <option value="Interested">Interested</option>
-                            <option value="Send details on WhatsApp">Send details on WhatsApp</option>
+                            <option value="Send details on WhatsApp">
+                                Send details on WhatsApp
+                            </option>
                             <option value="Mail sent">Mail sent</option>
                             <option value="Call later">Call later</option>
                             <option value="Meeting scheduled">Meeting scheduled</option>
@@ -206,21 +203,17 @@ export default function BasicInfoSection({register, errors, title, control}) {
                         )}
                     </div>
                 </div>
-                {/* Third row: Date and Time */}
+
                 <div className="row">
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Date</label>
-                        <input className="form-control" type="date" {...register("date")} />
-                        {errors.date && (
-                            <small className="text-danger">{errors.date.message}</small>
-                        )}
+                        <input {...register("date")} className="form-control" type="date"/>
+                        {errors.date && <small className="text-danger">{errors.date.message}</small>}
                     </div>
                     <div className="col-md-6 mb-3">
                         <label className="form-label">Time</label>
-                        <input className="form-control" type="time" {...register("time")} />
-                        {errors.time && (
-                            <small className="text-danger">{errors.time.message}</small>
-                        )}
+                        <input {...register("time")} className="form-control" type="time"/>
+                        {errors.time && <small className="text-danger">{errors.time.message}</small>}
                     </div>
                 </div>
             </div>

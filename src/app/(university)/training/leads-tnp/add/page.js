@@ -1,3 +1,4 @@
+// app/(your‑path)/training/leads‑tnp/add/page.tsx
 "use client";
 
 import React, {useState} from "react";
@@ -9,13 +10,13 @@ import {addDoc, collection} from "firebase/firestore";
 import {auth, db} from "@/lib/firebase/client";
 import {TNPLeadSchema} from "@/schema/TNPSchema";
 
+import BasicInformation from "@/components/sections/training/tnp/BasicInformation";
 import DecisionMakingSection from "@/components/sections/training/tnp/DecisionMakingSection";
 import CommentsSection from "@/components/sections/leads/CommentsSection";
 
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import Alert from "react-bootstrap/Alert";
 import "bootstrap/dist/css/bootstrap.min.css";
-import BasicInformation from "@/components/sections/training/tnp/BasicInformation";
 
 export default function AddTNPLead() {
     const router = useRouter();
@@ -27,78 +28,66 @@ export default function AddTNPLead() {
         handleSubmit,
         formState: {errors},
         reset,
-        control
+        control,
+        setValue,
     } = useForm({
         resolver: zodResolver(TNPLeadSchema),
         defaultValues: {
-            // Basic Info
             collegeName: "",
             location: "",
-            response: "Not Interested", // must match one of the enum values
+            response: "Not Interested",
             date: "",
             time: "",
-            // Multiple Contacts as a field array
             contacts: [{contactName: "", contactNumber: ""}],
-            // Comments
             newComments: [],
             courseName: "",
             salesChannel: "",
-            linkedinUrl: ""
+            otherSalesChannel: "",
+            linkedinUrl: "",
         },
         mode: "onChange",
     });
 
-    const addAlert = (variant, message) => {
+    const addAlert = (variant, message) =>
         setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
-    };
 
-    const removeAlert = (id) => {
+    const removeAlert = (id) =>
         setAlerts((prev) => prev.filter((a) => a.id !== id));
-    };
-
-    const getIcon = (variant) => {
-        switch (variant) {
-            case "success":
-                return <i className="fa fa-check-circle me-1"/>;
-            case "danger":
-                return <i className="fa fa-exclamation-triangle me-1"/>;
-            case "info":
-                return <i className="fa fa-info-circle me-1"/>;
-            default:
-                return null;
-        }
-    };
 
     const onSubmit = async (data) => {
         setIsSaving(true);
         try {
-            const createdBy = auth.currentUser?.email || "unknown";
+            // if they chose "Other", swap in the custom value
+            if (data.salesChannel === "Other") {
+                data.salesChannel = data.otherSalesChannel;
+            }
+
+            const createdBy = auth.currentUser?.email ?? "unknown";
             const leadData = {
                 ...data,
-                comments: data.newComments, // store new comments in 'comments'
+                comments: data.newComments,
                 createdAt: new Date().toISOString(),
                 createdBy,
             };
-            delete leadData.newComments;
+            delete (leadData).newComments;
 
             await addDoc(collection(db, "leads-tnp"), leadData);
 
             addAlert("success", "Lead added successfully!");
-            reset();
+            reset(); // clears back to defaultValues
             router.push("/training/leads-tnp");
         } catch (error) {
-            console.error("Error adding lead:", error);
+            console.error(error);
             addAlert("danger", "Failed to add lead");
         } finally {
             setIsSaving(false);
         }
     };
 
-    // Field array for new comments remains unchanged.
+    // field array for comments
     const {
         fields: newCommentFields,
         prepend: prependNewComment,
-        append: appendNewComment,
         remove: removeNewComment,
     } = useFieldArray({
         control,
@@ -106,92 +95,81 @@ export default function AddTNPLead() {
     });
 
     return (
-        <>
-            <div className="page px-4 py-3">
-                {alerts.map((alert) => (
-                    <Alert
-                        key={alert.id}
-                        variant={alert.variant}
-                        onClose={() => removeAlert(alert.id)}
-                        dismissible
-                        className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-                    >
-                        {getIcon(alert.variant)}
-                        {alert.message}
-                    </Alert>
-                ))}
+        <div className="page px-4 py-3">
+            {alerts.map((alert) => (
+                <Alert
+                    key={alert.id}
+                    variant={alert.variant}
+                    dismissible
+                    onClose={() => removeAlert(alert.id)}
+                    className={`alert-icon d-flex align-items-center`}
+                >
+                    {alert.variant === "success" && <i className="fa fa-check-circle me-1"/>}
+                    {alert.variant === "danger" && <i className="fa fa-exclamation-triangle me-1"/>}
+                    {alert.variant === "info" && <i className="fa fa-info-circle me-1"/>}
+                    {alert.message}
+                </Alert>
+            ))}
 
-                {isSaving && (
-                    <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
-                        <i className="fa fa-spinner fa-spin me-2"/>
-                        Saving lead...
-                    </Alert>
-                )}
+            {isSaving && (
+                <Alert variant="info" className="d-flex align-items-center">
+                    <i className="fa fa-spinner fa-spin me-2"/>
+                    Saving lead...
+                </Alert>
+            )}
 
-                <Breadcrumb
-                    breadcrumbs={[
-                        {label: "Home", href: "/"},
-                        {label: "Leads (TNP)", href: "/training/leads-tnp"},
-                        {label: "Add a Lead", href: "/training/leads-tnp/add"},
-                    ]}
-                />
+            <Breadcrumb
+                breadcrumbs={[
+                    {label: "Home", href: "/"},
+                    {label: "Leads (TNP)", href: "/training/leads-tnp"},
+                    {label: "Add a Lead", href: "/training/leads-tnp/add"},
+                ]}
+            />
 
-                <div className="section-body mt-4">
-                    <div className="container-fluid">
-                        <div className="tab-content">
-                            <div className="tab-pane active show fade" id="lead-add">
-                                <form onSubmit={handleSubmit(onSubmit)}>
-                                    {/* Basic Info */}
-                                    <BasicInformation
-                                        register={register}
-                                        errors={errors}
-                                        control={control}
-                                        title="TNP"
-                                    />
+            <div className="section-body mt-4">
+                <div className="container-fluid">
+                    <form onSubmit={handleSubmit(onSubmit)}>
+                        <BasicInformation
+                            register={register}
+                            errors={errors}
+                            control={control}
+                            setValue={setValue}
+                            title="TNP"
+                        />
 
-                                    {/* Multiple Contacts */}
-                                    <DecisionMakingSection
-                                        register={register}
-                                        errors={errors}
-                                        control={control}
-                                    />
+                        <DecisionMakingSection
+                            register={register}
+                            errors={errors}
+                            control={control}
+                        />
 
-                                    {/* Comments */}
-                                    <CommentsSection
-                                        showExistingComments={false}
-                                        newCommentFields={newCommentFields}
-                                        prependNewComment={prependNewComment}
-                                        removeNewComment={removeNewComment}
-                                    />
+                        <CommentsSection
+                            showExistingComments={false}
+                            newCommentFields={newCommentFields}
+                            prependNewComment={prependNewComment}
+                            removeNewComment={removeNewComment}
+                        />
 
-                                    {/* Buttons */}
-                                    <div className="d-flex justify-content-end gap-2 mb-5">
-                                        <button
-                                            type="reset"
-                                            className="btn btn-danger"
-                                            onClick={() => {
-                                                reset();
-                                                router.push("/training/leads-tnp");
-                                            }}
-                                            disabled={isSaving}
-                                        >
-                                            Clear Form
-                                        </button>
-                                        <button
-                                            type="submit"
-                                            className="btn btn-success"
-                                            disabled={isSaving}
-                                        >
-                                            {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
-                                            Add Lead
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
+                        <div className="d-flex justify-content-end gap-2 mb-5">
+                            <button
+                                type="reset"
+                                className="btn btn-danger"
+                                onClick={() => {
+                                    reset();
+                                    router.push("/training/leads-tnp");
+                                }}
+                                disabled={isSaving}
+                            >
+                                Clear Form
+                            </button>
+                            <button type="submit" className="btn btn-success" disabled={isSaving}>
+                                {isSaving && <i className="fa fa-spinner fa-spin me-2"/>}
+                                Add Lead
+                            </button>
                         </div>
-                    </div>
+                    </form>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

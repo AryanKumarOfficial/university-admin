@@ -43,4 +43,6 @@ export const TNPLeadSchema = z.object({
     courseName: z.string().min(1, "Course name is required"),
     salesChannel: z.string().min(1, "Sales channel is required"),
     linkedinUrl: z.string().url("Invalid URL format").optional(),
+    otherSalesChannel: z.string().optional(),
+
 });

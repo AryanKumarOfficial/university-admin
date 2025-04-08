@@ -66,7 +66,9 @@ export default function TNPLeadsClient({initialUsers = []}) {
             {key: "id", header: "#"},
             {key: "collegeName", header: "College Name"},
             {key: "courseName", header: "Course Name"},
-            {key: "salesChannel", header: "Sales Channel"},
+            {
+                key: "salesChannel", header: "Sales Channel",
+            },
             {
                 key: "linkedinUrl",
                 header: "LinkedIn/Other URL",
