@@ -1,11 +1,67 @@
 // app/api/create/route.js
 
 import {admin, db} from '@/lib/firebase/admin';
+import {jwtVerify} from 'jose';
+import {cookies} from 'next/headers';
 
+// Helper function to verify authentication
+async function verifyAuth(req) {
+    // Bypass authentication in non-production environments
+    console.log("Current environment:", process.env.NODE_ENV);
 
-export async function POST(req) {
+    if (process.env.NODE_ENV !== 'production') {
+        return {
+            authenticated: true,
+            user: {role: 'Admin'} // Mock admin user for development
+        };
+    }
+
+    const cookieStore = await cookies();
+    const token = cookieStore.get("firebase-auth-token")?.value ?? null;
+
+    if (!token) {
+        return {
+            authenticated: false,
+            error: 'Authentication required'
+        };
+    }
 
     try {
+        const secretKey = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
+        const {payload: decoded} = await jwtVerify(token, secretKey, {
+            algorithms: ['HS256'],
+        });
+
+        if (!decoded || !decoded.payload || decoded.payload.role !== 'Admin') {
+            return {
+                authenticated: false,
+                error: 'Insufficient permissions - Admin role required'
+            };
+        }
+
+        return {
+            authenticated: true,
+            user: decoded.payload
+        };
+    } catch (error) {
+        console.error('JWT verification error:', error);
+        return {
+            authenticated: false,
+            error: 'Invalid authentication token'
+        };
+    }
+}
+
+export async function POST(req) {
+    // Verify authentication before proceeding
+    const authResult = await verifyAuth(req);
+
+    if (!authResult.authenticated) {
+        return Response.json({error: authResult.error}, {status: 401});
+    }
+
+    try {
+
         const {name, email, phone, password, role, createdBy, createdAt} = await req.json();
         if (!name || !email || !phone || !password || !role || !createdBy || !createdAt) {
             return Response.json({
