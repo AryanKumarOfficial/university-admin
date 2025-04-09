@@ -26,7 +26,7 @@ const sidebarLinks = {
         {
             path: "/training/collages",
             icon: "fa fa-university",
-            label: "Collage Master"
+            label: "College Master"
         },
         {
             path: "/training/courses",

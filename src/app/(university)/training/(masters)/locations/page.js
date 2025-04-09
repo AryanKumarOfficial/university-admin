@@ -1,3 +1,5 @@
+export const revalidate = 0;
+export const dynamic = "force-dynamic";
 import DataClient from "@/app/(university)/training/(masters)/locations/DataClient";
 import {getLocations} from "@/app/(university)/training/(masters)/locations/fetchData";
 
