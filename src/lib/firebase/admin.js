@@ -6,7 +6,7 @@ import serviceAccount from "./service_account.json"
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        databaseURL: "https://console.firebase.google.com/u/1/project/errison-admin/database/errison-admin-default-rtdb/data/~2F"
+        databaseURL: "https://console.firebase.google.com/u/1/project/sales-tracker-iqnaut/database/sales-tracker-iqnaut-default-rtdb/data/~2F"
     });
 }
 
