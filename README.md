@@ -55,6 +55,23 @@ NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 NEXT_PUBLIC_JWT_SECRET=your_strong_secret_key
 ```
 
+#### Generating a Strong JWT Secret
+
+To generate a secure random JWT secret, you can use OpenSSL:
+
+```bash
+# This command works on macOS, Linux, and Windows (with OpenSSL installed)
+openssl rand -hex 32
+```
+
+**Platform Notes:**
+- **Windows users**: If OpenSSL isn't installed, you can:
+  - Install it via [Chocolatey](https://chocolatey.org/): `choco install openssl`
+  - Or download from [OpenSSL for Windows](https://slproweb.com/products/Win32OpenSSL.html)
+- **macOS/Linux users**: OpenSSL is typically pre-installed
+
+Copy the generated string and use it as your `NEXT_PUBLIC_JWT_SECRET` value.
+
 ### Firebase Admin Setup
 
 1. Create the service account file:
