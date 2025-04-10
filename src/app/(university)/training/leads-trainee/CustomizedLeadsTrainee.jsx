@@ -259,7 +259,7 @@ export default function TNPLeadsClient({initialUsers = []}) {
 
     return (
         <div id="main_content">
-            <div className="page vh-100">
+            <div className="page my-3 py-5">
                 <Breadcrumb
                     breadcrumbs={[
                         {label: "Leads (Trainee)", href: "/training/leads-trainee"},

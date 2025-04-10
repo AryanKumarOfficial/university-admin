@@ -198,7 +198,7 @@ export default function LeadsClient({initialLeads}) {
     );
 
     return (
-        <div className="section-body p-3">
+        <div className="section-body my-3 py-5">
             <GenericTable
                 title="Leads"
                 tableData={leads}

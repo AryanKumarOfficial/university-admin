@@ -1,6 +1,5 @@
 "use client"
 import React, {useState} from "react";
-import Alert from "react-bootstrap/Alert";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -8,32 +7,11 @@ import {UserSchema} from "@/schema/User";
 import {useRouter} from "next/navigation";
 import BasicInformation from "@/components/sections/Users/BasicInformation";
 import AccountInformation from "@/components/sections/Users/AccountInformation";
+import toast from "react-hot-toast";
 
 export default function AddUser() {
     const router = useRouter();
     const [isSaving, setIsSaving] = useState(false);
-    const [alerts, setAlerts] = useState([]);
-    const getIcon = (variant) => {
-        switch (variant) {
-            case "success":
-                return <i className="fa fa-check-circle me-1"/>;
-            case "danger":
-                return <i className="fa fa-exclamation-triangle me-1"/>;
-            case "info":
-                return <i className="fa fa-info-circle me-1"/>;
-            default:
-                return null;
-        }
-    };
-
-    const addAlert = (variant, message) => {
-        setAlerts((prev) => [...prev, {id: Date.now(), variant, message}]);
-    };
-
-    const removeAlert = (id) => {
-        setAlerts((prev) => prev.filter((a) => a.id !== id));
-    };
-
 
     const {
         register,
@@ -54,59 +32,44 @@ export default function AddUser() {
     })
 
     const onSubmit = async (data) => {
+        const toastId = toast.loading("Creating user...");
         setIsSaving(true);
+
         try {
             const userData = {
                 ...data,
                 createdAt: new Date(),
             }
+
             const res = await fetch("/api/users/create", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(userData),
-            })
+            });
+
+            const responseData = await res.json();
+
             if (res.status !== 201) {
-                console.log("Error creating user.")
-                addAlert("error", "Error creating user.")
-                return 0;
+                // Handle specific error messages from the API
+                const errorMessage = responseData.error || "Error creating user";
+                toast.error(errorMessage, {id: toastId});
+                return;
             }
-            addAlert("success", "User Created Successfully");
+
+            toast.success("User created successfully", {id: toastId});
             router.push("/users");
 
         } catch (e) {
-            console.log("Error creating user.", e)
-            addAlert("error", "Error creating user.")
-
+            console.error("Error creating user:", e);
+            toast.error(e.message || "An unexpected error occurred", {id: toastId});
         } finally {
             setIsSaving(false);
         }
     }
 
     return <div className="page">
-        {/* Alerts */}
-        {alerts.map((alert) => (
-            <Alert
-                key={alert.id}
-                variant={alert.variant}
-                onClose={() => removeAlert(alert.id)}
-                dismissible
-                className={`alert-icon d-flex align-items-center h-100 alert alert-${alert.variant}`}
-            >
-                {getIcon(alert.variant)}
-                {alert.message}
-            </Alert>
-        ))}
-
-        {/* If saving is in progress, show a top banner or spinner */}
-        {isSaving && (
-            <Alert variant="info" className="d-flex align-items-center h-100 alert-icon">
-                <i className="fa fa-spinner fa-spin me-2"/>
-                Saving User...
-            </Alert>
-        )}
-
         {/* Breadcrumb (Optional) */}
         <Breadcrumb
             breadcrumbs={[
@@ -126,7 +89,6 @@ export default function AddUser() {
 
                             {/* Account Information */}
                             <AccountInformation register={register} errors={errors}/>
-
 
                             {/* Submit Button */}
                             <div className="d-flex justify-content-end gap-2 mb-5">
@@ -152,5 +114,4 @@ export default function AddUser() {
             </div>
         </div>
     </div>
-
 }

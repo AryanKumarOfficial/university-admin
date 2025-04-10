@@ -64,11 +64,20 @@ export async function POST(req) {
 
         const {name, email, phone, password, role, createdBy, createdAt} = await req.json();
         if (!name || !email || !phone || !password || !role || !createdBy || !createdAt) {
+            const missingFields = [];
+            if (!name) missingFields.push('name');
+            if (!email) missingFields.push('email');
+            if (!phone) missingFields.push('phone');
+            if (!password) missingFields.push('password');
+            if (!role) missingFields.push('role');
+            if (!createdBy) missingFields.push('createdBy');
+            if (!createdAt) missingFields.push('createdAt');
+            
             return Response.json({
-                error: "Missing required parameters", data: {
-                    name, email, phone, password, role, createdBy, createdAt
-                }
-            }, {status: 401});
+                error: `Missing required parameters: ${missingFields.join(', ')}`,
+                code: 'missing_fields',
+                missingFields
+            }, {status: 400}); // Using 400 instead of 401 for validation errors
         }
 
         // Step 1: Create the Firebase Authentication account
@@ -83,7 +92,20 @@ export async function POST(req) {
         } catch (authError) {
             // Handle Firebase Auth errors (like duplicate email, invalid phone, etc.)
             console.error('Error creating auth account:', authError);
-            return Response.json({error: authError}, {
+            let errorMessage = 'Failed to create user account';
+            
+            // Extract specific error messages from Firebase Auth errors
+            if (authError.code === 'auth/email-already-exists') {
+                errorMessage = 'Email is already in use. Please use a different email.';
+            } else if (authError.code === 'auth/invalid-phone-number') {
+                errorMessage = 'Invalid phone number format. Please use country code + 10 digits (e.g., +911234567890).';
+            } else if (authError.code === 'auth/weak-password') {
+                errorMessage = 'Password is too weak. Please use a stronger password.';
+            } else if (authError.message) {
+                errorMessage = authError.message;
+            }
+            
+            return Response.json({error: errorMessage, code: authError.code || 'unknown_error'}, {
                 status: 400,
             });
         }
@@ -109,7 +131,16 @@ export async function POST(req) {
             } catch (rollbackError) {
                 console.error('Error during rollback (deleting auth user):', rollbackError);
             }
-            return Response.json({error: firestoreError}, {
+            
+            let errorMessage = 'Failed to create user database record';
+            if (firestoreError.message) {
+                errorMessage = firestoreError.message;
+            }
+            
+            return Response.json({
+                error: errorMessage,
+                code: firestoreError.code || 'database_error'
+            }, {
                 status: 400,
             })
         }
@@ -122,11 +153,20 @@ export async function POST(req) {
         console.error('General error in createUser endpoint:', error);
         // If it's a validation error from Yup, return details.
         if (error.name === 'ValidationError') {
-            return Response.json({errors: error.errors}, {
-                status: 500,
+            return Response.json({
+                error: 'Validation failed',
+                validationErrors: error.errors,
+                details: error.errors
+            }, {
+                status: 400, // Using 400 instead of 500 for validation errors
             });
         }
-        return Response.json({error: error.message}, {
+        
+        // Handle other types of errors
+        return Response.json({
+            error: error.message || 'An unexpected error occurred',
+            code: error.code || 'unknown_error'
+        }, {
             status: 500,
         });
     }
