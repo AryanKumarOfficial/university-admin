@@ -5,9 +5,11 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import GenericTable from "@/components/ui/GenericTable";
 import {formatTime} from "@/helpers/TimeFormat";
 import {useRouter} from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function UsersClient({initialUsers = []}) {
     const router = useRouter();
+
     // Column definitions for users
     const columns = [
         {key: "id", header: "#"},
@@ -15,21 +17,19 @@ export default function UsersClient({initialUsers = []}) {
         {key: "email", header: "Email"},
         {key: "phone", header: "Phone"},
         {key: "password", header: "Password"},
+        {key: "role", header: "Role"},
+        {key: "createdBy", header: "Created By"},
         {
-            key: "role", header: "Role",
-
-        },
-        {key: "createdBy", header: "created By"},
-        {
-            key: "createdAt", header: "Registered At",
+            key: "createdAt",
+            header: "Registered At",
             render: (value) => (
                 <span className="text-muted">
-                    {new Date(value).toLocaleDateString("en-IN", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    }) + " - " + formatTime(value)}
-                </span>
+          {new Date(value).toLocaleDateString("en-IN", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+          }) + " - " + formatTime(value)}
+        </span>
             ),
         },
     ];
@@ -41,11 +41,18 @@ export default function UsersClient({initialUsers = []}) {
             key: "role",
             label: "Role",
             type: "select",
-            options: ["All", "Admin", "Course Manager", "Professional", "Trainee", "Growth Manager", "Intern"]
+            options: [
+                "All",
+                "Admin",
+                "Course Manager",
+                "Professional",
+                "Trainee",
+                "Growth Manager",
+                "Intern",
+            ],
         },
         {key: "createdAt", label: "Created At", type: "date"},
     ];
-
 
     // Row actions
     const rowActions = [
@@ -58,25 +65,35 @@ export default function UsersClient({initialUsers = []}) {
             title: "Confirm Delete",
             confirmMessage: "Are you sure you want to delete this user?",
             onClick: async (item) => {
-                if (item) {
-                    console.log("Deleting user with id:", item.id);
-                    const res = await fetch(`/api/users/delete`, {
-                        method: "DELETE",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            uid: item.id,
-                        })
-                    })
-                    if (res.status !== 200) {
-                        console.log("Error deleting user with id:", res.status);
-                    } else {
+                if (!item) return;
+
+                // initiate delete request
+                const deletePromise = fetch(`/api/users/delete`, {
+                    method: "DELETE",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({uid: item.id}),
+                });
+
+                // show toast.promise
+                await toast.promise(
+                    deletePromise,
+                    {
+                        loading: `Deleting user #${item.id}…`,
+                        success: `User #${item.id} deleted!`,
+                        error: `Failed to delete user #${item.id}`,
+                    },
+                    {
+                        // optional: toast styling or duration overrides
+                        position: "top-right",
+                    }
+                );
+
+                // on success, refresh the table
+                deletePromise.then((res) => {
+                    if (res.ok) {
                         router.refresh();
                     }
-                } else {
-                    console.log("Error deleting user with id:", item.id);
-                }
+                });
             },
         },
         {
@@ -87,7 +104,6 @@ export default function UsersClient({initialUsers = []}) {
             requireConfirm: false,
             onClick: (item) => {
                 if (item) {
-                    console.log("Editing user with id:", item.id);
                     router.push(`/users/update/${item.id}`);
                 }
             },
