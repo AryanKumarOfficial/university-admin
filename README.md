@@ -2,6 +2,26 @@
 
 A Next.js application for university administration with Firebase authentication and Firestore database.
 
+## Table of Contents
+
+- [First-Time Setup](#first-time-setup)
+  - [Prerequisites](#prerequisites)
+  - [Project Setup](#project-setup)
+  - [Firebase Setup](#firebase-setup)
+  - [Environment Configuration](#environment-configuration)
+  - [Firebase Admin Setup](#firebase-admin-setup)
+- [Creating the First Admin User](#creating-the-first-admin-user)
+- [Running the Application](#running-the-application)
+- [Project Structure](#project-structure)
+- [Authentication Flow](#authentication-flow)
+- [Deploying to Vercel](#deploying-to-vercel)
+  - [Prerequisites](#prerequisites-1)
+  - [Deployment Steps](#deployment-steps)
+  - [Custom Domain](#custom-domain-optional)
+  - [Continuous Deployment](#continuous-deployment)
+  - [Troubleshooting](#troubleshooting)
+- [Maintenance](#maintenance)
+
 ## First-Time Setup
 
 ### Prerequisites
@@ -142,3 +162,117 @@ The application uses Firebase Authentication with custom JWT tokens:
 2. A custom JWT token with user role is created
 3. This token is stored in cookies and used for API authentication
 4. In production, all API routes and pages require valid authentication
+
+## Deploying to Vercel
+
+Follow these steps to deploy your university admin portal to Vercel:
+
+### Prerequisites
+
+- [Vercel account](https://vercel.com/signup)
+- Git repository (GitHub, GitLab, or Bitbucket)
+
+### Deployment Steps
+
+1. **Push your code to a Git repository**
+
+   Ensure your code is pushed to a Git repository on GitHub, GitLab, or Bitbucket.
+
+2. **Import your repository to Vercel**
+
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New" > "Project"
+   - Select your Git provider and the repository
+   - Click "Import"
+
+3. **Configure project settings**
+
+   - Framework Preset: Select "Next.js"
+   - Root Directory: Leave as default if your project is in the root directory
+   - Build Command: Verify it's set to `next build` (should be detected automatically)
+
+4. **Configure environment variables**
+
+   Add the same environment variables from your `.env.local` file:
+
+   ```
+   NEXT_PUBLIC_FIREBASE_API_KEY
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+   NEXT_PUBLIC_FIREBASE_APP_ID
+   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+   NEXT_PUBLIC_JWT_SECRET
+   ```
+
+5. **Handle Firebase Admin Service Account**
+
+   For the Firebase Admin SDK credentials, you have two options:
+
+   - **Option 1**: Store the entire service account JSON content in an environment variable (recommended for security):
+     - Create a new environment variable called `FIREBASE_SERVICE_ACCOUNT_KEY`
+     - Copy the entire content of your `service_account.json` file and paste it as the value
+
+   - **Option 2**: Encrypt the service account file and include it in your repository (less recommended):
+     - Use a secure method to encrypt your service account file
+     - Add decryption steps to your build process
+
+6. **Dependency Considerations**
+
+   If you encounter Firebase dependency conflicts during deployment, check your `firebase-admin` version. You may need to downgrade to version 12.0.0:
+
+   ```bash
+   npm install firebase-admin@12.0.0
+   # or
+   yarn add firebase-admin@12.0.0
+   # or
+   pnpm add firebase-admin@12.0.0
+   ```
+
+7. **Deploy the project**
+
+   - Click "Deploy"
+   - Wait for the build and deployment to complete
+   - Vercel will provide you with a URL to access your deployed application
+
+### Custom Domain (Optional)
+
+1. Go to your project settings in Vercel Dashboard
+2. Navigate to "Domains"
+3. Add your custom domain and follow the instructions to configure DNS settings
+
+### Continuous Deployment
+
+By default, Vercel will automatically deploy changes whenever you push to your Git repository. You can configure branch deployments and preview environments in your project settings.
+
+### Troubleshooting
+
+- If your build fails, check the build logs in Vercel for detailed error messages
+- Ensure all environment variables are correctly set
+- Verify your Firebase service account has the correct permissions
+
+## Maintenance
+
+### Developed and Maintained by
+
+IQnaut Development Team  
+Contact: admin@iqnaut.com
+
+### Version
+
+Current Version: 1.0.0 (April 2025)
+
+### Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### License
+
+This project is licensed under the [MIT License](LICENSE).
